@@ -130,7 +130,8 @@ async function analyzeLiveBoardPosition() {
   if (!fen) return;
 
   const key = document.getElementById('apiKey')?.value?.trim() || '';
-  if (!key) { setAicOutput('', true, 'API key missing. Open Settings.'); return; }
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { setAicOutput('', true, 'API key missing. Open Settings.'); return; }
 
   // Mark as active (compat)
   if (typeof _activeAnalysisView !== 'undefined') _activeAnalysisView = 'position';

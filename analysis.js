@@ -101,7 +101,7 @@ async function runAnalysis() {
   loadingStep('lstepBook', 'done');
 
   // ── Step 4: Highlights ──
-  const key = document.getElementById('apiKey').value.trim();
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
   loadingStep('lstepDone', 'active');
   loadingProgress(88);
   loadingStepDetail('Generating game highlights\u2026');
@@ -155,8 +155,9 @@ async function runAnalysis() {
 //  GAME HIGHLIGHTS - shown as overlay after analysis
 // ==============================================================
 async function generateHighlights() {
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) return null;
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) return null;
 
   const turns = [];
   for (let i = 1; i < positions.length; i++) {

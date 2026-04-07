@@ -48,9 +48,10 @@ async function generateImprovement(apiKey, thoughts) {
 }
 
 async function regenerateGamePlan() {
-  const key = document.getElementById('apiKey').value.trim();
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
   const content = document.getElementById('improveContent');
-  if (!key) {
+  if (!hasAccess) {
     if (content) { content.className = 'prof-improve-result dim'; content.textContent = 'API key missing. Open Settings (\u2699) and add your Claude API key.'; }
     return;
   }
@@ -80,8 +81,9 @@ function setBadge(cls, text) {
 }
 
 async function runExplain(promptText) {
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) {
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) {
     setNote('API key missing. Open Settings (\u2699) in the top right.', true);
     return;
   }
@@ -1104,8 +1106,9 @@ async function explainMoveAndAsk() {
     return;
   }
 
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) { setMoveNote('API key missing. Open Settings.', true); return; }
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { setMoveNote('API key missing. Open Settings.', true); return; }
 
   // Hide button group, show loading in the output area
   const explainBtn = document.getElementById('explainBtn');
@@ -1337,8 +1340,9 @@ async function explainPositionAndAsk() {
   const cacheKey = _explainKey('pos', currentPly);
   if (_explainCache[cacheKey]) return; // already done - button is disabled, this is a safeguard
 
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) { setNote('API key missing. Open Settings.', true); return; }
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { setNote('API key missing. Open Settings.', true); return; }
   setNote('<span class="spinner"></span> Asking Claude\u2026', false, true);
 
   // Fetch engine top moves for the current position (best continuations)
@@ -1625,8 +1629,9 @@ function _wtThoughtOptions(step) {
 // Launch the walkthrough
 function launchWalkthrough() {
   if (positions.length < 3) return;
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) { alert('API key missing. Open Settings.'); return; }
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { alert('API key missing. Open Settings.'); return; }
 
   _wtSteps = _wtBuildSteps();
   _wtIdx = 0;
@@ -1975,7 +1980,7 @@ async function _wtFetchExplanation(step, cacheKey) {
       return html;
     }
 
-    const key = document.getElementById('apiKey').value.trim();
+    const key = document.getElementById('apiKey')?.value?.trim() || '';
     const pos = positions[step.ply];
     const evB = evals[step.ply - 1];
     const evA = evals[step.ply];
@@ -2164,7 +2169,7 @@ async function _wtSelectThought(optionId, optionText, stepIdx) {
     </div>`;
 
   try {
-    const key = document.getElementById('apiKey').value.trim();
+    const key = document.getElementById('apiKey')?.value?.trim() || '';
     const pos = positions[step.ply];
     const san = pos.san;
     const moveNum = Math.ceil(step.ply / 2);
@@ -2279,8 +2284,9 @@ function _bdShowResult(html) {
 
 async function generateFullGameBreakdown() {
   if (positions.length < 3) return;
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) { document.getElementById('breakdownContent').textContent = 'API key missing.'; return; }
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { document.getElementById('breakdownContent').textContent = 'API key missing.'; return; }
 
   const content = document.getElementById('breakdownContent');
   content.className = 'bd-result-content';
