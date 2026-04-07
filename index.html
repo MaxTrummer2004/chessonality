@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chessonality: Discover Your Chess Personality</title>
+<meta name="description" content="Discover your chess personality. AI analysis meets self-discovery.">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/panels.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/analysis.css">
+<link rel="stylesheet" href="css/try-move.css">
+<link rel="stylesheet" href="css/breakdown.css">
+<link rel="stylesheet" href="css/personality.css">
+<link rel="stylesheet" href="css/insights.css">
+<link rel="stylesheet" href="css/coach.css">
+<link rel="stylesheet" href="css/engagement.css">
+<link rel="stylesheet" href="css/repertoire.css">
+<link rel="stylesheet" href="css/onboarding.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/paywall.css">
+<link rel="stylesheet" href="css/walkthrough.css">
+<link rel="stylesheet" href="css/esports.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+
+<!-- Streak decoration layer - sits behind all page content -->
+<div id="streak-canvas" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1 - LANDING
+══════════════════════════════════════════════════ -->
+<div id="pageLanding" class="app-page" style="display:none">
+
+  <header class="landing-header">
+    <div class="header-brand">
+      <h1>&#9823; Chess<span>onality</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeBtnLanding" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>
+      <button class="profile-btn profile-btn-lg" onclick="showPage('profile'); renderFullProfile();" title="Your profile &amp; history">
+        <svg class="profile-person-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Above-fold hero: fills exactly the viewport ── -->
+  <div class="landing-fold">
+
+    <!-- Personality carousel -->
+    <div class="pers-carousel" id="persCarousel">
+      <button class="carousel-arrow carousel-prev" onclick="carouselPrev()">&#8249;</button>
+      <div class="carousel-slide" id="carouselSlide" onclick="openPglos(carouselIdx)"><!-- filled by JS --></div>
+      <button class="carousel-arrow carousel-next" onclick="carouselNext()">&#8250;</button>
+      <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+
+    <div class="landing-hero landing-hero-center">
+      <h2 class="landing-title">Train like the player<br><span>you really are</span></h2>
+      <p class="landing-sub">Discover your chess personality, per game. Get AI explanations and coach tips built around how <em>you</em> actually play.</p>
+
+      <div class="landing-features landing-features-row">
+        <div class="lf-item"><span class="lf-dot" style="background:var(--good)"></span>Personality detected per game</div>
+        <div class="lf-item"><span class="lf-dot" style="background:var(--accent)"></span>Explanations matched to your style</div>
+        <div class="lf-item"><span class="lf-dot" style="background:var(--book-light)"></span>Personalised improvement tips</div>
+        <div class="lf-item"><span class="lf-dot" style="background:#8b5cf6"></span>Track your identity over time</div>
+      </div>
+
+      <button class="btn-analyze btn-get-started" onclick="showChoiceModal()">
+        <span>Get Started</span>
+      </button>
+    </div>
+
+    <!-- Floating scroll-down hint -->
+    <button class="landing-scroll-hint" onclick="document.getElementById('showcaseSection').scrollIntoView({behavior:'smooth'})">
+      <span class="lsh-label">Learn more</span>
+      <span class="lsh-arrow">&#8595;</span>
+    </button>
+
+  </div><!-- /landing-fold -->
+
+  <!-- ── Showcase: What You'll Get ── -->
+  <div class="showcase-section" id="showcaseSection">
+    <h3 class="showcase-heading">Here's what a single game reveals</h3>
+    <div class="showcase-grid">
+      <div class="showcase-card showcase-card-personality">
+        <div class="showcase-card-glow"></div>
+        <div class="showcase-card-icon">🦁</div>
+        <div class="showcase-card-label">Your Personality</div>
+        <div class="showcase-card-title">The Lion</div>
+        <div class="showcase-card-sub">Attack. Dominate. Conquer.</div>
+        <div class="showcase-card-traits">
+          <span>Aggressive</span><span>Fearless</span><span>Dominant</span>
+        </div>
+      </div>
+      <div class="showcase-card showcase-card-analysis">
+        <div class="showcase-card-glow"></div>
+        <div class="showcase-card-icon showcase-icon-text">&#9816;</div>
+        <div class="showcase-card-label">Move-by-Move AI</div>
+        <div class="showcase-card-example">
+          <div class="showcase-move-row">
+            <span class="showcase-move-badge showcase-good">Nf3</span>
+            <span class="showcase-move-text">Develops the knight and controls the center: textbook Lion aggression.</span>
+          </div>
+          <div class="showcase-move-row">
+            <span class="showcase-move-badge showcase-blunder">Bxh7?</span>
+            <span class="showcase-move-text">The Greek Gift sacrifice! Bold but the opponent defends precisely.</span>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-card showcase-card-coach">
+        <div class="showcase-card-glow"></div>
+        <div class="showcase-card-icon showcase-icon-text">&#9812;</div>
+        <div class="showcase-card-label">AI Coach Plan</div>
+        <div class="showcase-coach-items">
+          <div class="showcase-coach-item"><span class="showcase-check">&#10003;</span> Practice king safety patterns</div>
+          <div class="showcase-coach-item"><span class="showcase-check">&#10003;</span> Study Morphy's attacking games</div>
+          <div class="showcase-coach-item"><span class="showcase-check">&#10003;</span> Train tactical combinations</div>
+        </div>
+      </div>
+      <div class="showcase-card showcase-card-repertoire">
+        <div class="showcase-card-glow"></div>
+        <div class="showcase-card-icon showcase-icon-text">&#9823;</div>
+        <div class="showcase-card-label">Your Ideal Openings</div>
+        <div class="showcase-opening-items">
+          <div class="showcase-opening">
+            <span class="showcase-opening-name">King's Indian Attack</span>
+            <span class="showcase-opening-why">Matches your aggressive style</span>
+          </div>
+          <div class="showcase-opening">
+            <span class="showcase-opening-name">Sicilian Dragon</span>
+            <span class="showcase-opening-why">Sharp, tactical, your territory</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Social Proof ── -->
+  <div class="social-proof-section">
+    <div class="social-proof-counter">
+      <span class="sp-number" id="spCounter">20</span>
+      <span class="sp-label">players discovered their style</span>
+    </div>
+    <div class="social-proof-quotes">
+      <div class="sp-quote">
+        <div class="sp-quote-text">"I always knew I was aggressive but seeing 'The Lion' with specific drills to improve my attacks was eye-opening."</div>
+        <div class="sp-quote-author">- Alex, 1450 Lichess</div>
+      </div>
+      <div class="sp-quote">
+        <div class="sp-quote-text">"The opening recommendations actually match how I play. No other tool does this."</div>
+        <div class="sp-quote-author">- Maria, 1680 Chess.com</div>
+      </div>
+      <div class="sp-quote">
+        <div class="sp-quote-text">"Turned out I'm an Anaconda. The AI coach told me to study Karpov, which makes total sense now."</div>
+        <div class="sp-quote-author">- David, 1320 Lichess</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Choice modal: Repertoire vs Game Analysis -->
+  <div class="choice-modal-overlay" id="choiceModalOverlay" style="display:none" onclick="if(event.target===this)closeChoiceModal()">
+    <div class="choice-modal">
+      <button class="choice-modal-close" onclick="closeChoiceModal()">&times;</button>
+      <h2 class="choice-modal-title">What would you like to do?</h2>
+      <p class="choice-modal-sub">Choose your path. You can always explore the other one later.</p>
+      <div class="choice-modal-cards">
+        <button class="choice-card choice-card-rep" onclick="closeChoiceModal(); startRepFromChoice()">
+          <div class="choice-card-icon choice-card-icon-text">&#9823;</div>
+          <div class="choice-card-badge">NEW</div>
+          <h3 class="choice-card-title">Opening Repertoire</h3>
+          <p class="choice-card-text">Discover openings that match your personality, with stats from your games and explanations why each one fits you.</p>
+          <div class="choice-card-pills">
+            <span>Personality-matched</span>
+            <span>Your stats</span>
+          </div>
+        </button>
+        <button class="choice-card choice-card-analyze" onclick="closeChoiceModal(); showPage('gameSelect')">
+          <div class="choice-card-icon choice-card-icon-text">&#9816;</div>
+          <h3 class="choice-card-title">Game Analysis</h3>
+          <p class="choice-card-text">Import a game from Lichess or Chess.com and get AI-powered move explanations, personality detection, and coaching.</p>
+          <div class="choice-card-pills">
+            <span>AI explanations</span>
+            <span>Personality</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="landing-footer">
+    <span class="lf-copy">&copy; 2025 Chessonality</span>
+    <div class="lf-links">
+      <button class="lf-link" onclick="showLegal('imprint')">Imprint</button>
+      <span class="lf-sep">&middot;</span>
+      <button class="lf-link" onclick="showLegal('privacy')">Privacy Policy</button>
+      <span class="lf-sep">&middot;</span>
+      <button class="lf-link" onclick="showLegal('terms')">Terms of Service</button>
+      <span class="lf-sep">&middot;</span>
+      <a class="lf-link" href="mailto:maxtrummer16@gmail.com">Contact</a>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1b - GAME SELECT (platform import or PGN)
+══════════════════════════════════════════════════ -->
+<div id="pageGameSelect" class="app-page" style="display:none">
+  <div class="hero-input-wrap" id="gsWrap">
+    <button class="gs-back" onclick="goBackToLanding()">&#8592; Back</button>
+
+    <!-- Zone 1: Input card - hidden after games load -->
+    <div class="hero-input-zone" id="gsInputZone">
+      <div class="hero-input-card hero-input-analyze">
+        <div class="hero-input-glow"></div>
+        <div class="hero-input-icon hero-input-icon-text">&#9816;</div>
+        <h2 class="hero-input-title">Analyze a Game</h2>
+        <p class="hero-input-sub">Import from your chess platform or paste a PGN to get AI-powered analysis.</p>
+
+        <!-- Tabs: Platform / PGN -->
+        <div class="gs-tabs">
+          <button class="gs-tab active" id="gsTabBtnPlatform" onclick="switchGsTab('platform')"><span class="gs-tab-icon">&#9816;</span> Platform</button>
+          <button class="gs-tab" id="gsTabBtnPgn" onclick="switchGsTab('pgn')"><span class="gs-tab-icon">&#9814;</span> PGN</button>
+        </div>
+
+        <!-- Platform tab -->
+        <div id="gsTabPlatform" class="gs-tab-content">
+          <div class="hero-input-platforms">
+            <button class="hero-plat-btn active" id="gsPlatLichess" onclick="setGsPlatform('lichess')">
+              <span>&#9822;</span> Lichess
+            </button>
+            <button class="hero-plat-btn" id="gsPlatChesscom" onclick="setGsPlatform('chesscom')">
+              <span>&#9816;</span> Chess.com
+            </button>
+          </div>
+          <div class="hero-input-field">
+            <input id="gsUsername" type="text" class="hero-input" placeholder="Your username"
+                   onkeydown="if(event.key==='Enter')fetchRecentGames()">
+            <button class="hero-input-go" onclick="fetchRecentGames()">Load Games</button>
+          </div>
+          <div class="hero-input-error" id="gsError" style="display:none"></div>
+          <div class="hero-input-loading" id="gsLoading" style="display:none">
+            <span class="spinner"></span> <span>Loading games&hellip;</span>
+          </div>
+        </div>
+
+        <!-- PGN tab -->
+        <div id="gsTabPgn" class="gs-tab-content" style="display:none">
+          <div class="hero-pgn-section">
+            <div class="hero-color-row">
+              <span class="hero-color-label">I played as</span>
+              <button id="colorWhite" class="hero-plat-btn active" onclick="setPlayerColor('w')">&#9812; White</button>
+              <button id="colorBlack" class="hero-plat-btn" onclick="setPlayerColor('b')">&#9818; Black</button>
+            </div>
+            <textarea id="pgnInput" class="hero-textarea"
+              placeholder="1. e4 e5 2. Nf3 Nc6 ...&#10;or paste a full PGN with headers"></textarea>
+            <button class="hero-input-go hero-input-go-full" onclick="startFlow()">Analyze This Game</button>
+            <div id="landingError" class="landing-error" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Free analyses badge -->
+        <div class="free-analyses-badge" id="freeAnalysesBadge" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Zone 2: Game list - replaces input when games are loaded -->
+    <div class="hero-list-zone" id="gsListZone" style="display:none">
+      <div class="gs-list-header">
+        <button class="gs-list-change" onclick="gsShowInput()">&#8592; Change</button>
+        <span class="gs-list-title" id="gsListTitle">Select a game</span>
+      </div>
+      <div id="gsGameList" class="gs-game-list hero-game-list"></div>
+      <div class="gs-pagination" id="gsPagination" style="display:none">
+        <button class="gs-page-btn" id="gsPrevBtn" onclick="gsChangePage(-1)">&#8592;</button>
+        <span class="gs-page-info" id="gsPageInfo"></span>
+        <button class="gs-page-btn" id="gsNextBtn" onclick="gsChangePage(1)">&#8594;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1c - REPERTOIRE INPUT (centered, dynamic)
+══════════════════════════════════════════════════ -->
+<div id="pageRepInput" class="app-page" style="display:none">
+  <div class="hero-input-wrap">
+    <button class="gs-back" onclick="goBackToLanding()">&#8592; Back</button>
+    <div class="hero-input-card hero-input-rep">
+      <div class="hero-input-glow"></div>
+      <div class="hero-input-icon hero-input-icon-text">&#9823;</div>
+      <h2 class="hero-input-title">Find Your Ideal Openings</h2>
+      <p class="hero-input-sub">Enter your username and we'll analyze your recent games to recommend a personalized opening repertoire.</p>
+      <div class="hero-input-platforms">
+        <button class="hero-plat-btn active" id="repPlatLichess" onclick="setRepPlatform('lichess')">
+          <span>&#9822;</span> Lichess
+        </button>
+        <button class="hero-plat-btn" id="repPlatChesscom" onclick="setRepPlatform('chesscom')">
+          <span>&#9816;</span> Chess.com
+        </button>
+      </div>
+      <div class="hero-input-field">
+        <input type="text" id="repUsernameInput" class="hero-input" placeholder="Your username" onkeydown="if(event.key==='Enter')startRepertoireFlow()">
+        <button class="hero-input-go" onclick="startRepertoireFlow()">Analyze</button>
+      </div>
+      <div class="hero-input-error" id="repInputError" style="display:none"></div>
+      <div class="hero-input-loading" id="repInputLoading" style="display:none">
+        <span class="spinner"></span>
+        <span>Fetching your games&hellip;</span>
+      </div>
+      <p class="hero-input-note">We'll grab your last 10 games and match openings to your personality.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1d - REPERTOIRE LOADING SCREEN
+══════════════════════════════════════════════════ -->
+<div id="pageRepLoading" class="app-page" style="display:none">
+  <div class="rep-loading-wrap">
+    <!-- Fixed top: brand + title + bar - never moves -->
+    <div class="rep-loading-top">
+      <div class="loading-brand">&#9823; Opening Repertoire</div>
+      <h2 class="loading-title" id="repLoadTitle">Building your repertoire&hellip;</h2>
+      <div class="loading-bar-outer">
+        <div class="loading-bar-inner" id="repLoadBarFill" style="width:0%"></div>
+      </div>
+      <div class="loading-bar-pct" id="repLoadBarPct">0%</div>
+    </div>
+
+    <!-- Fixed-height lower panel: steps left, feed right -->
+    <div class="rep-loading-panel">
+      <div class="rep-load-steps" id="repLoadSteps">
+        <div class="rep-load-step" id="repLs0">
+          <div class="rep-ls-icon">&#9899;</div>
+          <div class="rep-ls-text">
+            <div class="rep-ls-label">Fetching your games</div>
+            <div class="rep-ls-detail" id="repLsDetail0"></div>
+          </div>
+        </div>
+        <div class="rep-load-step" id="repLs1">
+          <div class="rep-ls-icon">&#9899;</div>
+          <div class="rep-ls-text">
+            <div class="rep-ls-label">Parsing moves &amp; openings</div>
+            <div class="rep-ls-detail" id="repLsDetail1"></div>
+          </div>
+        </div>
+        <div class="rep-load-step" id="repLs2">
+          <div class="rep-ls-icon">&#9899;</div>
+          <div class="rep-ls-text">
+            <div class="rep-ls-label">Analyzing play patterns</div>
+            <div class="rep-ls-detail" id="repLsDetail2"></div>
+          </div>
+        </div>
+        <div class="rep-load-step" id="repLs3">
+          <div class="rep-ls-icon">&#9899;</div>
+          <div class="rep-ls-text">
+            <div class="rep-ls-label">Detecting your personality</div>
+            <div class="rep-ls-detail" id="repLsDetail3"></div>
+          </div>
+        </div>
+        <div class="rep-load-step" id="repLs4">
+          <div class="rep-ls-icon">&#9899;</div>
+          <div class="rep-ls-text">
+            <div class="rep-ls-label">Matching ideal openings</div>
+            <div class="rep-ls-detail" id="repLsDetail4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live feed: fixed height, newest items scroll in at bottom -->
+      <div class="rep-load-feed-wrap">
+        <div class="rep-load-feed-label">Games analyzed</div>
+        <div class="rep-load-feed" id="repLoadFeed"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 2 - QUESTIONNAIRE (one question at a time)
+══════════════════════════════════════════════════ -->
+<div id="pageQuestionnaire" class="app-page" style="display:none">
+  <div class="quiz-wrap">
+    <div class="quiz-progress">
+      <div class="quiz-progress-fill" id="quizProgressFill"></div>
+    </div>
+    <div class="quiz-counter" id="quizCounter">1 / 5</div>
+    <h2 class="quiz-question" id="quizQuestion"></h2>
+    <div class="quiz-boxes" id="quizBoxes">
+      <!-- 10 clickable boxes filled by JS -->
+    </div>
+    <button class="quiz-skip-btn" onclick="skipQuestionnaire()">Skip questions &rarr;</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 3 - LOADING SCREEN
+══════════════════════════════════════════════════ -->
+<div id="pageLoading" class="app-page" style="display:none">
+  <div class="loading-wrap">
+    <div class="loading-card">
+      <div class="loading-brand">&#9823; Chessonality</div>
+      <h2 class="loading-title" id="loadingTitle">Analyzing your game&hellip;</h2>
+
+      <div class="loading-bar-outer">
+        <div class="loading-bar-inner" id="loadingBarFill" style="width:0%"></div>
+      </div>
+      <div class="loading-bar-pct" id="loadingBarPct">0%</div>
+
+      <div class="lstep-current" id="lstepCurrent">
+        <div class="lstep-spinner"></div>
+        <div class="lstep-cur-text">
+          <div class="lstep-cur-label" id="lstepCurLabel">Preparing&hellip;</div>
+          <div class="lstep-cur-detail" id="lstepCurDetail"></div>
+        </div>
+      </div>
+
+      <div style="display:none">
+        <span id="lstepEngine"></span>
+        <span id="lstepEval"></span>
+        <span id="lstepBook"></span>
+        <span id="lstepDone"></span>
+        <span id="lstepEvalDetail"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 4 - GAME HIGHLIGHTS
+══════════════════════════════════════════════════ -->
+<div id="pageHighlights" class="app-page" style="display:none">
+  <div class="hl-overlay-inner">
+    <div class="hl-card">
+      <div class="hl-header">Your Game</div>
+      <div class="hl-items" id="hlItems"></div>
+      <button class="hl-btn" onclick="showPersonalityReveal()">
+        Reveal My Personality <span class="btn-arrow">&#8594;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 5 - PERSONALITY REVEAL
+══════════════════════════════════════════════════ -->
+<div id="pagePersonality" class="app-page" style="display:none">
+  <div class="pers-reveal" id="persReveal">
+    <div class="pers-content">
+      <div class="pers-subtitle">Your Chess Personality</div>
+      <div class="pers-emoji" id="persEmoji"></div>
+      <h1 class="pers-name" id="persName"></h1>
+      <div class="pers-tagline" id="persTagline"></div>
+      <p class="pers-description" id="persDescription"></p>
+      <div class="pers-traits" id="persTraits"></div>
+      <div class="pers-famous" id="persFamous"></div>
+      <div class="pers-actions">
+        <button class="hl-btn" onclick="goToAnalysis()">
+          Continue to Analysis <span class="btn-arrow">&#8594;</span>
+        </button>
+        <button class="pers-share-btn" onclick="sharePersonality()">
+          &#128228; Share Result
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 6 - MAIN ANALYSIS
+══════════════════════════════════════════════════ -->
+<div id="pageMain" class="app-page" style="display:none">
+
+  <input type="hidden" id="apiKey" value="">
+
+  <header>
+    <div class="header-brand">
+      <button class="back-btn" onclick="goBackToLanding()" title="New game">&#8592; New game</button>
+      <h1>&#9823; Chess<span>onality</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>
+      <button class="profile-btn profile-btn-lg help-tour-btn" onclick="startTour(ANALYSIS_TOUR_STEPS,'ce-analysis-toured',true)" title="Page guide">
+        <span class="help-tour-icon">?</span>
+      </button>
+      <button class="profile-btn profile-btn-lg" onclick="openProfile()" title="Your profile">
+        <svg class="profile-person-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- (settings modal moved to global scope) -->
+
+  <div class="container">
+
+    <!-- Personality mini-card for this game -->
+    <div class="analysis-pers-card" id="analysisPersonalityCard" style="display:none">
+      <span class="apc-emoji" id="apcEmoji"></span>
+      <div class="apc-text">
+        <span class="apc-label">This game you played as</span>
+        <span class="apc-name" id="apcName"></span>
+      </div>
+      <div class="apc-traits" id="apcTraits"></div>
+    </div>
+
+    <!-- Game stats pills -->
+    <div class="game-stats" id="gameStats" style="display:none">
+      <div class="gs-pill" id="gsAccuracy"><span class="gs-icon">&#127919;</span> <span id="gsAccVal"></span></div>
+      <div class="gs-pill" id="gsMoves"><span class="gs-icon">&#9823;</span> <span id="gsMovesVal"></span></div>
+      <div class="gs-pill" id="gsBook"><span class="gs-icon">&#128214;</span> <span id="gsBookVal"></span></div>
+      <span id="analysisStatus" class="gs-status"></span>
+    </div>
+
+    <div class="main-grid">
+
+      <!-- Board column -->
+      <div class="board-area">
+        <div class="board-wrapper">
+          <div class="eval-bar-wrap">
+            <div class="eval-bar-black" id="evalBarBlack" style="height:50%"></div>
+            <div class="eval-bar-white"></div>
+            <span class="eval-score top" id="evalTop"></span>
+            <span class="eval-score bot" id="evalBot">0.0</span>
+          </div>
+          <div class="board-col">
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+        <div class="nav-controls">
+          <button class="nav-btn" onclick="goTo(0)"                    title="Start">&#9198;</button>
+          <button class="nav-btn" onclick="goTo(currentPly - 1)"       title="Back">&#9664;</button>
+          <button class="nav-btn" onclick="goTo(currentPly + 1)"       title="Forward">&#9654;</button>
+          <button class="nav-btn" onclick="goTo(positions.length - 1)" title="End">&#9197;</button>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="right-panel">
+        <div class="tab-page" id="pageAnalysis">
+          <!-- Key Moments bar -->
+
+          <div class="panel-box moves-panel">
+            <div class="moves-split">
+              <div class="moves-left">
+                <div class="panel-label">Moves</div>
+                <div class="progress-bar" id="progressBar">
+                  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
+                <div class="move-list" id="moveList"></div>
+              </div>
+              <div class="moves-right">
+                <!-- AI Coach action panel - buttons only, no inline text -->
+                <div class="ai-coach-panel" id="aiCoachPanel">
+
+                  <!-- Single explain button + hint (grouped so they center together) -->
+                  <div class="aic-btn-group">
+                    <button id="explainBtn" class="btn-explain" onclick="handleExplain()">
+                      Explain
+                    </button>
+                    <div id="aicHint" class="aic-hint">Select a move to get started.</div>
+                  </div>
+
+                  <!-- Live board controls -->
+                  <div class="live-board-controls">
+                    <span id="liveBoardMoveBadge" class="live-board-badge" style="display:none">1 move ahead</span>
+                    <button id="liveBoardUndoBtn" class="btn-live-undo" style="display:none" onclick="liveBoardUndo()">
+                      &#8592; Undo Move
+                    </button>
+                    <button id="liveBoardUndoAllBtn" class="btn-live-undo-all" style="display:none" onclick="liveBoardUndoAll()">
+                      &#8634; Reset Board
+                    </button>
+                  </div>
+
+                  <!-- Inline slide deck output area -->
+                  <div id="aicOutput" class="aic-output" style="display:none"></div>
+
+                  <!-- Hidden data stores (used by JS) -->
+                  <div style="display:none">
+                    <div id="moveExplanation"></div>
+                    <div id="explanation"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden thought blocks for summary (used by full game page) -->
+          <div style="display:none">
+            <div id="ctSum" class="ct-block">
+              <div class="ct-grid">
+                <input id="ctSumQ1" type="text" placeholder="How did the game go?">
+                <input id="ctSumQ2" type="text" placeholder="When things went wrong?">
+                <input id="ctSumQ3" type="text" placeholder="Biggest mistake?">
+                <input id="ctSumQ4" type="text" placeholder="What would you do differently?">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Walkthrough CTA -->
+        <div class="walkthrough-cta" onclick="goToFullGameBreakdown()">
+          <div class="walkthrough-cta-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <div class="walkthrough-cta-text">
+            <span class="walkthrough-cta-title">Game Walkthrough</span>
+            <span class="walkthrough-cta-sub">Step-by-step review of your key moments</span>
+          </div>
+          <svg class="walkthrough-cta-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+
+        <!-- AI Coach CTA -->
+        <div class="coach-cta-analysis" onclick="openCoachPage()">
+          <div class="walkthrough-cta-icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.18),rgba(99,102,241,0.18))">
+            <span class="cta-icon-text" style="font-size:28px">&#9812;</span>
+          </div>
+          <div class="walkthrough-cta-text">
+            <span class="walkthrough-cta-title">AI Coach</span>
+            <span class="walkthrough-cta-sub">Personalized training plan for your chess personality</span>
+          </div>
+          <svg class="walkthrough-cta-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 7 - FULL GAME BREAKDOWN
+══════════════════════════════════════════════════ -->
+<div id="pageBreakdown" class="app-page" style="display:none">
+  <header>
+    <div class="header-brand">
+      <button class="back-btn" onclick="goToAnalysis()" title="Back to analysis">&#8592; Back</button>
+      <h1>&#9823; Chess<span>onality</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+    </div>
+  </header>
+  <div class="breakdown-page">
+    <div class="breakdown-header">
+      <div class="breakdown-emoji" id="bdEmoji"></div>
+      <h2 class="breakdown-title">Full Game Breakdown</h2>
+      <p class="breakdown-sub" id="bdSub">AI-powered analysis of your complete game</p>
+    </div>
+    <div class="breakdown-content">
+      <!-- Thought prompts -->
+      <div class="bd-thoughts">
+        <div class="bd-thought-label">Share your thoughts (optional)</div>
+        <div class="bd-thought-grid">
+          <input id="ctSumQ1Bd" type="text" placeholder="Overall feeling about this game?">
+          <input id="ctSumQ2Bd" type="text" placeholder="When did things go wrong?">
+          <input id="ctSumQ3Bd" type="text" placeholder="Biggest mistake?">
+          <input id="ctSumQ4Bd" type="text" placeholder="What would you do differently?">
+        </div>
+        <button class="bd-generate-btn" onclick="generateFullGameBreakdown()">&#129302; Generate Full Breakdown</button>
+      </div>
+      <!-- AI Response - full width, large -->
+      <div class="panel-box breakdown-panel bd-result-panel">
+        <div id="breakdownContent" class="bd-result-content dim">Your AI-powered full game breakdown will appear here after you click Generate.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 8 - FULL PROFILE PAGE (main hub)
+══════════════════════════════════════════════════ -->
+<div id="pageProfile" class="app-page" style="display:none">
+  <header class="landing-header">
+    <div class="header-brand">
+      <h1>&#9823; Chess<span>onality</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeBtnProfile" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings">&#9881;</button>
+      <button class="profile-btn profile-btn-lg help-tour-btn" onclick="startTour(PROFILE_TOUR_STEPS,'ce-profile-toured',true)" title="Page guide">
+        <span class="help-tour-icon">?</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="prof-page">
+
+    <!-- ── Top hub bar: identity + primary CTA ── -->
+    <div class="prof-hub-bar">
+      <div class="prof-identity">
+        <div class="profile-avatar-large">
+          <svg class="profile-person-icon-lg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+        </div>
+        <div class="prof-name-area">
+          <div id="profNameRow" class="profile-name-row">
+            <span id="profNameDisplay" class="profile-name-display">Set your name</span>
+            <button class="profile-edit-btn" onclick="startEditName()">&#9998;</button>
+          </div>
+          <input id="profileNameInput" class="profile-name-input" type="text"
+            placeholder="Enter your name&hellip;" style="display:none"
+            onblur="finishEditName()" onkeydown="if(event.key==='Enter')finishEditName()">
+          <div class="prof-games-count" id="profGamesCount">0 games analyzed</div>
+        </div>
+      </div>
+      <div class="prof-hub-actions">
+        <button class="prof-pglos-btn" onclick="openPglos()" title="Learn about all personalities">
+          &#129488; Personalities
+        </button>
+        <button class="prof-analyze-btn" onclick="showPage('gameSelect')">
+          <span class="prof-analyze-icon">&#9654;</span>
+          Analyze a Game
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Tab bar ── -->
+    <div class="prof-tabs">
+      <button class="prof-tab active" id="profTabOverview" onclick="switchProfTab('overview')">Overview</button>
+      <button class="prof-tab" id="profTabHistory" onclick="switchProfTab('history')">My Games</button>
+    </div>
+
+    <!-- ══ TAB: OVERVIEW ══ -->
+    <div id="profTabPanelOverview" class="prof-tab-panel">
+
+      <!-- Row 1: Personality card + Breakdown (full width) -->
+      <div class="prof-top-grid">
+        <div class="prof-primary" id="profPrimary">
+          <div class="prof-primary-inner" id="profPrimaryInner">
+            <div class="prof-primary-sub">Your Chess Identity</div>
+            <div class="prof-primary-emoji" id="profPrimaryEmoji">?</div>
+            <div class="prof-primary-name" id="profPrimaryName">Analyze games to discover</div>
+            <div class="prof-primary-tagline" id="profPrimaryTagline">your chess personality</div>
+          </div>
+        </div>
+        <div class="prof-section prof-section-breakdown">
+          <div class="prof-section-title">Personality Breakdown</div>
+          <div id="profBreakdown" class="prof-breakdown">
+            <div class="ph-empty">Play games to build your personality profile.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Dashboard - streak + sparkline + collection counter -->
+      <div class="prof-engage-row" id="profEngageRow" style="display:none">
+        <div class="prof-streak-card" id="profStreakCard">
+          <div class="prof-streak-flame" id="profStreakFlame">🔥</div>
+          <div class="prof-streak-info">
+            <div class="prof-streak-count" id="profStreakCount">0</div>
+            <div class="prof-streak-label" id="profStreakLabel">games this week</div>
+          </div>
+          <div class="prof-streak-dots" id="profStreakDots"></div>
+        </div>
+        <div class="prof-sparkline-card" id="profSparklineCard">
+          <div class="prof-sparkline-label">Personality Trend</div>
+          <canvas id="profSparkline" width="160" height="48"></canvas>
+          <div class="prof-sparkline-sub" id="profSparklineSub"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Feature CTA cards (Repertoire, DNA, Coach) -->
+      <div class="prof-feature-row" id="profFeatureRow" style="display:none">
+        <div class="prof-feat-card prof-feat-rep" onclick="openRepertoire()">
+          <div class="prof-feat-icon prof-feat-icon-text">&#9823;</div>
+          <div class="prof-feat-body">
+            <div class="prof-feat-title">Your Ideal Openings</div>
+            <div class="prof-feat-sub" id="profFeatRepSub">Personality-matched repertoire with personal stats</div>
+          </div>
+          <div class="prof-feat-status" id="profFeatRepStatus"></div>
+        </div>
+        <div class="prof-feat-card prof-feat-dna" id="profInsightsCta" style="display:none" onclick="openInsights()">
+          <div class="prof-feat-icon prof-feat-icon-text">&#9815;</div>
+          <div class="prof-feat-body">
+            <div class="prof-feat-title">My Chess DNA</div>
+            <div class="prof-feat-sub" id="profFeatDnaSub">Personality evolution &amp; strengths radar</div>
+          </div>
+          <div class="prof-feat-status" id="profFeatDnaStatus"></div>
+        </div>
+        <div class="prof-feat-card prof-feat-coach" id="profCoachPreview" style="display:none" onclick="openCoachPage()">
+          <div class="prof-feat-icon prof-feat-icon-text">&#9812;</div>
+          <div class="prof-feat-body">
+            <div class="prof-feat-title">AI Coach</div>
+            <div class="prof-feat-sub" id="profCoachPreviewText">Personalized training plan</div>
+          </div>
+          <div class="prof-feat-status" id="profFeatCoachStatus"></div>
+        </div>
+      </div>
+
+      <!-- Row 4: Personality Collection (horizontal grid) -->
+      <div class="prof-collection" id="profCollection" style="display:none">
+        <div class="prof-collection-header">
+          <span class="prof-collection-title">Personality Collection</span>
+          <span class="prof-collection-counter" id="profCollectionCounter">0/8 discovered</span>
+        </div>
+        <div class="prof-collection-grid" id="profCollectionGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- ══ TAB: HISTORY ══ -->
+    <div id="profTabPanelHistory" class="prof-tab-panel" style="display:none">
+      <div class="prof-section">
+        <div class="prof-section-header">
+          <div class="prof-history-filters" id="profHistoryFilters">
+            <input type="text" id="profHistorySearch" class="prof-search-input" placeholder="Search opponent..."
+                   oninput="filterHistory()">
+            <div class="prof-filter-pills">
+              <button class="prof-filter-pill active" onclick="setHistoryFilter('all', this)">All</button>
+              <button class="prof-filter-pill" onclick="setHistoryFilter('win', this)">Wins</button>
+              <button class="prof-filter-pill" onclick="setHistoryFilter('loss', this)">Losses</button>
+              <button class="prof-filter-pill" onclick="setHistoryFilter('draw', this)">Draws</button>
+            </div>
+          </div>
+        </div>
+        <div id="profHistory" class="prof-history">
+          <div class="ph-empty">No analyses yet. Click "Analyze a Game" to get started.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 10 - OPENING REPERTOIRE
+══════════════════════════════════════════════════ -->
+<div id="pageRepertoire" class="app-page" style="display:none">
+
+  <!-- Header -->
+  <header class="ins-header rep-page-header">
+    <button class="ins-back-btn" onclick="showPage('profile'); renderFullProfile();">
+      <span class="ins-back-arrow">&#8592;</span> Back
+    </button>
+    <div class="ins-header-center">
+      <div class="ins-header-title">Your Ideal Openings</div>
+      <div class="ins-header-sub" id="repHeaderSub">Matched to your chess personality</div>
+    </div>
+    <div style="width:64px"></div>
+  </header>
+
+  <div class="rep-page-wrap" id="repPageWrap">
+
+    <!-- Hero section (auto-animates on load) -->
+    <div class="rep-hero" id="repHero">
+      <div class="rep-hero-emoji rep-hero-emoji-text" id="repHeroEmoji">&#9823;</div>
+      <h2 class="rep-hero-title" id="repHeroTitle">Analyze games to unlock your repertoire</h2>
+      <p class="rep-hero-sub" id="repHeroSub">We match openings to your unique playing style.</p>
+    </div>
+
+    <!-- Narrative: who you are -->
+    <div class="rep-narrative rep-scroll-section" id="repNarrative1" style="display:none">
+      <div class="rep-narrative-text" id="repNarText1">Here's what your games reveal about you</div>
+      <div class="rep-narrative-sub" id="repNarSub1">Patterns from your analyzed games, distilled into insights.</div>
+      <div class="rep-narrative-line"></div>
+    </div>
+
+    <!-- Personal insights (scroll-reveal) -->
+    <div class="rep-insights-section rep-scroll-section" id="repInsightsSection" style="display:none">
+      <div class="rep-insights-title">Your Personal Profile</div>
+      <div class="rep-insights-grid" id="repInsightsGrid"></div>
+    </div>
+
+    <!-- Fading divider -->
+    <div class="coach-story-divider rep-scroll-section" id="repDivider2" style="display:none"></div>
+
+    <!-- Narrative: transition to white -->
+    <div class="rep-narrative rep-scroll-section" id="repNarrative2" style="display:none">
+      <div class="rep-narrative-text" id="repNarText2">Now, your weapons with the white pieces</div>
+      <div class="rep-narrative-sub" id="repNarSub2">Openings hand-picked for how you actually play.</div>
+      <div class="rep-narrative-line"></div>
+    </div>
+
+    <!-- White openings (scroll-reveal) -->
+    <div class="rep-color-section rep-scroll-section" id="repWhiteSection" style="display:none">
+      <div class="rep-color-header">
+        <span class="rep-color-piece">♙</span>
+        <div>
+          <div class="rep-color-title">As White</div>
+          <div class="rep-color-sub">Openings that match your style with the first move</div>
+        </div>
+      </div>
+      <div class="rep-cards-grid" id="repWhiteCards"></div>
+    </div>
+
+    <!-- Fading divider -->
+    <div class="coach-story-divider rep-scroll-section" id="repDivider3" style="display:none"></div>
+
+    <!-- Narrative: transition to black -->
+    <div class="rep-narrative rep-scroll-section" id="repNarrative3" style="display:none">
+      <div class="rep-narrative-text" id="repNarText3">And for when your opponent starts…</div>
+      <div class="rep-narrative-sub" id="repNarSub3">One defense against 1.e4, one against 1.d4, covering all your bases.</div>
+      <div class="rep-narrative-line"></div>
+    </div>
+
+    <!-- Black openings (scroll-reveal) -->
+    <div class="rep-color-section rep-scroll-section" id="repBlackSection" style="display:none">
+      <div class="rep-color-header">
+        <span class="rep-color-piece">♟</span>
+        <div>
+          <div class="rep-color-title">As Black</div>
+          <div class="rep-color-sub">Defenses that play to your natural strengths</div>
+        </div>
+      </div>
+      <div class="rep-cards-grid" id="repBlackCards"></div>
+    </div>
+
+    <!-- Fading divider -->
+    <div class="coach-story-divider rep-scroll-section" id="repDivider4" style="display:none"></div>
+
+    <!-- Narrative: go deeper -->
+    <div class="rep-narrative rep-scroll-section" id="repNarrative4" style="display:none">
+      <div class="rep-narrative-text">Ready to master these lines?</div>
+      <div class="rep-narrative-sub">Dive into individual game analysis to sharpen every opening.</div>
+      <div class="rep-narrative-line"></div>
+    </div>
+
+    <!-- Deep analysis incentive banner (scroll-reveal) -->
+    <div class="rep-analysis-cta rep-scroll-section" id="repAnalysisCta" style="display:none">
+      <div class="rep-cta-left">
+        <div>
+          <div class="rep-cta-title">Want to go even deeper?</div>
+          <div class="rep-cta-sub">Analyze individual games for move-by-move AI explanations, real eval scores, and coaching built around your personality.</div>
+        </div>
+      </div>
+      <div class="rep-cta-features">
+        <span>Eval bar &amp; engine</span>
+        <span>Move explanations</span>
+        <span>AI Coach plan</span>
+      </div>
+      <button class="rep-cta-btn" onclick="showPage('gameSelect')">Analyze a game</button>
+    </div>
+
+    <!-- Cross-links to other features (scroll-reveal) -->
+    <div class="rep-crosslinks rep-scroll-section" id="repCrosslinks" style="display:none">
+      <div class="rep-crosslinks-title">Go deeper</div>
+      <div class="rep-crosslinks-grid">
+        <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9815;</span>
+          <div>
+            <div class="rep-crosslink-name">Chess DNA</div>
+            <div class="rep-crosslink-desc">See how your personality evolves over time</div>
+          </div>
+        </div>
+        <div class="rep-crosslink" onclick="openCoachPage()">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9812;</span>
+          <div>
+            <div class="rep-crosslink-name">AI Coach</div>
+            <div class="rep-crosslink-desc">Get a personalized training plan</div>
+          </div>
+        </div>
+        <div class="rep-crosslink" onclick="showPage('gameSelect');">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9816;</span>
+          <div>
+            <div class="rep-crosslink-name">Analyze Another Game</div>
+            <div class="rep-crosslink-desc">Every game refines your recommendations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 9 - INSIGHTS (Chess DNA)
+══════════════════════════════════════════════════ -->
+<div id="pageInsights" class="app-page" style="display:none">
+
+  <!-- Header -->
+  <header class="ins-header">
+    <button class="ins-back-btn" onclick="showPage('profile'); renderFullProfile();">
+      <span class="ins-back-arrow">&#8592;</span> Back
+    </button>
+    <div class="ins-header-center">
+      <div class="ins-header-title">My Chess DNA</div>
+      <div class="ins-header-sub" id="insHeaderSub">Your chess identity at a glance</div>
+    </div>
+    <div style="width:64px"></div><!-- spacer -->
+  </header>
+
+  <!-- Tab pills -->
+  <div class="ins-pills-wrap">
+    <div class="ins-pills">
+      <button class="ins-pill active" id="insTabStrengths"  onclick="switchInsTab('strengths')">&#127760; Strengths</button>
+      <button class="ins-pill"        id="insTabEvolution"  onclick="switchInsTab('evolution')">&#128200; Evolution</button>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: STRENGTHS ══ -->
+  <div id="insTabPanelStrengths" class="ins-panel">
+    <div class="ins-page-wrap">
+
+      <!-- Two-col: radar + bar list -->
+      <div class="ins-strengths-grid">
+
+        <!-- Radar -->
+        <div class="ins-card ins-card-radar">
+          <div class="ins-card-label">Personality radar</div>
+          <div class="ins-radar-wrap">
+            <canvas id="insRadarChart" class="ins-radar-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Bar breakdown -->
+        <div class="ins-card ins-card-bars">
+          <div class="ins-card-label">Dimension breakdown</div>
+          <div id="insStrengthBars" class="ins-strength-bars"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: EVOLUTION ══ -->
+  <div id="insTabPanelEvolution" class="ins-panel" style="display:none">
+    <div class="ins-page-wrap">
+
+      <!-- Chart card: title row + canvas -->
+      <div class="ins-card ins-card-chart">
+        <div class="ins-chart-header">
+          <div>
+            <div class="ins-chart-title" id="insChartTitle">Personality Score Trajectory</div>
+            <div class="ins-chart-subtitle" id="insChartSubtitle">Primary personality score across your analyzed games</div>
+          </div>
+          <div class="ins-chart-badges" id="insChartBadges"></div>
+        </div>
+        <canvas id="insLineChart" class="ins-canvas"></canvas>
+        <div class="ins-chart-legend">
+          <span class="ins-cleg-item"><span class="ins-cleg-line ins-cleg-solid"></span>Primary score</span>
+          <span class="ins-cleg-item"><span class="ins-cleg-line ins-cleg-dashed"></span>Running average</span>
+          <span class="ins-cleg-item"><span class="ins-cleg-dot ins-cleg-peak"></span>Peak game</span>
+        </div>
+      </div>
+
+      <!-- Bottom stat cards -->
+      <div class="ins-stat-cards" id="insEvoStats"></div>
+
+    </div>
+  </div>
+
+  <!-- ══ PANEL: COACH ══ -->
+  <div id="insTabPanelCoach" class="ins-panel" style="display:none">
+    <div class="ins-page-wrap ins-page-wrap-coach">
+
+      <div class="ins-coach-card">
+        <div class="ins-coach-header">
+          <div class="ins-coach-icon-wrap">
+            <span class="ins-coach-icon">&#129302;</span>
+          </div>
+          <div>
+            <div class="ins-coach-title">AI Chess Coach</div>
+            <div class="ins-coach-subtitle">Personalised advice based on your DNA</div>
+          </div>
+        </div>
+
+        <div id="insCoachContent" class="ins-coach-body">
+          <div class="ins-coach-empty">
+            <div class="ins-coach-empty-icon">&#127942;</div>
+            <div class="ins-coach-empty-text">Your personalised coaching plan is one click away.</div>
+          </div>
+        </div>
+
+        <button class="ins-coach-cta" id="insCoachBtn" onclick="generateInsightsAdvice()">
+          <span class="ins-coach-cta-icon">&#9889;</span>
+          Get Personalised Advice
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 11 - AI COACH (dedicated)
+══════════════════════════════════════════════════ -->
+<div id="pageCoach" class="app-page" style="display:none">
+
+  <!-- Coach header -->
+  <header class="coach-page-header">
+    <button class="coach-back-btn" onclick="showPage('profile'); renderFullProfile();">
+      <span class="coach-back-arrow">&#8592;</span> Back
+    </button>
+    <div class="coach-header-center">
+      <div class="coach-header-icon">&#129302;</div>
+      <div class="coach-header-title">AI Chess Coach</div>
+      <div class="coach-header-sub">Your personalised practice plan</div>
+    </div>
+    <div style="width:64px"></div>
+  </header>
+
+  <!-- Coach content area -->
+  <div class="coach-page-body">
+    <div class="coach-page-inner">
+
+      <!-- Status / empty state -->
+      <div id="coachPageContent" class="coach-page-content">
+        <div class="coach-page-empty">
+          <div class="coach-page-empty-glow"></div>
+          <div class="coach-page-empty-icon">&#127942;</div>
+          <div class="coach-page-empty-title">Your Practice Plan</div>
+          <div class="coach-page-empty-text">Generate a personalised coaching plan based on your chess personality, strengths, and weaknesses.</div>
+        </div>
+      </div>
+
+      <!-- CTA button -->
+      <button class="coach-page-cta" id="coachPageBtn" onclick="generateCoachPageAdvice()">
+        <span class="coach-page-cta-icon">&#9889;</span>
+        Generate Practice Plan
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     GLOBAL OVERLAY + MODALS
+══════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+<!-- ── Settings modal ── -->
+<div class="modal modal-settings" id="settingsModal">
+  <div class="modal-header">
+    <h2 class="modal-title">&#9881; Settings</h2>
+    <button class="modal-close-btn" onclick="closeAllModals()" title="Close">&times;</button>
+  </div>
+
+  <div class="modal-section">
+    <div class="modal-section-label">Profile</div>
+    <div class="settings-row">
+      <label class="settings-label" for="settingsName">Display Name</label>
+      <div class="settings-input-row">
+        <input type="text" id="settingsName" class="settings-input" placeholder="Your name" maxlength="40">
+        <button class="settings-save-btn" onclick="saveSettingsName()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-section">
+    <div class="modal-section-label">Your Data</div>
+    <div class="settings-data-rows">
+      <div class="settings-data-row">
+        <div class="settings-data-info">
+          <div class="settings-data-title">Export Data</div>
+          <div class="settings-data-desc">Download all your game history as JSON</div>
+        </div>
+        <button class="settings-action-btn" onclick="exportAllData()">&#8681; Export</button>
+      </div>
+      <div class="settings-data-row">
+        <div class="settings-data-info">
+          <div class="settings-data-title">Clear History</div>
+          <div class="settings-data-desc">Remove all saved games, keep your profile</div>
+        </div>
+        <button class="settings-action-btn settings-action-warn" onclick="confirmClearHistory()">Clear</button>
+      </div>
+      <div class="settings-data-row settings-data-row-danger">
+        <div class="settings-data-info">
+          <div class="settings-data-title">Delete Account</div>
+          <div class="settings-data-desc">Permanently erase all your data from this device</div>
+        </div>
+        <button class="settings-action-btn settings-action-danger" onclick="confirmDeleteAccount()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-section">
+    <div class="modal-section-label">Appearance</div>
+    <div class="settings-row settings-theme-row">
+      <span class="settings-label">Theme</span>
+      <div class="settings-theme-toggle">
+        <button class="stt-btn" id="sttLight" onclick="applyTheme('light')">&#9728; Light</button>
+        <button class="stt-btn" id="sttDark"  onclick="applyTheme('dark')">&#9790; Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-section modal-section-legal">
+    <button class="lf-link" onclick="showLegal('imprint')">Imprint</button>
+    <span class="lf-sep">&middot;</span>
+    <button class="lf-link" onclick="showLegal('privacy')">Privacy Policy</button>
+    <span class="lf-sep">&middot;</span>
+    <button class="lf-link" onclick="showLegal('terms')">Terms of Service</button>
+    <span class="lf-sep">&middot;</span>
+    <span class="settings-version">v1.0</span>
+  </div>
+</div>
+
+<!-- ── Imprint modal (Impressum / Offenlegung) ── -->
+<div class="modal modal-legal" id="imprintModal">
+  <div class="modal-header">
+    <h2 class="modal-title">&#128196; Imprint</h2>
+    <button class="modal-close-btn" onclick="closeAllModals()" title="Close">&times;</button>
+  </div>
+  <div class="modal-legal-body">
+    <p class="legal-date">Information per &sect; 5 ECG, &sect; 14 UGB and &sect; 25 MedienG (Austria)</p>
+
+    <h3>Operator (Medieninhaber)</h3>
+    <p>
+      Max Trummer<br>
+      Mellacher Stra&szlig;e 63<br>
+      8072 Fernitz&ndash;Mellach<br>
+      Austria
+    </p>
+
+    <h3>Contact</h3>
+    <p>
+      Email: <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>
+    </p>
+
+    <h3>Purpose of the website</h3>
+    <p>Chessonality is a personal, non-commercial chess learning tool that analyzes user-supplied chess games and offers AI-generated personality insights and opening recommendations. The fundamental orientation of the medium is the educational presentation of chess analysis and player personality typology.</p>
+
+    <h3>Responsible for content</h3>
+    <p>Max Trummer (address as above)</p>
+
+    <h3>Online dispute resolution</h3>
+    <p>The European Commission provides a platform for online dispute resolution, available at <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener" class="legal-link">ec.europa.eu/consumers/odr</a>. We are neither obliged nor willing to participate in dispute resolution proceedings before a consumer arbitration board.</p>
+
+    <h3>Liability for content</h3>
+    <p>The content of this website has been created with the greatest possible care. However, we cannot guarantee its accuracy, completeness or timeliness. AI-generated analyses and explanations may be inaccurate and are provided for informational and entertainment purposes only.</p>
+
+    <h3>Liability for links</h3>
+    <p>This site contains links to external third-party websites (Lichess, Chess.com, Anthropic) over whose content we have no influence. We therefore cannot accept any liability for these external contents. The respective providers are responsible for the content of linked pages.</p>
+
+    <h3>Copyright</h3>
+    <p>The content and works on this website are subject to Austrian copyright law. Reproduction, processing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator.</p>
+  </div>
+</div>
+
+<!-- ── Privacy Policy modal (GDPR) ── -->
+<div class="modal modal-legal" id="privacyModal">
+  <div class="modal-header">
+    <h2 class="modal-title">&#128274; Privacy Policy</h2>
+    <button class="modal-close-btn" onclick="closeAllModals()" title="Close">&times;</button>
+  </div>
+  <div class="modal-legal-body">
+    <p class="legal-date">Last updated: April 2026</p>
+
+    <h3>1. Controller</h3>
+    <p>The controller responsible for data processing under the EU General Data Protection Regulation (GDPR) is:</p>
+    <p>
+      Max Trummer<br>
+      Mellacher Stra&szlig;e 63, 8072 Fernitz&ndash;Mellach, Austria<br>
+      Email: <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>
+    </p>
+
+    <h3>2. Local-first storage</h3>
+    <p>Chessonality is a local-first web app. Your display name, game history, analysis results, personality scores and theme preference are stored exclusively in your browser (IndexedDB and localStorage) on your own device. We do not operate a user database and do not transmit this data to our own servers.</p>
+    <p><strong>Legal basis:</strong> Art. 6 (1) (b) GDPR (performance of the service you requested) and &sect; 165 (3) TKG 2021 (technically necessary local storage).</p>
+
+    <h3>3. Game import from Lichess and Chess.com</h3>
+    <p>When you enter a Lichess or Chess.com username, your browser fetches your public games directly from the respective platform's public API. We do not handle credentials, and the request is made from your device, not from our servers.</p>
+    <p><strong>Legal basis:</strong> Art. 6 (1) (b) GDPR.</p>
+
+    <h3>4. AI analysis (Anthropic Claude API)</h3>
+    <p>To generate move explanations and coaching insights, chess positions (FEN strings), move lists and engine evaluations are transmitted to Anthropic PBC (548 Market St., PMB 90375, San Francisco, CA 94104, USA), the operator of the Claude API. We do not transmit your name or other directly identifying information. Anthropic acts as an independent recipient of the data; details are governed by Anthropic's <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener" class="legal-link">privacy policy</a>.</p>
+    <p>The transfer to the USA takes place on the basis of the EU&ndash;US Data Privacy Framework, in which Anthropic participates, as well as on the basis of EU Standard Contractual Clauses where applicable.</p>
+    <p><strong>Legal basis:</strong> Art. 6 (1) (b) GDPR (provision of the analysis service you requested).</p>
+
+    <h3>5. Chess engine evaluation</h3>
+    <p>If you choose the Lichess cloud engine, the position to be analyzed is sent to the public Lichess analysis API. If you use the local engine, no data leaves your browser.</p>
+    <p><strong>Legal basis:</strong> Art. 6 (1) (b) GDPR.</p>
+
+    <h3>6. Hosting and server logs</h3>
+    <p>The static files of this website are delivered via a hosting provider. Like every web server, the hosting provider may temporarily process technical access data (IP address, user agent, time of request, requested URL) in server logs for the purpose of operating and securing the service.</p>
+    <p><strong>Legal basis:</strong> Art. 6 (1) (f) GDPR (legitimate interest in operating a stable and secure website).</p>
+
+    <h3>7. Cookies and tracking</h3>
+    <p>Chessonality does not use tracking cookies, advertising cookies, web analytics, fingerprinting or any third-party tracking. The only items stored locally are your theme preference and your local game data, both of which are technically necessary to provide the requested functionality and do not require consent under &sect; 165 TKG 2021.</p>
+
+    <h3>8. Your rights</h3>
+    <p>Under the GDPR you have the right to:</p>
+    <p>access (Art. 15), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18), data portability (Art. 20) and objection (Art. 21). Because all your personal data is stored locally on your device, you can exercise erasure and portability yourself at any time via Settings &rarr; Export Data and Settings &rarr; Delete Account, or by clearing your browser's site data.</p>
+
+    <h3>9. Right to lodge a complaint</h3>
+    <p>You have the right to lodge a complaint with a data protection supervisory authority. The competent authority in Austria is the Austrian Data Protection Authority (<em>Datenschutzbeh&ouml;rde</em>), Barichgasse 40&ndash;42, 1030 Vienna, <a href="https://www.dsb.gv.at" target="_blank" rel="noopener" class="legal-link">dsb.gv.at</a>.</p>
+
+    <h3>10. Retention period</h3>
+    <p>We do not retain any personal data on our servers. Locally stored data on your device persists until you delete it yourself. Server log files of the hosting provider are typically deleted after a few days.</p>
+
+    <h3>11. Contact</h3>
+    <p>Questions about data protection? Email <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>.</p>
+  </div>
+</div>
+
+<!-- ── Terms of Service modal ── -->
+<div class="modal modal-legal" id="termsModal">
+  <div class="modal-header">
+    <h2 class="modal-title">&#128203; Terms of Service</h2>
+    <button class="modal-close-btn" onclick="closeAllModals()" title="Close">&times;</button>
+  </div>
+  <div class="modal-legal-body">
+    <p class="legal-date">Last updated: January 2025</p>
+
+    <h3>Use of the service</h3>
+    <p>Chessonality is a free tool for personal chess improvement. You may use it for personal, non-commercial purposes. You agree not to misuse the service, attempt to reverse-engineer it, or use it to violate any laws.</p>
+
+    <h3>AI-generated content</h3>
+    <p>Analysis and coaching tips are generated by AI and are provided for informational and entertainment purposes only. They do not constitute professional advice. Results may occasionally be inaccurate.</p>
+
+    <h3>Third-party services</h3>
+    <p>This app relies on Anthropic's Claude API, the Lichess API, and optionally the Chess.com API. Use of these services is subject to their respective terms. We are not affiliated with, endorsed by, or sponsored by Lichess, Chess.com, or Anthropic.</p>
+
+    <h3>No warranties</h3>
+    <p>This service is provided "as is" without warranties of any kind. We do not guarantee uninterrupted availability, accuracy of analysis, or fitness for any particular purpose.</p>
+
+    <h3>Limitation of liability</h3>
+    <p>To the maximum extent permitted by law, Chessonality and its creators are not liable for any damages arising from your use of this service.</p>
+
+    <h3>Changes to these terms</h3>
+    <p>We may update these terms occasionally. Continued use of the service constitutes acceptance of any changes.</p>
+
+    <h3>Contact</h3>
+    <p>Questions about these terms? Email <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>.</p>
+  </div>
+</div>
+
+<!-- ── Confirm danger modal ── -->
+<div class="modal modal-confirm" id="confirmModal">
+  <div class="modal-header">
+    <h2 class="modal-title" id="confirmTitle">Are you sure?</h2>
+    <button class="modal-close-btn" onclick="closeConfirm()">&times;</button>
+  </div>
+  <p class="confirm-body" id="confirmBody"></p>
+  <div class="confirm-actions">
+    <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+    <button class="settings-action-btn settings-action-danger" id="confirmOkBtn">Confirm</button>
+  </div>
+</div>
+
+<!-- ── Onboarding walkthrough ── -->
+<div class="onboarding-overlay" id="onboardingOverlay" style="display:none">
+
+  <!-- Step 1: LEFT - single animal intro -->
+  <div class="ob-scene ob-scene-left ob-animate-in" id="obScene0">
+    <div class="ob-spotlight ob-spot-left">
+      <div class="ob-animal">&#129409;</div>
+      <h2 class="ob-title">Every player has a personality</h2>
+      <p class="ob-text">Are you an aggressive Lion, a patient Anaconda, or a cunning Fox? Analyze your games and the AI detects your chess personality, then coaches you on your best and worst moments.</p>
+      <div class="ob-scene-actions">
+        <button class="ob-skip" onclick="closeOnboarding()">Skip</button>
+        <button class="ob-next" onclick="nextOnboardingStep()">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: RIGHT - analysis preview -->
+  <div class="ob-scene ob-scene-right" id="obScene1" style="display:none">
+    <div class="ob-spotlight ob-spot-right">
+      <div class="ob-animal">&#128300;</div>
+      <h2 class="ob-title">Every move, fully decoded</h2>
+      <p class="ob-text">Paste any PGN from Lichess or Chess.com and every move gets quality-coded instantly. Tap one and the AI walks you through it as a three-slide deck: a plain-language overview, the structural idea, and the engine's best alternative based on the next three moves.</p>
+      <div class="ob-scene-actions">
+        <button class="ob-skip" onclick="closeOnboarding()">Skip</button>
+        <button class="ob-next" onclick="nextOnboardingStep()">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: FULLSCREEN - personality quiz -->
+  <div class="ob-scene ob-scene-full" id="obScene2" style="display:none">
+    <div class="ob-full-cta" style="margin-bottom:8px">
+      <h2 class="ob-title">Which one do you think you are?</h2>
+      <p class="ob-text">Tap the personality that feels most like you.</p>
+    </div>
+    <div class="ob-full-grid ob-quiz-grid">
+      <div class="ob-full-animal ob-quiz-animal" data-personality="anaconda" onclick="obPickPersonality(this)"><span>&#128013;</span><span class="ob-full-name">Anaconda</span><span class="ob-quiz-hint">Patient &amp; positional</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="eagle" onclick="obPickPersonality(this)"><span>&#129413;</span><span class="ob-full-name">Eagle</span><span class="ob-quiz-hint">Tactical &amp; decisive</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="fox" onclick="obPickPersonality(this)"><span>&#129418;</span><span class="ob-full-name">Fox</span><span class="ob-quiz-hint">Creative &amp; tricky</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="lion" onclick="obPickPersonality(this)"><span>&#129409;</span><span class="ob-full-name">Lion</span><span class="ob-quiz-hint">Aggressive &amp; bold</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="owl" onclick="obPickPersonality(this)"><span>&#129417;</span><span class="ob-full-name">Owl</span><span class="ob-quiz-hint">Prepared &amp; deep</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="shark" onclick="obPickPersonality(this)"><span>&#129416;</span><span class="ob-full-name">Shark</span><span class="ob-quiz-hint">Relentless &amp; clinical</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="phoenix" onclick="obPickPersonality(this)"><span>&#128293;</span><span class="ob-full-name">Phoenix</span><span class="ob-quiz-hint">Resilient &amp; clutch</span></div>
+      <div class="ob-full-animal ob-quiz-animal" data-personality="turtle" onclick="obPickPersonality(this)"><span>&#128034;</span><span class="ob-full-name">Turtle</span><span class="ob-quiz-hint">Solid &amp; unbreakable</span></div>
+    </div>
+    <div class="ob-quiz-result" id="obQuizResult" style="display:none">
+      <div class="ob-quiz-result-text" id="obQuizResultText"></div>
+      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">Let's find out for real &rarr;</button>
+    </div>
+    <div class="ob-quiz-skip" id="obQuizSkip">
+      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Step 4: DARK MODE choice -->
+  <div class="ob-scene ob-scene-full ob-scene-theme" id="obScene3" style="display:none">
+    <div class="ob-theme-card">
+      <div class="ob-theme-moon">🌗</div>
+      <h2 class="ob-title">Do you prefer the dark side?</h2>
+      <p class="ob-text">Choose your vibe. You can always change it later.</p>
+      <div class="ob-theme-choices">
+        <button class="ob-theme-btn ob-theme-dark" onclick="obPickTheme('dark')">
+          <span class="ob-theme-btn-icon">🌙</span>
+          <span class="ob-theme-btn-label">Dark Mode</span>
+          <span class="ob-theme-btn-sub">Easy on the eyes</span>
+        </button>
+        <button class="ob-theme-btn ob-theme-light" onclick="obPickTheme('light')">
+          <span class="ob-theme-btn-icon">☀️</span>
+          <span class="ob-theme-btn-label">Light Mode</span>
+          <span class="ob-theme-btn-sub">Crisp &amp; clean</span>
+        </button>
+      </div>
+      <button class="ob-skip ob-theme-skip" onclick="closeOnboarding()">Keep current &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="ob-dots" id="obDots">
+    <span class="ob-dot active" id="obDot0"></span>
+    <span class="ob-dot" id="obDot1"></span>
+    <span class="ob-dot" id="obDot2"></span>
+    <span class="ob-dot" id="obDot3"></span>
+  </div>
+</div>
+
+<!-- ── First-visit consent banner ── -->
+<div class="consent-banner" id="consentBanner" style="display:none">
+  <div class="consent-inner">
+    <span class="consent-text">&#128274; Your data stays on your device. We use local storage for game history and send moves to AI for analysis.</span>
+    <div class="consent-actions">
+      <button class="lf-link consent-learn" onclick="showLegal('privacy')">Learn more</button>
+      <button class="consent-accept" onclick="acceptConsent()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Milestone celebration modal ── -->
+<div class="milestone-overlay" id="milestoneOverlay" style="display:none" onclick="closeMilestone()">
+  <div class="milestone-modal" onclick="event.stopPropagation()">
+    <div class="milestone-confetti" id="milestoneConfetti"></div>
+    <div class="milestone-emoji milestone-emoji-text" id="milestoneEmoji">&#9813;</div>
+    <div class="milestone-title" id="milestoneTitle">Milestone!</div>
+    <div class="milestone-sub" id="milestoneSub"></div>
+    <button class="milestone-btn" onclick="closeMilestone()">Keep Going!</button>
+  </div>
+</div>
+
+<!-- ── Paywall modal ── -->
+<div class="modal modal-paywall" id="paywallModal">
+  <div class="paywall-inner">
+    <div class="paywall-badge">Free limit reached</div>
+    <div class="paywall-emoji paywall-emoji-text">&#9823;</div>
+    <h2 class="paywall-title">Unlock Unlimited Analysis</h2>
+    <p class="paywall-sub">You've used your 2 free analyses. Subscribe to keep discovering your chess personality.</p>
+
+    <ul class="paywall-features">
+      <li><span class="pf-check">✓</span> Unlimited game analyses</li>
+      <li><span class="pf-check">✓</span> AI coaching on every move</li>
+      <li><span class="pf-check">✓</span> Full game breakdown</li>
+      <li><span class="pf-check">✓</span> Personality profile &amp; trends</li>
+      <li><span class="pf-check">✓</span> Import from Lichess &amp; Chess.com</li>
+    </ul>
+
+    <div class="paywall-price">
+      <span class="paywall-amount">€4.99</span>
+      <span class="paywall-period">/ month</span>
+    </div>
+    <div class="paywall-trust">Cancel anytime · Secured by Stripe</div>
+
+    <a class="paywall-cta" id="paywallStripeBtn" href="#" target="_blank" onclick="openStripe()">
+      Subscribe Now →
+    </a>
+
+    <div class="paywall-key-section">
+      <p class="paywall-key-label">Already subscribed? Enter your license key:</p>
+      <div class="paywall-key-row">
+        <input type="text" id="paywallKeyInput" class="paywall-key-input" placeholder="CP-XXXXXXXXXXXXXXXX">
+        <button class="paywall-key-btn" onclick="submitLicenseKey()">Unlock</button>
+      </div>
+      <div id="paywallKeyError" class="paywall-key-error" style="display:none"></div>
+    </div>
+
+    <button class="paywall-close" onclick="closePaywall()">Maybe later</button>
+  </div>
+</div>
+
+<!-- ── Welcome to Pro modal (after Stripe checkout success) ── -->
+<div class="modal modal-paywall" id="welcomeProModal">
+  <div class="paywall-inner">
+    <div class="paywall-badge" style="background:linear-gradient(135deg,#d4af37,#f0c758);color:#1a1a1a">Pro activated</div>
+    <div class="paywall-emoji paywall-emoji-text">&#9819;</div>
+    <h2 class="paywall-title">Welcome to Chessonality Pro!</h2>
+    <p class="paywall-sub">Your subscription is active. Enjoy unlimited game analyses, full coaching, and every feature unlocked.</p>
+    <ul class="paywall-features">
+      <li><span class="pf-check">✓</span> Unlimited game analyses</li>
+      <li><span class="pf-check">✓</span> AI coaching on every move</li>
+      <li><span class="pf-check">✓</span> Personality profile &amp; trends</li>
+      <li><span class="pf-check">✓</span> Cancel anytime from your Stripe receipt</li>
+    </ul>
+    <button class="paywall-cta" onclick="closeWelcomePro()" style="background:linear-gradient(135deg,#d4af37,#f0c758);color:#1a1a1a">
+      Start Analyzing →
+    </button>
+  </div>
+</div>
+
+<!-- ── Analysis error overlay ── -->
+<div class="analysis-error-overlay" id="analysisErrorOverlay" style="display:none">
+  <div class="aeo-inner">
+    <div class="aeo-icon aeo-icon-text">&#9818;</div>
+    <h2 class="aeo-title">Analysis Failed</h2>
+    <p class="aeo-body" id="aeoBody">Something went wrong during analysis.</p>
+    <div class="aeo-actions">
+      <button class="aeo-retry" onclick="retryAnalysis()">↺ Try Again</button>
+      <button class="btn btn-ghost" onclick="goBackToLanding()">← New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="config.js"></script>
+<script src="db.js"></script>
+<script src="engine.js"></script>
+<script src="personality.js"></script>
+<script src="claude-api.js"></script>
+<script src="state.js"></script>
+<script src="moves.js"></script>
+<script src="board.js"></script>
+<script src="navigation.js"></script>
+<script src="quiz.js"></script>
+<script src="analysis.js"></script>
+<script src="explain.js"></script>
+<script src="try-move.js"></script>
+<script src="master-games.js"></script>
+<script src="history.js"></script>
+<script src="gameselect.js"></script>
+<script src="carousel.js"></script>
+<script src="insights.js"></script>
+<script src="engagement.js"></script>
+<script src="repertoire.js"></script>
+<script src="tour.js"></script>
+<script src="streaks.js"></script>
+
+<script>
+// ── Theme ──────────────────────────────────────────────────
+(function () {
+  const saved = localStorage.getItem('ce-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeIcon(theme);
+})();
+
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ce-theme', next);
+  updateThemeIcon(next);
+}
+function updateThemeIcon(theme) {
+  const icon = theme === 'dark' ? '\u2600' : '\u263D';
+  ['themeBtn','themeBtnLanding','themeBtnProfile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = icon;
+  });
+}
+
+// ── Modal helpers ───────────────────────────────────────────
+const MODAL_IDS = ['settingsModal','imprintModal','privacyModal','termsModal','confirmModal','paywallModal','welcomeProModal'];
+function closeAllModals() {
+  document.getElementById('overlay').classList.remove('open');
+  MODAL_IDS.forEach(id => { const m = document.getElementById(id); if (m) m.classList.remove('open'); });
+}
+function closeConfirm() { closeAllModals(); openSettings(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
+
+// ── Settings modal ─────────────────────────────────────────
+function openSettings() {
+  closeAllModals();
+  // Pre-fill name
+  const nameEl = document.getElementById('settingsName');
+  if (nameEl) nameEl.value = (typeof getProfileName === 'function' ? getProfileName() : '') || '';
+  // Sync theme buttons
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  document.getElementById('sttLight') && document.getElementById('sttLight').classList.toggle('active', theme === 'light');
+  document.getElementById('sttDark')  && document.getElementById('sttDark').classList.toggle('active', theme === 'dark');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('settingsModal').classList.add('open');
+}
+function saveSettingsName() {
+  const v = (document.getElementById('settingsName').value || '').trim();
+  if (!v) return;
+  if (typeof setProfileName === 'function') setProfileName(v);
+  if (typeof updateProfileAvatar === 'function') updateProfileAvatar();
+  // Flash confirmation
+  const btn = document.querySelector('.settings-save-btn');
+  if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => btn.textContent = 'Save', 1400); }
+}
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('ce-theme', t);
+  updateThemeIcon(t);
+  document.getElementById('sttLight') && document.getElementById('sttLight').classList.toggle('active', t === 'light');
+  document.getElementById('sttDark')  && document.getElementById('sttDark').classList.toggle('active', t === 'dark');
+}
+
+// ── Legal modals ────────────────────────────────────────────
+function showLegal(which) {
+  closeAllModals();
+  const id = which === 'privacy' ? 'privacyModal'
+           : which === 'imprint' ? 'imprintModal'
+           : 'termsModal';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById(id).classList.add('open');
+}
+
+// ── Data management ─────────────────────────────────────────
+async function exportAllData() {
+  try {
+    const history = await dbGetHistory();
+    const profile = { name: typeof getProfileName === 'function' ? getProfileName() : '' };
+    const blob = new Blob([JSON.stringify({ profile, history, exportedAt: new Date().toISOString() }, null, 2)],
+      { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'chess-personality-data.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (e) { alert('Export failed: ' + e.message); }
+}
+
+function confirmClearHistory() {
+  document.getElementById('confirmTitle').textContent = 'Clear Game History?';
+  document.getElementById('confirmBody').textContent =
+    'This will permanently remove all your saved games and analyses. Your profile name will be kept. This cannot be undone.';
+  document.getElementById('confirmOkBtn').textContent = 'Clear History';
+  document.getElementById('confirmOkBtn').onclick = doClearHistory;
+  closeAllModals();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('confirmModal').classList.add('open');
+}
+async function doClearHistory() {
+  try {
+    const hist = await dbGetHistory();
+    for (const e of hist) { await dbDeleteHistoryEntry(e.id); }
+    closeAllModals();
+    if (typeof renderFullProfile === 'function') renderFullProfile();
+  } catch (err) { alert('Failed: ' + err.message); }
+}
+
+function confirmDeleteAccount() {
+  document.getElementById('confirmTitle').textContent = 'Delete All Data?';
+  document.getElementById('confirmBody').textContent =
+    'This will permanently erase your profile name, all game history, and all analyses from this device. This cannot be undone.';
+  document.getElementById('confirmOkBtn').textContent = 'Delete Everything';
+  document.getElementById('confirmOkBtn').onclick = doDeleteAccount;
+  closeAllModals();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('confirmModal').classList.add('open');
+}
+async function doDeleteAccount() {
+  try {
+    // Clear all history
+    const hist = await dbGetHistory();
+    for (const e of hist) { await dbDeleteHistoryEntry(e.id); }
+    // Clear all profile keys
+    const profileKeys = ['username', 'lastPlatform', 'lastUsername'];
+    for (const k of profileKeys) { await dbSetProfile(k, ''); }
+    window._profileName = '';
+    if (typeof updateProfileAvatar === 'function') updateProfileAvatar();
+    // Clear localStorage caches (coach plan, onboarding, streaks, etc.)
+    const lsKeys = ['ce-onboarded', 'ce-coach-plan', 'ce-repertoire-personality',
+                    'ce-ob-guess', 'cp-free-used', 'cp-license-key', 'cp-license-exp'];
+    lsKeys.forEach(k => localStorage.removeItem(k));
+    closeAllModals();
+    // Send back to landing
+    if (typeof showPage === 'function') showPage('landing');
+  } catch (err) { alert('Failed: ' + err.message); }
+}
+
+// ── Consent banner ──────────────────────────────────────────
+function checkConsent() {
+  if (!localStorage.getItem('ce-consent')) {
+    const b = document.getElementById('consentBanner');
+    if (b) b.style.display = '';
+  } else {
+    document.body.classList.add('consent-dismissed');
+  }
+}
+function acceptConsent() {
+  localStorage.setItem('ce-consent', '1');
+  document.body.classList.add('consent-dismissed');
+  const b = document.getElementById('consentBanner');
+  if (b) { b.style.opacity = '0'; b.style.transition = 'opacity 0.3s'; setTimeout(() => b.remove(), 320); }
+}
+
+// ── Back to landing ────────────────────────────────────────
+function goBackToLanding() {
+  // Return to profile hub if they have history, else landing
+  dbGetHistory().then(h => {
+    if (h && h.length > 0) { showPage('profile'); renderFullProfile(); }
+    else showPage('landing');
+  }).catch(() => showPage('landing'));
+}
+
+// ── Choice modal (Get Started → Repertoire or Analysis) ──
+function showChoiceModal() {
+  const ov = document.getElementById('choiceModalOverlay');
+  ov.style.display = '';
+  requestAnimationFrame(() => ov.classList.add('choice-visible'));
+}
+function closeChoiceModal() {
+  const ov = document.getElementById('choiceModalOverlay');
+  ov.classList.remove('choice-visible');
+  setTimeout(() => { ov.style.display = 'none'; }, 260);
+}
+
+// ── Paywall ────────────────────────────────────────────────
+function getFreeAnalysesUsed() {
+  return parseInt(localStorage.getItem('cp-free-used') || '0');
+}
+function incrementFreeAnalysesUsed() {
+  localStorage.setItem('cp-free-used', String(getFreeAnalysesUsed() + 1));
+}
+function isPremium() {
+  const key = localStorage.getItem('cp-license-key');
+  if (!key) return false;
+  const exp = parseInt(localStorage.getItem('cp-license-exp') || '0');
+  return exp > Date.now();
+}
+function freeAnalysesRemaining() {
+  const limit = (window.CP_CONFIG?.FREE_ANALYSES) || 2;
+  return Math.max(0, limit - getFreeAnalysesUsed());
+}
+function checkPaywall() {
+  // Returns true if analysis can proceed, false if paywalled
+  if (isPremium()) return true;
+  if (freeAnalysesRemaining() > 0) {
+    incrementFreeAnalysesUsed();
+    updateFreeBadge();
+    return true;
+  }
+  openPaywall();
+  return false;
+}
+function openPaywall() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('paywallModal').classList.add('open');
+}
+function closePaywall() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('paywallModal').classList.remove('open');
+}
+function openStripe() {
+  const link = window.CP_CONFIG?.STRIPE_LINK || '';
+  if (!link || link.indexOf('YOUR_PAYMENT_LINK') !== -1) {
+    alert('Stripe payment link not configured yet. See STRIPE_SETUP.md to set this up.');
+    return;
+  }
+  window.open(link, '_blank', 'noopener');
+}
+async function submitLicenseKey() {
+  const keyInput = document.getElementById('paywallKeyInput');
+  const errEl    = document.getElementById('paywallKeyError');
+  const key = (keyInput.value || '').trim().toUpperCase();
+  if (!key) return;
+
+  errEl.style.display = 'none';
+  const btn = document.querySelector('.paywall-key-btn');
+  if (btn) btn.textContent = 'Checking…';
+
+  try {
+    const valid = typeof verifyLicenseKey === 'function'
+      ? await verifyLicenseKey(key)
+      : key.startsWith('CP-');
+
+    if (valid) {
+      localStorage.setItem('cp-license-key', key);
+      // 31-day expiry
+      localStorage.setItem('cp-license-exp', String(Date.now() + 31 * 24 * 60 * 60 * 1000));
+      closePaywall();
+      // Allow the analysis that was blocked to proceed
+      if (typeof startFlow === 'function') startFlow();
+    } else {
+      errEl.textContent = 'Invalid or expired key. Please check and try again.';
+      errEl.style.display = '';
+    }
+  } catch (e) {
+    errEl.textContent = 'Could not verify key. Check your connection.';
+    errEl.style.display = '';
+  } finally {
+    if (btn) btn.textContent = 'Unlock';
+  }
+}
+function updateFreeBadge() {
+  const badge = document.getElementById('freeAnalysesBadge');
+  if (!badge) return;
+  if (isPremium()) { badge.style.display = 'none'; return; }
+  const rem = freeAnalysesRemaining();
+  badge.style.display = '';
+  badge.innerHTML = rem > 0
+    ? `✦ <span class="fab-count">${rem}</span> free ${rem === 1 ? 'analysis' : 'analyses'} remaining`
+    : '✦ Free limit reached. Subscribe to continue';
+}
+// Check for Stripe success redirect
+(function checkStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('subscribed') === '1') {
+    // Mark as premium for 31 days. (When the Worker is live, this will be
+    // replaced by a server-validated session_id check against Stripe.)
+    const sessionId = params.get('session_id') || ('local-' + Date.now());
+    localStorage.setItem('cp-license-key', 'CP-' + sessionId.slice(-12).toUpperCase());
+    localStorage.setItem('cp-license-exp', String(Date.now() + 31 * 24 * 60 * 60 * 1000));
+    // Clean URL
+    history.replaceState({}, '', window.location.pathname);
+    // Show celebration on next tick (after DOMContentLoaded)
+    window._showWelcomeProOnInit = true;
+  }
+})();
+
+// ── Welcome-to-Pro celebration ─────────────────────────────
+function showWelcomePro() {
+  const ov = document.getElementById('overlay');
+  const m  = document.getElementById('welcomeProModal');
+  if (!ov || !m) return;
+  ov.classList.add('open');
+  m.classList.add('open');
+  // Hide the free badge instantly
+  if (typeof updateFreeBadge === 'function') updateFreeBadge();
+}
+function closeWelcomePro() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('welcomeProModal').classList.remove('open');
+}
+
+// ── Analysis error recovery ─────────────────────────────────
+function showAnalysisError(msg) {
+  document.getElementById('aeoBody').textContent = msg || 'Something went wrong. Please try again.';
+  document.getElementById('analysisErrorOverlay').style.display = '';
+}
+function hideAnalysisError() {
+  document.getElementById('analysisErrorOverlay').style.display = 'none';
+}
+function retryAnalysis() {
+  hideAnalysisError();
+  // analysisActive is already reset to false by the catch block in runAnalysis()
+  if (typeof runAnalysis === 'function') runAnalysis();
+}
+
+// ── Social-proof signup counter (base 20 + local increments) ──
+const SIGNUP_COUNTER_BASE = 20;
+function renderSignupCounter() {
+  const el = document.getElementById('spCounter');
+  if (!el) return;
+  const extra = parseInt(localStorage.getItem('ce-signup-count') || '0', 10) || 0;
+  el.textContent = (SIGNUP_COUNTER_BASE + extra).toLocaleString();
+}
+function incrementSignupCounter() {
+  // Only increment once per device - first time the user "signs up" by saving
+  // any chess.com / lichess username for analysis or repertoire.
+  if (localStorage.getItem('ce-signup-counted') === '1') return;
+  localStorage.setItem('ce-signup-counted', '1');
+  const cur = parseInt(localStorage.getItem('ce-signup-count') || '0', 10) || 0;
+  localStorage.setItem('ce-signup-count', String(cur + 1));
+  renderSignupCounter();
+}
+
+// ── Init ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof updateProfileAvatar === 'function') updateProfileAvatar();
+  checkConsent();
+  updateFreeBadge();
+  renderSignupCounter();
+  if (window._showWelcomeProOnInit) {
+    window._showWelcomeProOnInit = false;
+    showWelcomePro();
+  }
+});
+</script>
+
+<!-- ── Personalities Glossary Modal ── -->
+<div class="pglos-overlay" id="pglosOverlay">
+  <!-- Animated gradient background layer -->
+  <div class="pglos-bg" id="pglosBg"></div>
+
+  <!-- Top bar -->
+  <div class="pglos-topbar">
+    <div class="pglos-counter" id="pglosCounter">1 / 8</div>
+    <div class="pglos-topbar-title">Chess Personalities</div>
+    <button class="pglos-close" onclick="closePglos()" title="Close">&times;</button>
+  </div>
+
+  <!-- Slide stage -->
+  <div class="pglos-stage" id="pglosStage">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="pglos-bottom">
+    <button class="pglos-arrow pglos-prev" id="pglosPrev" onclick="pglosGo(-1)">&#8249;</button>
+    <div class="pglos-dots" id="pglosDots"></div>
+    <button class="pglos-arrow pglos-next" id="pglosNext" onclick="pglosGo(1)">&#8250;</button>
+  </div>
+</div>
+
+<!-- ── Guided tour overlay (analysis + profile) ── -->
+<div class="tour-overlay" id="tourOverlay" style="display:none">
+  <div class="tour-highlight" id="tourHighlight"></div>
+  <div class="tour-tooltip" id="tourTooltip">
+    <div class="tour-tooltip-text" id="tourText"></div>
+    <div class="tour-tooltip-footer">
+      <span class="tour-step-counter" id="tourCounter"></span>
+      <div class="tour-tooltip-actions">
+        <button class="tour-skip" onclick="closeTour()">Skip</button>
+        <button class="tour-next" onclick="nextTourStep()">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

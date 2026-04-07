@@ -1,0 +1,1133 @@
+/* ══════════════════════════════════════════════
+   ESPORTS / GAMING ENERGY LAYER
+   Floating, free-flowing, hovering elements.
+   Less boxes - more atmosphere and motion.
+   ══════════════════════════════════════════════ */
+
+/* ── Shared keyframes ── */
+@keyframes esportsPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-5px) rotate(0.5deg); }
+}
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(139,92,246,0.2); }
+  50%      { text-shadow: 0 0 40px rgba(139,92,246,0.5), 0 0 80px rgba(139,92,246,0.15); }
+}
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 120%; }
+}
+@keyframes scanDown {
+  0%   { top: -30%; }
+  100% { top: 130%; }
+}
+@keyframes borderGlow {
+  0%, 100% { border-color: color-mix(in srgb, var(--pers-color, #8b5cf6) 20%, transparent); }
+  50%      { border-color: color-mix(in srgb, var(--pers-color, #8b5cf6) 45%, transparent); }
+}
+
+
+/* ══════════════════════════════════════════════
+   GAME SELECT - Floating, atmospheric
+   ══════════════════════════════════════════════ */
+
+/* Card: fully dissolved - no box, no border, no shadow, wider */
+.hero-input-card {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  max-width: 680px !important;
+  padding: 56px 48px 44px !important;
+}
+
+/* Title: clean, bigger */
+.hero-input-title {
+  position: relative;
+  font-size: 1.9rem !important;
+  margin-bottom: 10px !important;
+}
+.hero-input-sub {
+  font-size: 0.95rem !important;
+  max-width: 480px !important;
+}
+
+/* Glow orb: hidden (removed) */
+.hero-input-glow {
+  display: none !important;
+}
+
+/* Platform buttons: floating pills, no box feel */
+.hero-plat-btn {
+  border-radius: 20px !important;
+  border-width: 1px !important;
+  font-size: 0.84rem !important;
+  padding: 10px 24px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.hero-plat-btn.active {
+  background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(139,92,246,0.1)) !important;
+  border-color: rgba(233,69,96,0.4) !important;
+  box-shadow: 0 0 20px rgba(233,69,96,0.1);
+  transform: translateY(-1px);
+}
+
+/* Input: slim, elegant underline - dark bg in dark mode */
+.hero-input {
+  border: none !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-dim) 25%, transparent) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 10px 4px !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: var(--text) !important;
+  letter-spacing: 0.01em !important;
+  transition: border-color 0.3s !important;
+}
+.hero-input:focus {
+  border-color: color-mix(in srgb, #8b5cf6 60%, var(--text-dim)) !important;
+  box-shadow: 0 1px 0 0 color-mix(in srgb, #8b5cf6 40%, transparent) !important;
+  border-radius: 0 !important;
+}
+.hero-input::placeholder {
+  color: var(--text-muted) !important;
+  letter-spacing: 0.03em;
+  font-weight: 400 !important;
+  font-size: 0.95rem !important;
+}
+
+/* Load button: floating pill with shimmer */
+.hero-input-go,
+.hero-input-go-full {
+  border-radius: 20px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.88rem !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(233,69,96,0.25) !important;
+}
+.hero-input-go::after,
+.hero-input-go-full::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Game cards: no box, just text with subtle hover */
+.gs-game-card {
+  background: transparent !important;
+  border: none !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.gs-game-card:hover {
+  border-left-color: var(--accent) !important;
+  background: transparent !important;
+}
+.gs-game-card + .gs-game-card {
+  border-top: 1px solid color-mix(in srgb, var(--text-dim) 8%, transparent) !important;
+}
+
+
+/* ══════════════════════════════════════════════
+   WALKTHROUGH - Atmospheric & immersive
+   ══════════════════════════════════════════════ */
+
+/* Backdrop: deeper, more cinematic */
+.wt-backdrop {
+  background: rgba(0, 0, 0, 0.94) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+/* Layout: softer edges, atmospheric glow */
+.wt-layout {
+  border: 1px solid rgba(139,92,246,0.12) !important;
+  box-shadow:
+    0 40px 120px rgba(0,0,0,0.7),
+    0 0 80px rgba(139,92,246,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.03) !important;
+  border-radius: 24px !important;
+}
+
+/* Board: no scan effect, clean look */
+.wt-board-spotlight::after {
+  display: none !important;
+}
+
+/* Move label: floating text, not badge */
+.wt-move-label {
+  background: none !important;
+  border: none !important;
+  padding: 8px 0 !important;
+  font-size: 1rem !important;
+  color: var(--text-dim) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase;
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+/* Intro: floating text, no card */
+.wt-intro-card,
+.wt-outro-card {
+  background: none !important;
+  border: none !important;
+}
+.wt-intro-card .wt-intro-icon,
+.wt-outro-card .wt-outro-icon {
+  animation: floatUp 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 30px rgba(139,92,246,0.5));
+}
+.wt-intro-card .wt-intro-title {
+  font-size: 1.7rem !important;
+  background: linear-gradient(135deg, var(--text) 20%, #a78bfa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+.wt-intro-card .wt-intro-sub,
+.wt-outro-card .wt-outro-sub {
+  color: var(--text-dim) !important;
+  font-size: 1rem !important;
+  max-width: 340px;
+}
+
+/* Plan items: floating stats, not boxes */
+.wt-intro-plan {
+  gap: 24px !important;
+}
+.wt-plan-item {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 8px 12px !important;
+}
+.wt-plan-count {
+  font-size: 2rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+.wt-plan-item.wt-plan-worst .wt-plan-count {
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(233,69,96,0.4);
+}
+.wt-plan-item.wt-plan-best .wt-plan-count {
+  color: var(--good);
+  text-shadow: 0 0 20px rgba(34,197,94,0.4);
+}
+.wt-plan-label {
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.72rem !important;
+  color: var(--text-dim) !important;
+}
+
+/* Outro: victory gradient */
+.wt-outro-card .wt-outro-title {
+  background: linear-gradient(135deg, var(--text) 20%, #22c55e 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Coach CTA in outro: floating, not boxed */
+.wt-coach-cta {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, #8b5cf6 20%, transparent) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s !important;
+}
+.wt-coach-cta:hover {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 30px rgba(139,92,246,0.12);
+}
+
+/* Avatar: glowing, floating */
+.wt-coach-avatar {
+  border: 1px solid color-mix(in srgb, var(--pers-color, #8b5cf6) 30%, transparent) !important;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--pers-color, #8b5cf6) 12%, transparent);
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+/* Progress dots: glowing trail */
+.wt-dot.done {
+  box-shadow: 0 0 8px rgba(34,197,94,0.35);
+}
+.wt-dot.active {
+  box-shadow: 0 0 10px rgba(139,92,246,0.45);
+}
+
+
+/* ══════════════════════════════════════════════
+   ANALYSIS PAGE - CTA Cards: floating energy
+   ══════════════════════════════════════════════ */
+
+/* CTA: inner shimmer only - no outer glow */
+.walkthrough-cta {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 20%, transparent) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+}
+.walkthrough-cta::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--pers-color, var(--accent)) 10%, transparent), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+.walkthrough-cta::before {
+  display: none !important;
+}
+.walkthrough-cta:hover {
+  background: color-mix(in srgb, var(--pers-color, var(--accent)) 4%, transparent) !important;
+  border-color: color-mix(in srgb, var(--pers-color, var(--accent)) 35%, transparent) !important;
+  box-shadow: none !important;
+  transform: translateY(-2px) !important;
+}
+.walkthrough-cta-icon {
+  background: transparent !important;
+  border: none !important;
+  animation: floatSlow 4s ease-in-out infinite;
+}
+.cta-icon-text {
+  opacity: 0.7;
+  color: var(--accent, #8b5cf6);
+}
+.walkthrough-cta-icon svg {
+  filter: drop-shadow(0 4px 16px color-mix(in srgb, var(--pers-color, var(--accent)) 40%, transparent));
+}
+.walkthrough-cta-title {
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.95rem !important;
+}
+.walkthrough-cta-sub {
+  letter-spacing: 0.02em;
+  font-size: 0.82rem !important;
+}
+.walkthrough-cta-arrow {
+  transition: transform 0.3s, opacity 0.3s !important;
+  opacity: 0.4;
+}
+.walkthrough-cta:hover .walkthrough-cta-arrow {
+  opacity: 1;
+  transform: translateX(6px) !important;
+}
+
+/* Coach CTA: inner shimmer only - no outer glow */
+.coach-cta-analysis {
+  background: transparent !important;
+  border: 1px solid rgba(139,92,246,0.20) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  position: relative;
+  overflow: hidden;
+}
+.coach-cta-analysis::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139,92,246,0.08), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+  animation-delay: 2s;
+  pointer-events: none;
+}
+.coach-cta-analysis::before {
+  display: none !important;
+}
+.coach-cta-analysis:hover {
+  background: rgba(139,92,246,0.04) !important;
+  border-color: rgba(139,92,246,0.35) !important;
+  box-shadow: none !important;
+  transform: translateY(-2px) !important;
+}
+.coach-cta-analysis .walkthrough-cta-icon {
+  animation-delay: 0.5s;
+}
+.coach-cta-analysis .walkthrough-cta-icon .cta-icon-text {
+  font-size: 2.8rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+.coach-cta-analysis .walkthrough-cta-arrow {
+  opacity: 0.4;
+}
+.coach-cta-analysis:hover .walkthrough-cta-arrow {
+  opacity: 1;
+}
+
+
+/* ══════════════════════════════════════════════
+   AI COACH PRESENTATION - Floating, open
+   ══════════════════════════════════════════════ */
+
+/* Header title: glowing gradient text */
+.ins-header-title {
+  background: linear-gradient(135deg, var(--text) 30%, #a78bfa 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: glowPulse 5s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════
+   AI COACH PRESENTATION OVERHAUL
+   Cinematic, dynamic, immersive overlay
+   ══════════════════════════════════════════════ */
+
+/* Overlay: deeper, more atmospheric */
+.cpo-overlay {
+  background: radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.06) 0%, rgba(0,0,0,0.99) 60%) !important;
+}
+
+/* Card: dissolve the box into floating content */
+@keyframes cpoSlideIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cpo-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  max-width: 720px !important;
+  width: min(720px, 92vw) !important;
+  padding: 32px 48px 28px !important;
+  gap: 20px !important;
+}
+.cpo-card.cpo-animate {
+  animation: cpoSlideIn 0.45s cubic-bezier(0.2, 0, 0, 1) both !important;
+}
+
+/* Close button: floating, minimal */
+.cpo-close {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  color: rgba(255,255,255,0.4) !important;
+  top: 8px !important;
+  right: 8px !important;
+  transition: all 0.2s !important;
+}
+.cpo-close:hover {
+  background: rgba(255,255,255,0.12) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.3) !important;
+}
+
+/* Header: large floating text with gradient */
+.cpo-header-area .aic-section-head {
+  background: none !important;
+  border-left: none !important;
+  padding: 0 !important;
+  font-size: 2rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.5px !important;
+  color: #fff !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+.cpo-header-area .aic-section-head .aic-section-text {
+  background: linear-gradient(135deg, #fff 20%, #a78bfa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.cpo-header-area .aic-section-icon {
+  font-size: 2rem !important;
+  animation: floatSlow 3s ease-in-out infinite;
+}
+
+/* Body: immersive, centered text */
+.cpo-body {
+  text-align: center !important;
+  padding: 8px 0 !important;
+}
+.cpo-body .aic-sentence {
+  font-size: 1.08rem !important;
+  line-height: 1.75 !important;
+  padding: 16px 20px !important;
+  margin-bottom: 10px !important;
+  border-left: none !important;
+  color: rgba(255,255,255,0.93) !important;
+  text-align: left !important;
+  background: rgba(255,255,255,0.035) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 14px !important;
+  transition: background 0.25s !important;
+}
+.cpo-body .aic-sentence:hover {
+  background: rgba(139,92,246,0.06) !important;
+}
+.cpo-body .aic-numbered-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 14px !important;
+  padding: 14px 20px !important;
+  margin-bottom: 10px !important;
+  font-size: 1.1rem !important;
+  line-height: 1.85 !important;
+  text-align: left !important;
+  color: rgba(255,255,255,0.95) !important;
+  transition: background 0.25s !important;
+}
+.cpo-body .aic-numbered-card:hover {
+  background: rgba(139,92,246,0.06) !important;
+}
+.cpo-body .aic-bullet-card {
+  font-size: 1.1rem !important;
+  line-height: 1.85 !important;
+  padding: 10px 20px !important;
+  color: rgba(255,255,255,0.95) !important;
+  text-align: left !important;
+  background: none !important;
+  border: none !important;
+}
+.cpo-body .aic-num {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+  box-shadow: 0 0 15px rgba(139,92,246,0.4) !important;
+  animation: floatSlow 4s ease-in-out infinite;
+}
+/* Links inside coach presentation: bright, visible */
+.cpo-body a,
+.cpo-body a:visited {
+  color: #c4b5fd !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  transition: color 0.15s !important;
+}
+.cpo-body a:hover {
+  color: #e9d5ff !important;
+}
+
+.cpo-body .aic-move-chip {
+  color: #a78bfa !important;
+  border-color: rgba(139,92,246,0.35) !important;
+  background: rgba(139,92,246,0.12) !important;
+}
+
+/* Footer: floating dots + pill button */
+.cpo-footer {
+  border-top: none !important;
+  padding-top: 20px !important;
+  justify-content: center !important;
+  gap: 28px !important;
+}
+.cpo-dots {
+  gap: 10px !important;
+}
+.cpo-dot {
+  width: 10px !important;
+  height: 10px !important;
+  background: rgba(255,255,255,0.15) !important;
+  transition: all 0.3s !important;
+}
+.cpo-dot.active {
+  width: 28px !important;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa) !important;
+  box-shadow: 0 0 12px rgba(139,92,246,0.5) !important;
+}
+.cpo-dot:hover:not(.active) {
+  background: rgba(255,255,255,0.3) !important;
+}
+.cpo-next-btn {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+  border-radius: 24px !important;
+  padding: 11px 32px !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 4px 20px rgba(139,92,246,0.4) !important;
+  position: relative;
+  overflow: hidden;
+}
+.cpo-next-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+.cpo-next-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(139,92,246,0.5) !important;
+}
+.cpo-next-btn.cpo-done {
+  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.4) !important;
+}
+
+/* Click hint: ethereal */
+.cpo-click-hint {
+  color: rgba(255,255,255,0.18) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+}
+
+/* Badge area: floating pills */
+.cpo-badge-area .badge {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.6) !important;
+  border-radius: 20px !important;
+}
+
+/* Pill tabs: floating pills */
+.ins-pills {
+  background: transparent !important;
+  border: none !important;
+  gap: 8px !important;
+  padding: 0 !important;
+}
+.ins-pill {
+  border-radius: 20px !important;
+  border: 1px solid var(--border) !important;
+  background: transparent !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.76rem !important;
+  padding: 8px 20px !important;
+  transition: all 0.25s !important;
+}
+.ins-pill.active {
+  border-color: transparent !important;
+  box-shadow: 0 4px 20px rgba(139,92,246,0.35) !important;
+}
+
+/* Coach card: fully dissolved - no box at all */
+.ins-coach-card {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.ins-coach-header {
+  border-bottom: none !important;
+  padding: 20px 8px 12px !important;
+  background: transparent !important;
+}
+
+/* Coach icon: floating glow */
+.ins-coach-icon-wrap {
+  border: none !important;
+  box-shadow: 0 0 30px rgba(139,92,246,0.2);
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+/* Coach body: spacious, no padding walls */
+.ins-coach-body {
+  padding: 20px 8px !important;
+}
+
+/* ── Coach task plan: floating, dynamic design ── */
+.coach-plan {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 16px 0 !important;
+  box-shadow: none !important;
+}
+.coach-plan-header {
+  justify-content: center !important;
+  margin-bottom: 24px !important;
+}
+.coach-plan-title {
+  background: linear-gradient(135deg, var(--text) 30%, #a78bfa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.2rem !important;
+  letter-spacing: -0.02em !important;
+}
+.coach-plan-icon {
+  animation: floatSlow 3s ease-in-out infinite;
+}
+.coach-task {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 14px 4px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-dim) 10%, transparent) !important;
+  transition: all 0.25s !important;
+}
+.coach-task:last-child {
+  border-bottom: none !important;
+}
+.coach-task:hover {
+  background: color-mix(in srgb, var(--pers-color, #8b5cf6) 4%, transparent) !important;
+  padding-left: 10px !important;
+}
+.coach-task-check {
+  border: 2px solid rgba(139,92,246,0.35) !important;
+  background: transparent !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  transition: all 0.3s !important;
+}
+.coach-task-check:hover {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 12px rgba(139,92,246,0.2);
+}
+.coach-task-done .coach-task-check {
+  background: rgba(34,197,94,0.12) !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 0 10px rgba(34,197,94,0.2) !important;
+}
+.coach-plan-progress {
+  color: var(--text-dim) !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  margin-top: 20px !important;
+}
+
+/* Dissolve all coach section boxes */
+.coach-section {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
+}
+.coach-heading {
+  border-bottom: none !important;
+  padding-bottom: 6px !important;
+}
+.coach-item {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 6px 0 !important;
+}
+.coach-item + .coach-item {
+  border-top: 1px solid color-mix(in srgb, var(--text-dim) 10%, transparent) !important;
+  padding-top: 10px !important;
+}
+.coach-num {
+  box-shadow: none !important;
+}
+
+/* Empty state: atmospheric */
+.ins-coach-empty {
+  padding: 48px 16px !important;
+}
+.ins-coach-empty-icon {
+  opacity: 0.6 !important;
+  animation: floatUp 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 20px rgba(139,92,246,0.3));
+}
+.ins-coach-empty-text {
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+/* CTA button: floating pill */
+.ins-coach-cta {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid color-mix(in srgb, #8b5cf6 12%, transparent) !important;
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em !important;
+  transition: all 0.3s !important;
+}
+.ins-coach-cta:hover {
+  background: rgba(139,92,246,0.06) !important;
+  text-shadow: 0 0 20px rgba(139,92,246,0.3);
+}
+
+/* ══════════════════════════════════════════════
+   DEDICATED COACH PAGE - esports energy
+══════════════════════════════════════════════ */
+.coach-page-header {
+  padding: 36px 28px 24px !important;
+}
+.coach-back-btn {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--text-dim) 15%, transparent) !important;
+  color: var(--text-dim) !important;
+}
+.coach-back-btn:hover {
+  color: var(--text) !important;
+  border-color: var(--text-dim) !important;
+}
+.coach-header-icon {
+  filter: drop-shadow(0 4px 20px rgba(139,92,246,0.35));
+  animation: floatSlow 4s ease-in-out infinite;
+}
+.coach-header-title {
+  text-shadow: 0 0 40px rgba(139,92,246,0.15);
+}
+.coach-header-sub {
+  letter-spacing: 0.04em;
+}
+
+/* Coach empty state: atmospheric */
+.coach-page-empty {
+  padding: 80px 24px !important;
+}
+.coach-page-empty-glow {
+  width: 280px !important;
+  height: 280px !important;
+  background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.05) 40%, transparent 70%) !important;
+  animation: glowPulse 5s ease-in-out infinite;
+}
+.coach-page-empty-icon {
+  opacity: 0.55 !important;
+  animation: floatUp 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 20px rgba(139,92,246,0.3));
+}
+.coach-page-empty-title {
+  background: linear-gradient(135deg, var(--text) 30%, #a78bfa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Coach CTA: glowing pill */
+.coach-page-cta {
+  border-radius: 14px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-size: 0.95rem !important;
+}
+
+/* Loading: purple spinner */
+.coach-page-loading-spinner {
+  border-color: rgba(139,92,246,0.15) !important;
+  border-top-color: #a78bfa !important;
+}
+
+/* Study link: YouTube red glow */
+.coach-task-study-link {
+  box-shadow: 0 0 20px rgba(248,113,113,0.08);
+}
+.coach-task-study-link:hover {
+  box-shadow: 0 0 24px rgba(248,113,113,0.15);
+}
+
+
+/* ══════════════════════════════════════════════
+   AI COACH PANEL (Analysis Right Side)
+   ══════════════════════════════════════════════ */
+
+/* Panel: soft glow border, breathing */
+.ai-coach-panel {
+  animation: borderGlow 5s ease-in-out infinite;
+}
+.ai-coach-panel::before {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pers-color, var(--accent)) 20%, transparent) !important;
+}
+
+/* Buttons: floating pills */
+.btn-explain,
+.btn-ask-move {
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.82rem !important;
+  border-radius: 10px !important;
+  position: relative;
+  overflow: hidden;
+}
+.btn-explain::after,
+.btn-ask-move::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+}
+.btn-try-move,
+.btn-explain-pos {
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.82rem !important;
+}
+
+/* Live board controls: minimal, floating */
+.live-board-controls {
+  justify-content: center !important;
+}
+.live-board-badge {
+  box-shadow: 0 0 12px rgba(139,92,246,0.15);
+}
+.btn-live-undo,
+.btn-live-undo-all {
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-size: 0.72rem !important;
+  background: transparent !important;
+  border-color: color-mix(in srgb, var(--text-dim) 15%, transparent) !important;
+}
+.btn-live-undo:hover,
+.btn-live-undo-all:hover {
+  border-color: var(--text-dim) !important;
+}
+
+
+/* ══════════════════════════════════════════════
+   SLIDE HEADERS - Floating labels
+   ══════════════════════════════════════════════ */
+
+/* Analysis slide headers: keep small underline style */
+.aic-slide-header {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid;
+  border-radius: 0 !important;
+  padding: 0 0 6px !important;
+  margin-bottom: 10px !important;
+}
+.aic-slide-header.slide-overview { border-bottom-color: color-mix(in srgb, var(--accent, #8b5cf6) 30%, transparent); }
+.aic-slide-header.slide-structure { border-bottom-color: rgba(34, 197, 94, 0.3); }
+.aic-slide-header.slide-tactics { border-bottom-color: rgba(245, 158, 11, 0.3); }
+
+/* Walkthrough slide headers: already redesigned in walkthrough.css - no extra overrides needed */
+
+/* Dot colors (keep existing) */
+
+
+/* ══════════════════════════════════════════════
+   LIGHT MODE adjustments
+   ══════════════════════════════════════════════ */
+[data-theme="light"] .hero-input-card {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .hero-input {
+  border-bottom-color: color-mix(in srgb, var(--text-dim) 20%, transparent) !important;
+}
+[data-theme="light"] .hero-input:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 1px 0 0 rgba(124,58,237,0.3) !important;
+}
+[data-theme="light"] .wt-layout {
+  box-shadow: 0 40px 100px rgba(0,0,0,0.1), 0 0 40px rgba(139,92,246,0.03) !important;
+}
+[data-theme="light"] .ins-header-title,
+[data-theme="light"] .coach-header-title {
+  background: linear-gradient(135deg, var(--text) 40%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+[data-theme="light"] .coach-page-empty-title {
+  background: linear-gradient(135deg, var(--text) 40%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+[data-theme="light"] .coach-page-empty-glow {
+  background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%) !important;
+}
+[data-theme="light"] .coach-task-study-link {
+  background: rgba(239,68,68,0.06) !important;
+  border-color: rgba(239,68,68,0.15) !important;
+  color: #dc2626 !important;
+}
+[data-theme="light"] .coach-task-study-link:hover {
+  background: rgba(239,68,68,0.1) !important;
+  color: #b91c1c !important;
+}
+/* Light mode: coach presentation stays FULLY DARK - cinematic overlay */
+[data-theme="light"] .cpo-overlay {
+  background: rgba(0,0,0,0.98) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+[data-theme="light"] .cpo-card {
+  background: transparent !important;
+}
+[data-theme="light"] .cpo-header-area .aic-section-head {
+  color: #fff !important;
+}
+[data-theme="light"] .cpo-header-area .aic-section-head .aic-section-text {
+  -webkit-text-fill-color: transparent !important;
+}
+[data-theme="light"] .cpo-body .aic-sentence,
+[data-theme="light"] .cpo-body .aic-numbered-card,
+[data-theme="light"] .cpo-body .aic-bullet-card {
+  color: rgba(255,255,255,0.95) !important;
+  background: rgba(255,255,255,0.04) !important;
+}
+[data-theme="light"] .cpo-close {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.5) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+[data-theme="light"] .cpo-dot {
+  background: rgba(255,255,255,0.15) !important;
+}
+[data-theme="light"] .cpo-next-btn {
+  color: #fff !important;
+}
+[data-theme="light"] .cpo-click-hint {
+  color: rgba(255,255,255,0.18) !important;
+}
+
+
+/* ══════════════════════════════════════════════
+   COACH SCROLL-DRIVEN STORY PAGE
+   (mirrors repertoire scroll storytelling)
+══════════════════════════════════════════════ */
+.coach-story-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 28px 60px;
+}
+
+/* Hero entrance */
+.coach-story-hero {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 40px 0 32px;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: coachHeroEntrance 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+@keyframes coachHeroEntrance {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.coach-story-hero-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+.coach-story-hero-sub {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Fading divider - sits between the task card (mark complete) and the next section heading */
+.coach-story-divider {
+  width: 100%;
+  height: 1px;
+  margin: 16px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 35%, transparent) 25%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 35%, transparent) 75%,
+    transparent 100%
+  );
+}
+
+/* More breathing room for narrative dividers within coach story */
+.coach-story-wrap .rep-narrative {
+  padding: 36px 0;
+}
+
+/* Story section (each coach section) */
+.coach-story-section {
+  margin-bottom: 48px;
+}
+.coach-story-section .aic-section-head {
+  margin-bottom: 16px;
+}
+.coach-story-body {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+.coach-story-body .aic-sentence {
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+  padding: 14px 18px !important;
+  background: rgba(255,255,255,0.035) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 14px !important;
+  text-align: left !important;
+  margin-bottom: 8px;
+}
+.coach-story-body .aic-numbered-card,
+.coach-story-body .aic-bullet-card {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+
+/* Task card within story */
+.coach-story-section .coach-task {
+  margin-top: 16px;
+}
+
+/* Footer with new plan button */
+.coach-story-footer {
+  text-align: center;
+  padding: 40px 0 20px;
+}
+.coach-story-new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 14px;
+  color: var(--accent);
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.coach-story-new-btn:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .coach-story-body .aic-sentence {
+  background: rgba(0,0,0,0.025) !important;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .coach-story-body .aic-numbered-card,
+[data-theme="light"] .coach-story-body .aic-bullet-card {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.05);
+}

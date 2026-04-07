@@ -1,0 +1,202 @@
+/* ============================================================
+   Chess Explainer - Premium Design System v2
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Colour tokens ── */
+:root {
+  --accent:       #e94560;
+  --accent-2:     #ff6b6b;
+  --accent-glow:  rgba(233, 69, 96, 0.22);
+  --good:         #22c55e;
+  --brilliant:    #26d9ca;
+  --inaccuracy:   #f59e0b;
+  --mistake:      #f97316;
+  --blunder:      #ef4444;
+  --book:         #a07848;
+  --book-light:   #c49a60;
+  --neutral-move: #6b7280;
+  --light-sq:     #f0d9b5;
+  --dark-sq:      #b58863;
+  --radius:       14px;
+  --radius-sm:    9px;
+  --radius-xs:    5px;
+  --transition:   0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] {
+  --bg:           #0b0b18;
+  --bg-grid:      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0M-10 10L10-10M30 50L50 30' stroke='%23ffffff' stroke-width='0.3' fill='none' opacity='0.025'/%3E%3C/svg%3E");
+  --surface:      #13132a;
+  --surface2:     #1a1a35;
+  --surface3:     #22224a;
+  --border:       #252545;
+  --border-hi:    rgba(255,255,255,0.08);
+  --text:         #e6e6f4;
+  --text-dim:     #7070a0;
+  --text-muted:   #404068;
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.5);
+  --shadow:       0 4px 20px rgba(0,0,0,0.55);
+  --shadow-lg:    0 12px 40px rgba(0,0,0,0.7);
+  --shadow-glow:  0 0 0 1px rgba(233,69,96,0.2), 0 4px 20px rgba(233,69,96,0.12);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg:           #e8e8f4;
+  --bg-grid:      none;
+  --surface:      #f3f3fc;
+  --surface2:     #ebebf7;
+  --surface3:     #e2e2f0;
+  --border:       #cacae0;
+  --border-hi:    rgba(0,0,0,0.09);
+  --text:         #14142a;
+  --text-dim:     #46467e;
+  --text-muted:   #9898c0;
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.11);
+  --shadow:       0 4px 20px rgba(0,0,0,0.14);
+  --shadow-lg:    0 12px 40px rgba(0,0,0,0.18);
+  --shadow-glow:  0 0 0 1px rgba(233,69,96,0.18), 0 4px 20px rgba(233,69,96,0.10);
+}
+
+/* ── Base ── */
+html {
+  font-size: 15px;
+  height: 100%;
+  overflow: hidden;        /* no browser-level scroll or scrollbar */
+}
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  background-image: var(--bg-grid);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;        /* lock body too */
+  transition: background 0.3s, color 0.3s;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide ALL native scrollbars everywhere - keep scroll behaviour where needed */
+* {
+  scrollbar-width: none;       /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / Edge */
+}
+
+/* ══════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════ */
+header {
+  background: rgba(19, 19, 42, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+[data-theme="light"] header {
+  background: rgba(235, 235, 248, 0.92);
+  border-bottom-color: var(--border);
+}
+
+/* ── Light-mode visibility fixes ── */
+/* Cards need borders to stand out against the similarly-colored background */
+[data-theme="light"] .aic-sentence,
+[data-theme="light"] .aic-numbered-card,
+[data-theme="light"] .aic-bullet-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+[data-theme="light"] .aic-section-head {
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+}
+/* Board border */
+[data-theme="light"] #pageMain .board {
+  border-color: var(--border);
+}
+/* Profile tabs border */
+[data-theme="light"] .prof-tabs {
+  border-bottom-color: var(--border);
+}
+/* Insights chart legend lines */
+[data-theme="light"] .ins-cleg-solid {
+  background: var(--text-dim);
+}
+[data-theme="light"] .ins-cleg-dashed {
+  border-top-color: var(--text-dim);
+}
+/* Coach area and insights panel contrast */
+/* Fullscreen breakdown - slightly more card contrast */
+[data-theme="light"] .bd-result-fullscreen .aic-sentence,
+[data-theme="light"] .bd-result-fullscreen .aic-numbered-card,
+[data-theme="light"] .bd-result-fullscreen .aic-bullet-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+[data-theme="light"] .bd-result-fullscreen .aic-section-head {
+  background: linear-gradient(135deg, #fff, var(--surface));
+  border: 1px solid var(--border);
+}
+/* Coach presentation card in light mode */
+[data-theme="light"] .cpo-card {
+  box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px var(--border);
+}
+[data-theme="light"] .cpo-body .aic-sentence,
+[data-theme="light"] .cpo-body .aic-numbered-card,
+[data-theme="light"] .cpo-body .aic-bullet-card {
+  background: #fff;
+  border: 1px solid var(--border);
+}
+
+/* subtle top accent line - removed (was showing as thin white line) */
+header::before {
+  display: none;
+}
+
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-brand h1 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 1.18rem; font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-brand h1 span {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-brand .tag {
+  font-size: 0.63rem; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid rgba(233,69,96,0.3);
+  border-radius: 20px; padding: 2px 8px;
+}
+
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-dim); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.icon-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--accent); transform: translateY(-1px); }
+

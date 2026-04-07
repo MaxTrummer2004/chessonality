@@ -1,0 +1,288 @@
+/* ══════════════════════════════════════════════
+   PROFILE PERSON ICON SVG
+══════════════════════════════════════════════ */
+.profile-person-icon {
+  width: 20px; height: 20px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+.profile-person-icon-lg {
+  width: 32px; height: 32px;
+  color: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* ── Larger profile button ── */
+.profile-btn.profile-btn-lg {
+  width: 44px; height: 44px;
+  box-shadow: 0 3px 14px var(--accent-glow);
+}
+.profile-btn.profile-btn-lg .profile-person-icon {
+  width: 24px; height: 24px;
+}
+
+/* ── Help / tour button - small icon-btn style, no color ── */
+.help-tour-btn {
+  /* override profile-btn: use icon-btn look instead */
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+.help-tour-btn:hover {
+  background: var(--surface3) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: none !important;
+}
+.help-tour-icon {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  line-height: 1;
+  user-select: none;
+}
+
+/* ══════════════════════════════════════════════
+   PERSONALITY-THEMED ANALYSIS PAGE
+   Uses CSS custom property --pers-color set by JS
+══════════════════════════════════════════════ */
+
+/* Tabs use personality color underline */
+#pageMain .right-tab.active {
+  color: var(--pers-color, var(--accent));
+}
+#pageMain .right-tab::after {
+  background: linear-gradient(90deg, var(--pers-color, var(--accent)), var(--pers-color-2, var(--accent-2)));
+}
+
+/* Nav buttons hover in personality color */
+#pageMain .nav-btn:hover {
+  border-color: var(--pers-color, var(--accent));
+  color: var(--pers-color, var(--accent));
+}
+
+/* Panel box top accent line uses personality color */
+#pageMain .panel-box::before {
+  background: linear-gradient(90deg, var(--pers-color, var(--accent)) 0%, transparent 100%);
+}
+
+/* Explain buttons hover with personality color */
+#pageMain .explain-btns .btn:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pers-color, var(--accent)) 10%, transparent), transparent);
+  border-color: var(--pers-color, var(--accent));
+  color: var(--pers-color, var(--accent));
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--pers-color, var(--accent)) 15%, transparent);
+}
+
+/* Ask Claude button uses personality gradient */
+#pageMain .btn-ask-claude {
+  background: linear-gradient(135deg, var(--pers-color, var(--accent)) 0%, var(--pers-color-2, var(--accent-2)) 100%);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--pers-color, var(--accent)) 25%, transparent);
+}
+#pageMain .btn-ask-claude:hover {
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--pers-color, var(--accent)) 45%, transparent);
+}
+
+/* Active move highlight uses personality color */
+#pageMain .move-cell.active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pers-color, var(--accent)) 18%, transparent), color-mix(in srgb, var(--pers-color, var(--accent)) 10%, transparent));
+  outline: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 35%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--pers-color, var(--accent)) 12%, transparent);
+}
+
+/* Progress bar fill uses personality gradient */
+#pageMain .progress-fill {
+  background: linear-gradient(90deg, var(--pers-color, var(--accent)), var(--pers-color-2, var(--accent-2)));
+}
+
+/* Header top accent line - removed */
+#pageMain header::before {
+  display: none;
+}
+
+/* Board glow with personality color */
+#pageMain .board-wrapper {
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.55)) drop-shadow(0 0 2px color-mix(in srgb, var(--pers-color, var(--accent)) 20%, transparent));
+}
+
+/* Eval bar glow */
+#pageMain .eval-bar-wrap {
+  box-shadow: var(--shadow-sm), 0 0 10px color-mix(in srgb, var(--pers-color, var(--accent)) 15%, transparent);
+}
+
+/* Game stats pill hover with personality */
+#pageMain .gs-pill:hover {
+  border-color: color-mix(in srgb, var(--pers-color, var(--accent)) 50%, transparent);
+  color: var(--pers-color, var(--accent));
+}
+
+/* Thought input focus ring uses personality color */
+#pageMain .ct-grid input:focus {
+  border-color: var(--pers-color, var(--accent));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pers-color, var(--accent)) 25%, transparent);
+}
+
+/* ── Decorative personality wave/curve in panels ── */
+#pageMain .moves-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 120px; height: 120px;
+  background: radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--pers-color, var(--accent)) 8%, transparent), transparent 70%);
+  pointer-events: none;
+  border-radius: 0 0 var(--radius) 0;
+}
+
+/* Decorative corner glow on the AI coach panel */
+#pageMain .panel-box:last-child::after {
+  content: '';
+  position: absolute;
+  top: -1px; right: -1px;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle at top right, color-mix(in srgb, var(--pers-color, var(--accent)) 10%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+/* Profile button on analysis page - personality-colored */
+#pageMain .profile-btn {
+  background: linear-gradient(135deg, var(--pers-color, var(--accent)), var(--pers-color-2, var(--accent-2)));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--pers-color, var(--accent)) 30%, transparent);
+}
+#pageMain .profile-btn:hover {
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--pers-color, var(--accent)) 50%, transparent);
+}
+
+/* ══════════════════════════════════════════════
+   PERSONALITY CAROUSEL (Landing Page)
+══════════════════════════════════════════════ */
+.pers-carousel {
+  max-width: 800px;
+  width: calc(100% - 80px);
+  margin: 0 auto;
+  position: relative;
+  padding: 0 44px;
+}
+
+.carousel-slide {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 20px;
+  min-height: 60px;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border-left: 4px solid var(--cs-color, var(--accent));
+  /* Personality gradient fills the right white space */
+  background: linear-gradient(
+    105deg,
+    var(--surface) 30%,
+    color-mix(in srgb, var(--cs-color, var(--accent)) 10%, var(--surface)) 65%,
+    color-mix(in srgb, var(--cs-color, var(--accent)) 22%, var(--surface)) 100%
+  );
+}
+
+.carousel-slide:hover {
+  border-color: color-mix(in srgb, var(--cs-color, var(--accent)) 50%, var(--border));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--cs-color, var(--accent)) 15%, transparent);
+}
+.carousel-slide .cs-emoji {
+  font-size: 3.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18));
+}
+
+.carousel-slide .cs-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.carousel-slide .cs-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.carousel-slide .cs-tagline {
+  font-size: 1.06rem;
+  color: var(--text-dim);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.carousel-slide .cs-traits {
+  display: flex;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.carousel-slide .cs-trait {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 4px 13px;
+  border-radius: 20px;
+  background: var(--surface3);
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-60%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  z-index: 2;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+.carousel-arrow:hover {
+  background: var(--surface3);
+  border-color: var(--accent);
+}
+.carousel-prev { left: 0; }
+.carousel-next { right: 0; }
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.carousel-dot.active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
+
+/* ══════════════════════════════════════════════
