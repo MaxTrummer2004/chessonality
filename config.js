@@ -20,7 +20,7 @@ window.CP_CONFIG = {
   // 3. After creation, set the success URL to:
   //    https://your-domain.com/?subscribed=1&session_id={CHECKOUT_SESSION_ID}
   // 4. Paste the resulting buy.stripe.com link below.
-  STRIPE_LINK: 'https://buy.stripe.com/YOUR_PAYMENT_LINK',
+  STRIPE_LINK: 'https://buy.stripe.com/test_00weVfdjB1kXePW2sE97G00',
 
   // Number of free game analyses before the paywall triggers.
   FREE_ANALYSES: 2,
