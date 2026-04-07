@@ -678,3 +678,102 @@
   /* Right panel internal padding tighter */
   .right-panel { font-size: 0.92rem; }
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE LANDING PAGE FIX (≤860px)
+   The desktop landing pins the carousel absolutely
+   at the top and centers the hero in 100vh. On
+   phones the viewport is too short, so they
+   overlap. Below we restore normal document flow
+   and make everything stack cleanly.
+══════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Let the landing fold grow with content; no forced viewport height */
+  .landing-fold {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 18px 0 32px;
+  }
+
+  /* Carousel is no longer absolute — flows in normal order at the top */
+  .landing-fold .pers-carousel {
+    position: relative;
+    top: auto; left: auto; right: auto;
+    margin-bottom: 28px;
+  }
+
+  /* Carousel itself: tighter horizontal padding so arrows don't crowd content */
+  .pers-carousel {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 44px;
+    box-sizing: border-box;
+  }
+  .carousel-slide {
+    padding: 12px 14px;
+    gap: 12px;
+    min-height: 72px;
+  }
+  .carousel-slide .cs-emoji { font-size: 2.4rem; }
+  .carousel-slide .cs-name { font-size: 1.2rem; }
+  .carousel-slide .cs-tagline { font-size: 0.88rem; }
+  .carousel-slide .cs-trait { font-size: 0.7rem; padding: 3px 9px; }
+
+  /* Hero text block: no top margin (carousel already provides spacing) */
+  .landing-hero-center {
+    margin-top: 0;
+    padding: 0 22px;
+  }
+  .landing-hero-center .landing-title { font-size: clamp(1.8rem, 7vw, 2.4rem); }
+  .landing-hero-center .landing-sub {
+    font-size: 1rem;
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+
+  /* Features list stacks vertically and is left-aligned for readability */
+  .landing-features-row {
+    flex-direction: column !important;
+    align-items: flex-start;
+    gap: 8px !important;
+    margin: 0 auto 24px;
+    max-width: 320px;
+    padding-left: 8px;
+  }
+
+  /* Make sure the cookie consent banner never covers the CTA */
+  .landing-fold { padding-bottom: 140px; }
+  body.consent-dismissed .landing-fold { padding-bottom: 32px; }
+
+  /* Scroll hint: hide on phones (would just clutter) */
+  .landing-scroll-hint { display: none; }
+
+  /* Consent banner: stack vertically on phone */
+  .consent-inner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  .consent-text { min-width: 0; }
+  .consent-actions { justify-content: center; }
+}
+
+/* ══════════════════════════════════════════════
+   GAME SELECT + LOADING + RESULT (≤860px)
+   Light tightening so the in-app flows fit phone
+   widths without horizontal scroll.
+══════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .gs-wrap { padding: 18px 14px 40px; }
+  .gs-platform-row,
+  .gs-username-row { flex-direction: column; gap: 10px; }
+  .prof-hub-bar { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+  .prof-hub-actions { flex-direction: column; width: 100%; gap: 8px; }
+  .prof-pglos-btn,
+  .prof-analyze-btn { width: 100%; justify-content: center; }
+
+  /* Settings/imprint/privacy modals fit phones */
+  .modal { max-width: 96vw; }
+}
