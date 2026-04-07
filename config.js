@@ -12,7 +12,7 @@
 window.CP_CONFIG = {
   // ← Replace with your Cloudflare Worker URL before deploying.
   // While empty, the app uses the local API key from claude-api.js (dev only).
-  PROXY_URL: '',
+  PROXY_URL: 'https://chess-personality-api.maxtrummer.workers.dev',
 
   // Stripe Payment Link for the €4.99/month Pro subscription.
   // 1. Go to https://dashboard.stripe.com/payment-links
