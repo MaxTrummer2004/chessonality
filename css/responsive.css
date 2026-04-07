@@ -593,3 +593,88 @@
   .showcase-heading { font-size: 1.05rem; }
   .social-proof-section { padding: 24px 16px 40px; }
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE LAYOUT OVERRIDES (≤960px)
+   Desktop unchanged, only mobile is fixed.
+   The desktop layout pins everything inside one
+   viewport (height:100vh, overflow:hidden) which
+   completely breaks on phones. Below we restore
+   normal flow + scrolling + a fluid board.
+══════════════════════════════════════════════ */
+@media (max-width: 960px) {
+  /* Allow the page to grow and the user to scroll */
+  .container {
+    height: auto;
+    min-height: calc(100vh - 58px);
+    overflow: visible;
+    padding: 12px 14px 32px;
+  }
+  #pageMain {
+    overflow: visible;
+    height: auto;
+  }
+  body { overflow-y: auto; }
+
+  /* Stack board on top, right panel below */
+  .main-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    height: auto;
+    align-items: stretch;
+  }
+  .board-area { width: 100%; align-items: center; }
+  .right-panel { width: 100%; min-height: 0; }
+
+  /* PGN row stacks cleanly */
+  .pgn-row { flex-direction: column; }
+  .pgn-right { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .pgn-right .btn-ask-claude { flex: 1 1 100%; }
+
+  /* Board: fluid based on viewport, leaves room for eval bar */
+  .board-wrapper { width: 100%; justify-content: center; }
+  .board {
+    grid-template-columns: repeat(8, calc((min(100vw, 560px) - 60px) / 8));
+    grid-template-rows:    repeat(8, calc((min(100vw, 560px) - 60px) / 8));
+  }
+  .square {
+    width:  calc((min(100vw, 560px) - 60px) / 8);
+    height: calc((min(100vw, 560px) - 60px) / 8);
+  }
+  .eval-bar-wrap { width: 22px; }
+
+  /* Nav buttons get bigger touch targets */
+  .nav-btn { width: 46px; height: 42px; font-size: 1.05rem; }
+
+  /* Moves panel: stack and bound height so it doesn't dominate */
+  .moves-split { flex-direction: column; }
+  .moves-left  { width: 100% !important; max-height: 220px; overflow-y: auto; }
+  .moves-right { width: 100%; }
+}
+
+@media (max-width: 600px) {
+  /* Header tightening */
+  header .engine-toggle { display: none; }
+  .header-brand h1 { font-size: 0.95rem; }
+  .container { padding: 10px 10px 36px; }
+
+  /* Slightly smaller board math, still fluid */
+  .board {
+    grid-template-columns: repeat(8, calc((100vw - 48px) / 8));
+    grid-template-rows:    repeat(8, calc((100vw - 48px) / 8));
+  }
+  .square {
+    width:  calc((100vw - 48px) / 8);
+    height: calc((100vw - 48px) / 8);
+  }
+
+  /* Stat pills shrink */
+  .gs-pill { font-size: 0.68rem; padding: 4px 8px; }
+
+  /* Modals fit phone width */
+  .modal-paywall { width: 96vw; max-width: 96vw; }
+  .paywall-inner { padding: 24px 20px 20px; }
+
+  /* Right panel internal padding tighter */
+  .right-panel { font-size: 0.92rem; }
+}
