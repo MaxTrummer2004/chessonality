@@ -1044,3 +1044,442 @@
   .eval-bar-wrap { width: 18px; }
   .nav-btn { width: 42px; height: 40px; font-size: 1rem; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ░░░░░░  AUDIT-DRIVEN MOBILE PASS  ░░░░░░
+   Targeted overrides based on real findings from index.html and
+   the per-page CSS files. Every rule lives inside a media query so
+   the desktop layout is untouched. Uses !important sparingly only
+   where the desktop selectors are very specific (e.g. fixed grid
+   columns). Order matters: this block ships LAST so it wins.
+═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   ONBOARDING / QUESTIONNAIRE PAGE
+   Real bug: .quiz-wrap is min-height:100vh +
+   justify-content:center, so the skip button
+   sits below the fold and is unreachable on
+   short screens. Fix: top-align, give bottom
+   padding, and grid-out the 1-10 boxes so all
+   ten fit comfortably on a 360px wide phone.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .quiz-wrap {
+    min-height: auto !important;
+    justify-content: flex-start !important;
+    padding: 28px 18px 64px !important;
+    max-width: 100%;
+  }
+  .quiz-question {
+    font-size: clamp(1.15rem, 4.5vw, 1.6rem) !important;
+    margin-bottom: 20px !important;
+    padding: 0 4px;
+  }
+  .quiz-counter { margin-bottom: 18px !important; }
+  .quiz-boxes {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .quiz-box {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1;
+    min-height: 44px;
+    font-size: 0.95rem !important;
+  }
+  .quiz-answers { gap: 10px; }
+  .quiz-answer {
+    padding: 14px 16px !important;
+    font-size: 0.92rem !important;
+  }
+  .quiz-skip-btn {
+    margin-top: 20px !important;
+    padding: 12px 22px !important;
+    font-size: 0.85rem !important;
+    width: auto;
+    align-self: center;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   GAME SELECT PAGE
+   Real bug: .gs-wrap is grid 320px 1fr (desktop
+   sidebar). insights.css already collapses to
+   1fr at ≤700px, but padding still causes issues
+   and platform/username rows need stacking.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .gs-wrap {
+    grid-template-columns: 1fr !important;
+    padding: 24px 14px 60px !important;
+    gap: 0 !important;
+    max-width: 100%;
+  }
+  .gs-left-col,
+  .gs-right-col { grid-column: 1 !important; grid-row: auto !important; }
+  .gs-left-col { margin-bottom: 18px; }
+  .gs-title { font-size: 1.4rem !important; }
+  .gs-sub { font-size: 0.92rem !important; margin-bottom: 18px !important; }
+  .gs-platform-row { flex-direction: column !important; gap: 8px; }
+  .gs-platform-btn { width: 100%; }
+  .gs-username-row { flex-direction: column !important; gap: 8px; }
+  .gs-input { width: 100%; }
+  .gs-load-btn,
+  .hero-input-go,
+  .hero-input-go-full { width: 100%; }
+  .gs-tabs { padding: 3px; }
+  .gs-tab { font-size: 0.8rem; padding: 8px 10px; }
+  .gs-game-card,
+  .gs-card,
+  .game-card {
+    padding: 12px !important;
+    flex-wrap: wrap;
+  }
+  .gs-incentive-features { flex-wrap: wrap; gap: 8px 14px; justify-content: center; }
+  .gs-incentive-features span { font-size: 0.78rem; }
+}
+
+/* ─────────────────────────────────────────────
+   HERO INPUT (rep-input page + game select)
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .hero-input-card { padding: 22px 16px !important; max-width: 100%; }
+  .hero-input-title { font-size: 1.4rem !important; }
+  .hero-input-sub { font-size: 0.9rem !important; }
+  .hero-input-field {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .hero-input { width: 100%; }
+  .hero-plat-btn { padding: 10px 14px !important; font-size: 0.85rem !important; }
+}
+
+/* ─────────────────────────────────────────────
+   LANDING PAGE — already mostly fixed earlier,
+   here we just safety-net the hero grid that
+   pages.css declares as 1fr 460px.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .landing-hero {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    padding: 16px 18px 32px !important;
+  }
+  .landing-features-row {
+    flex-direction: column !important;
+    align-items: center;
+    gap: 8px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   HIGHLIGHTS PAGE
+   .hl-card uses padding 44px 48px which eats
+   the entire phone width.
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .hl-overlay-inner { padding: 14px; align-items: flex-start; }
+  .hl-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 26px 18px 22px !important;
+  }
+  .hl-header { font-size: 0.78rem !important; margin-bottom: 14px !important; }
+  .hl-items { flex-direction: column !important; gap: 10px !important; }
+  .hl-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+  }
+  .hl-btn {
+    width: 100%;
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    margin-top: 8px;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   PERSONALITY REVEAL PAGE
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .pers-piece,
+  .pers-reveal,
+  #pagePersonality .container { padding: 22px 16px !important; }
+  .pers-emoji { font-size: 3.4rem !important; margin-bottom: 10px !important; }
+  .pers-name { font-size: clamp(1.7rem, 8vw, 2.6rem) !important; }
+  .pers-tagline { font-size: 0.95rem !important; }
+  .pers-traits { gap: 6px !important; }
+  .pers-trait { font-size: 0.72rem !important; padding: 4px 11px !important; }
+  .pers-desc, .pers-piece-desc { font-size: 0.9rem !important; padding: 0 6px !important; }
+  .pers-cta, .pers-piece-btn {
+    width: 100%;
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    margin-top: 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   PROFILE PAGE — feature row + hub bar
+   .prof-feature-row is 3 fixed columns. Stack
+   them on phones for legibility.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .prof-page,
+  .prof-page-wrap { padding: 16px 12px 80px !important; }
+  .prof-hub-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+  .prof-hub-actions {
+    flex-direction: column !important;
+    width: 100%;
+    gap: 8px;
+  }
+  .prof-analyze-btn,
+  .prof-pglos-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .prof-feature-row,
+  .prof-top-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .prof-feat-card,
+  .prof-card { padding: 16px 14px !important; }
+  .prof-tabs { flex-wrap: wrap; gap: 4px; }
+  .prof-tab { flex: 1 1 auto; font-size: 0.8rem; padding: 9px 10px; }
+}
+
+/* ─────────────────────────────────────────────
+   INSIGHTS PAGE — radar + bars side-by-side
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .ins-page-wrap,
+  .ins-page-wrap-coach { padding: 16px 12px 60px !important; }
+  .ins-strengths-grid,
+  .insights-grid,
+  .insights-row {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .ins-card,
+  .insights-card { padding: 14px !important; }
+  .ins-radar-canvas,
+  .ins-card-radar canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   BREAKDOWN PAGE — 2-col input grid → 1 col
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .breakdown-page,
+  #pageBreakdown .container { padding: 16px 12px 60px !important; }
+  .breakdown-header { padding: 16px 14px !important; }
+  .breakdown-title { font-size: 1.3rem !important; }
+  .breakdown-sub { font-size: 0.88rem !important; }
+  .bd-thoughts { padding: 14px !important; }
+  .bd-thought-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .bd-thought-grid input {
+    width: 100% !important;
+    padding: 11px 12px !important;
+  }
+  .bd-generate-btn { width: 100%; padding: 13px 16px !important; }
+  .bd-result-content { font-size: 0.9rem !important; line-height: 1.55; padding: 14px !important; }
+  .bd-fs-header { padding: 12px 14px !important; flex-wrap: wrap; gap: 10px; }
+  .bd-fs-back { padding: 9px 14px !important; font-size: 0.85rem !important; }
+  .bd-fs-title { font-size: 1.05rem !important; }
+}
+
+/* ─────────────────────────────────────────────
+   REPERTOIRE PAGE — 2-col card grid → 1 col
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .rep-page,
+  .rep-page-wrap,
+  #pageRepertoire .container { padding: 16px 12px 60px !important; }
+  .rep-cards-grid,
+  .rep-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .rep-card,
+  .rep-opening-card { padding: 14px !important; }
+  .rep-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .rep-stats { flex-wrap: wrap; gap: 8px; }
+  .rep-cta-btn,
+  .rep-analysis-cta { width: 100%; min-height: 48px; padding: 12px 16px !important; }
+}
+
+/* ─────────────────────────────────────────────
+   COACH PAGE
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .coach-page-body { padding: 16px 12px 60px !important; }
+  .coach-page-inner { padding: 0 !important; }
+  .coach-page-header { padding: 14px !important; }
+  .coach-page-content { padding: 14px !important; }
+  .coach-page-empty { padding: 28px 16px !important; }
+  .coach-page-empty-icon { font-size: 2.4rem !important; }
+  .coach-page-empty-title { font-size: 1.1rem !important; }
+  .coach-page-empty-text { font-size: 0.88rem !important; }
+  .coach-page-cta {
+    width: 100%;
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    min-height: 48px;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   LOADING PAGES — fit card to phone width
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .loading-wrap { padding: 22px 14px !important; max-width: 100% !important; }
+  .loading-card { padding: 22px 18px !important; width: 100% !important; max-width: 100% !important; }
+  .loading-title { font-size: 1.15rem !important; }
+  .loading-bar-outer { height: 6px; }
+  .lstep-current {
+    flex-direction: row;
+    align-items: center;
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+  .lstep-spinner { width: 32px !important; height: 32px !important; flex-shrink: 0; }
+  .lstep-cur-label { font-size: 0.92rem !important; }
+  .lstep-cur-detail { font-size: 0.78rem !important; }
+}
+
+/* ─────────────────────────────────────────────
+   ALL MODALS — width and scroll behavior
+   Hard-overrides any per-modal fixed widths.
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .modal {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 16px;
+    box-sizing: border-box;
+  }
+  .modal-settings,
+  .modal-legal,
+  .modal-confirm,
+  .modal-paywall {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .modal-header {
+    padding: 16px 18px 12px !important;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 2;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 1rem !important; }
+  .modal-section { padding: 14px 18px !important; }
+  .modal-legal-body { padding: 14px 18px 22px !important; }
+  .modal-legal-body h3 { font-size: 0.96rem !important; }
+  .modal-legal-body p { font-size: 0.84rem !important; line-height: 1.55; }
+  .modal-footer {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 18px !important;
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .modal-footer .btn { flex: 1 1 auto; }
+
+  /* Paywall modal special: tight inner padding */
+  .modal-paywall .paywall-inner { padding: 22px 18px 18px !important; }
+  .paywall-amount { font-size: 1.85rem !important; }
+  .paywall-cta { padding: 13px 16px !important; font-size: 0.95rem !important; }
+  .paywall-key-row { flex-direction: column !important; gap: 8px; }
+  .paywall-key-input,
+  .paywall-key-btn { width: 100%; }
+}
+
+/* ─────────────────────────────────────────────
+   CONFIRM MODAL specifically (delete prompts)
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .modal-confirm { padding: 22px 18px !important; }
+  .confirm-title { font-size: 1.05rem !important; }
+  .confirm-body { font-size: 0.88rem !important; line-height: 1.55; }
+  .confirm-actions {
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+  .confirm-actions .btn { width: 100%; padding: 12px 16px !important; }
+}
+
+/* ─────────────────────────────────────────────
+   FOOTER (all pages with .landing-footer)
+───────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .landing-footer,
+  .lf-row {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px 12px !important;
+    text-align: center;
+    padding: 14px 16px !important;
+  }
+  .lf-link { font-size: 0.78rem !important; }
+  .lf-sep { display: none; }
+}
+
+/* ─────────────────────────────────────────────
+   GLOBAL SAFETY: never let any page or modal
+   produce horizontal scroll on a phone.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  .app-page { max-width: 100vw; }
+  .modal img, .modal video,
+  .app-page img, .app-page video { max-width: 100%; height: auto; }
+
+  /* Hide :hover transforms that look broken with sticky touch */
+  .gs-back:hover,
+  .quiz-answer:hover,
+  .rep-card:hover,
+  .prof-feat-card:hover { transform: none !important; }
+}
+
+/* ─────────────────────────────────────────────
+   TOUCH TARGETS (≥44×44 per Apple HIG)
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  button, .btn, a.btn, .nav-btn, .gs-tab, .quiz-box {
+    min-height: 40px;
+  }
+  .modal-close-btn { width: 36px !important; height: 36px !important; }
+}
