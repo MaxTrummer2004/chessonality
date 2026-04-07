@@ -777,3 +777,270 @@
   /* Settings/imprint/privacy modals fit phones */
   .modal { max-width: 96vw; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ░░░  COMPREHENSIVE MOBILE PASS  ░░░
+   One bundled override block for every page on phones.
+   Desktop is untouched: every rule below lives in a media query.
+══════════════════════════════════════════════════════════════ */
+
+/* ─── Universal: app pages should never lock the viewport ─── */
+@media (max-width: 960px) {
+  html, body { overflow-x: hidden; }
+  body { -webkit-text-size-adjust: 100%; }
+  .app-page { min-height: 0; height: auto; overflow: visible; }
+  #pageMain, #pageProfile, #pageInsights, #pageBreakdown,
+  #pageRepertoire, #pageCoach, #pageGameSelect, #pageHighlights,
+  #pagePersonality, #pageRepInput, #pageRepLoading,
+  #pageQuestionnaire, #pageLoading {
+    overflow: visible;
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ANALYSIS PAGE (board + right panel)
+═══════════════════════════════════════════ */
+@media (max-width: 960px) {
+  /* Container can scroll on mobile */
+  .container { height: auto; min-height: 0; overflow: visible; }
+
+  /* Board area: center board, allow eval bar to sit beside it neatly */
+  .board-area { width: 100%; align-items: center; padding: 0; }
+  .board-wrapper { justify-content: center; }
+  .board-col { min-width: 0; }
+
+  /* Right panel below board, full width with sane padding */
+  .right-panel { width: 100%; min-width: 0; }
+  .right-tabs { border-radius: 0; }
+  .right-tab { padding: 10px 6px; font-size: 0.78rem; }
+  .tab-page { padding: 12px 10px; gap: 10px; }
+
+  /* Coach cards / explanation panels: shrink padding */
+  .coach-this-move { padding: 12px 12px; }
+  .coach-card-header { gap: 8px; }
+  .coach-card-title { font-size: 0.95rem; }
+  .coach-explanation { font-size: 0.88rem; line-height: 1.5; }
+  .coach-explanation p { padding: 8px 10px; margin-bottom: 8px; }
+  .coach-pos-actions { flex-wrap: wrap; gap: 6px; }
+  .coach-pos-actions button { flex: 1 1 calc(50% - 6px); font-size: 0.78rem; padding: 8px 6px; }
+
+  /* Try-move panel */
+  .aic-output { font-size: 0.86rem; padding: 10px 12px; }
+  .aic-actions { flex-wrap: wrap; gap: 6px; }
+  .aic-actions button { flex: 1 1 calc(50% - 6px); }
+
+  /* Status bar inside container */
+  .status-bar { font-size: 0.7rem; gap: 12px; flex-wrap: wrap; padding: 0 2px 10px; }
+}
+
+/* ═══════════════════════════════════════════
+   GAME SELECT PAGE
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .gs-wrap { padding: 18px 14px 40px; max-width: 100%; }
+  .gs-header { padding: 14px 10px; }
+  .gs-title { font-size: 1.4rem; }
+  .gs-subtitle { font-size: 0.85rem; }
+  .gs-list { gap: 8px; }
+  .gs-game-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+  }
+  .gs-game-meta { flex-wrap: wrap; gap: 6px; }
+  .gs-pill { font-size: 0.7rem; padding: 4px 9px; }
+  .gs-status { margin-left: 0; font-size: 0.7rem; }
+  .gs-incentive-features { flex-wrap: wrap; justify-content: center; gap: 8px 14px; }
+  .gs-incentive-features span { font-size: 0.78rem; }
+  .free-analyses-badge { font-size: 0.72rem; padding: 4px 10px; }
+}
+
+/* ═══════════════════════════════════════════
+   LOADING PAGES (analysis + repertoire)
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .loading-wrap { padding: 24px 16px; max-width: 100%; }
+  .lstep-current { padding: 16px; gap: 12px; }
+  .lstep-spinner { width: 36px; height: 36px; flex-shrink: 0; }
+  .lstep-cur-label { font-size: 0.95rem; }
+  .lstep-cur-detail { font-size: 0.78rem; }
+  .lstep-list { gap: 6px; }
+  .lstep-item { font-size: 0.82rem; padding: 8px 10px; }
+}
+
+/* ═══════════════════════════════════════════
+   PROFILE / INSIGHTS PAGE
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .prof-wrap { padding: 16px 12px 40px; max-width: 100%; }
+  .prof-hub-bar { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+  .prof-hub-actions { flex-direction: column; width: 100%; gap: 8px; }
+  .prof-pglos-btn,
+  .prof-analyze-btn { width: 100%; justify-content: center; }
+  .prof-card { padding: 16px 14px; }
+  .prof-card-title { font-size: 1rem; }
+  .prof-grid { grid-template-columns: 1fr !important; gap: 12px; }
+
+  /* Insights overview cards stack */
+  .insights-grid,
+  .insights-row { grid-template-columns: 1fr !important; }
+  .insights-card { padding: 14px; }
+
+  /* Profile tab strip */
+  .prof-tabs { flex-wrap: wrap; gap: 4px; }
+  .prof-tab { flex: 1 1 auto; font-size: 0.78rem; padding: 8px 10px; }
+}
+
+/* ═══════════════════════════════════════════
+   BREAKDOWN PAGE
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .breakdown-page { padding: 16px 12px 40px; }
+  .breakdown-header { padding: 16px 12px; }
+  .breakdown-title { font-size: 1.3rem; }
+  .breakdown-sub { font-size: 0.85rem; }
+  .breakdown-content { padding: 14px; font-size: 0.9rem; line-height: 1.55; }
+  .breakdown-panel { padding: 14px; }
+  .prof-improve-card { padding: 14px; }
+  .prof-improve-inputs { flex-direction: column; gap: 8px; }
+  .prof-improve-inputs input { width: 100%; }
+  .prof-improve-btn { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════
+   REPERTOIRE PAGE
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .rep-wrap, .rep-page { padding: 16px 12px 40px; max-width: 100%; }
+  .rep-card, .rep-opening-card { padding: 14px; }
+  .rep-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .rep-stats { flex-wrap: wrap; gap: 8px; }
+  .rep-grid { grid-template-columns: 1fr !important; gap: 12px; }
+}
+
+/* ═══════════════════════════════════════════
+   PERSONALITY REVEAL PAGE
+═══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .pers-piece { padding: 24px 16px; }
+  .pers-piece-title { font-size: 1.5rem; }
+  .pers-piece-name { font-size: 1.8rem; }
+  .pers-piece-tagline { font-size: 0.95rem; }
+  .pers-piece-desc { font-size: 0.9rem; padding: 0 8px; }
+}
+
+/* ═══════════════════════════════════════════
+   COACH PRESENTATION OVERLAY
+═══════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .cpo-card { width: 94vw; max-width: 94vw; padding: 20px 16px; }
+  .cpo-title { font-size: 1.1rem; }
+  .cpo-body { font-size: 0.88rem; line-height: 1.55; }
+  .cpo-controls { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ═══════════════════════════════════════════
+   WALKTHROUGH OVERLAY
+═══════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .wt-overlay { padding: 0; }
+  .wt-card { width: 96vw; max-width: 96vw; max-height: 88vh; padding: 18px 14px; }
+  .wt-title { font-size: 1.1rem; }
+  .wt-body { font-size: 0.88rem; line-height: 1.55; }
+  .wt-nav { flex-wrap: wrap; gap: 8px; }
+  .wt-nav button { flex: 1 1 auto; font-size: 0.85rem; padding: 10px 12px; }
+}
+
+/* ═══════════════════════════════════════════
+   ALL MODALS — full-width and scrollable
+═══════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .modal {
+    width: 94vw;
+    max-width: 94vw;
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 20px 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-settings,
+  .modal-legal,
+  .modal-confirm,
+  .modal-paywall {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 86vh;
+    overflow-y: auto;
+  }
+  .modal-header { padding: 16px 18px 12px; }
+  .modal-title { font-size: 1rem; }
+  .modal-section { padding: 14px 18px; }
+  .modal-legal-body { padding: 14px 18px 18px; max-height: none; }
+  .modal-legal-body h3 { font-size: 0.95rem; }
+  .modal-legal-body p { font-size: 0.84rem; }
+  .modal-footer { flex-wrap: wrap; gap: 6px; }
+  .modal-footer .btn { flex: 1 1 auto; }
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER LINKS — wrap nicely on phones
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .landing-footer,
+  .lf-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 10px;
+    text-align: center;
+    padding: 14px 16px;
+  }
+  .lf-link { font-size: 0.78rem; }
+}
+
+/* ═══════════════════════════════════════════
+   HEADER (top bar)
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  header { padding: 0 12px; }
+  .header-brand { gap: 8px; }
+  .header-brand h1 { font-size: 0.95rem; }
+  .header-actions { gap: 6px; }
+  .header-actions button {
+    width: 36px; height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PAYWALL FINE-TUNING
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .paywall-inner { padding: 22px 18px 18px; }
+  .paywall-title { font-size: 1.25rem; }
+  .paywall-sub { font-size: 0.84rem; }
+  .paywall-features li { font-size: 0.82rem; padding: 4px 0; }
+  .paywall-amount { font-size: 1.9rem; }
+  .paywall-cta { padding: 12px 16px; font-size: 0.95rem; }
+  .paywall-key-row { flex-direction: column; }
+  .paywall-key-btn { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════
+   IMPROVED FLUID BOARD on smallest phones
+   Keeps the eval bar visible and the board square.
+═══════════════════════════════════════════ */
+@media (max-width: 420px) {
+  .board {
+    grid-template-columns: repeat(8, calc((100vw - 56px) / 8));
+    grid-template-rows:    repeat(8, calc((100vw - 56px) / 8));
+  }
+  .square {
+    width:  calc((100vw - 56px) / 8);
+    height: calc((100vw - 56px) / 8);
+  }
+  .eval-bar-wrap { width: 18px; }
+  .nav-btn { width: 42px; height: 40px; font-size: 1rem; }
+}
