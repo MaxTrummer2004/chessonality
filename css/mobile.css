@@ -192,54 +192,110 @@
     backdrop-filter: none !important;
   }
 
-  /* Hide chrome buttons that aren't essential on mobile (the bottom
-     tab bar replaces navigation). Keep theme toggle hidden too — it's
-     in settings via the gear if needed. */
-  .landing-header .header-actions .icon-btn,
+  /* Show theme toggle + settings on mobile too (user-requested).
+     Hide only the redundant help-tour and profile buttons — the bottom
+     tab bar already handles profile navigation. */
   .landing-header .header-actions .help-tour-btn,
-  #pageMain > header .header-actions .icon-btn,
   #pageMain > header .header-actions .help-tour-btn {
     display: none !important;
   }
-  /* Keep one settings entry point visible (gear) and the profile button hidden
-     since the bottom tab bar handles navigation. */
   .landing-header .header-actions .profile-btn,
   #pageMain > header .header-actions .profile-btn {
     display: none !important;
   }
+  /* Compact the icon buttons so they fit alongside the centered brand */
+  .landing-header .header-actions,
+  #pageMain > header .header-actions {
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .landing-header .header-actions .icon-btn,
+  #pageMain > header .header-actions .icon-btn {
+    display: inline-flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    border-radius: var(--radius-sm, 8px) !important;
+    align-items: center;
+    justify-content: center;
+  }
 
-  /* Brand logo: smaller, centered on hub pages */
+  /* Header layout: back-button left, brand absolutely centered, icons right.
+     Absolute centering on the brand prevents the logo drifting when the
+     left/right side widths are uneven. */
+  .landing-header,
+  #pageMain > header {
+    position: relative !important;
+  }
   .landing-header .brand-logo,
   #pageMain > header .brand-logo {
-    font-size: 17px !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 16px !important;
     font-weight: 600 !important;
     letter-spacing: -0.01em;
-    margin: 0 auto;
-    flex: 1;
-    text-align: center;
+    margin: 0 !important;
+    text-align: center !important;
+    white-space: nowrap;
+    pointer-events: auto;
+    z-index: 1;
+  }
+  .landing-header .header-brand,
+  #pageMain > header .header-brand {
+    flex: 0 0 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0;
   }
 
-  /* Back-button styling: small arrow only, fixed left */
-  .gs-back, .back-btn, .ins-back-btn, .coach-back-btn {
-    background: transparent !important;
-    border: 0 !important;
-    padding: 0 12px 0 0 !important;
+  /* Back-button styling: desktop "ghost pill" look (background + border)
+     but compact. Replaces page-specific labels ("← New game", "← Back",
+     etc.) with a single uniform "← Back" so the button has consistent
+     width across pages and balances the right-side icon buttons.
+     Hide the original text by zeroing font-size, then inject the new
+     label via ::before. Higher specificity than responsive.css:1804
+     ensures our font-size: 0 wins. */
+  .gs-back, .back-btn, .ins-back-btn, .coach-back-btn,
+  .app-page > header .back-btn {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm, 8px) !important;
+    padding: 0 12px !important;
     margin: 0 !important;
-    color: var(--text) !important;
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    min-height: 44px;
-    min-width: 44px;
-    display: inline-flex;
-    align-items: center;
-  }
-  .back-btn { /* "← New game" -> just arrow */
+    color: var(--text-muted) !important;
     font-size: 0 !important;
+    line-height: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+    flex: 0 0 auto !important;
+    transform: none !important;
+    white-space: nowrap !important;
   }
-  .back-btn::before {
-    content: "←";
-    font-size: 24px;
+  .gs-back::before, .back-btn::before,
+  .ins-back-btn::before, .coach-back-btn::before,
+  .app-page > header .back-btn::before {
+    content: "← Back";
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 13px !important;
+    font-weight: 600 !important;
     line-height: 1;
+    color: var(--text-muted);
+    display: inline-block;
+    letter-spacing: 0.01em;
   }
 
 
@@ -899,44 +955,56 @@
     gap: 16px;
   }
 
-  /* Board area: full width with eval bar flush */
+  /* Board area: identical visual style to desktop, only scaled down.
+     Layout = eval bar (18px) + board (remaining width), stacked as a
+     flex row inside the wrapper. Everything else — border, border-radius,
+     drop-shadow, piece rendering — is inherited from desktop. */
   .board-area { width: 100%; }
   .board-wrapper {
     display: flex !important;
     flex-direction: row !important;
-    gap: 0;
+    gap: 8px; /* match desktop .board-wrapper gap */
     width: 100%;
+    justify-content: center;
   }
   .eval-bar-wrap {
     width: 18px !important;
     flex-shrink: 0;
     height: auto !important;
     align-self: stretch;
-    border-radius: 6px 0 0 6px;
-    overflow: hidden;
-    position: relative;
-  }
-  .eval-bar-black,
-  .eval-bar-white {
-    transition: height 400ms ease, transform 400ms ease;
   }
   .eval-bar-wrap .eval-score {
-    font-size: 9px !important;
+    font-size: 7px !important;
     line-height: 1;
+    letter-spacing: -0.5px !important;
   }
-  .board-col { flex: 1; min-width: 0; }
+  .eval-bar-wrap .eval-score.top { top: 3px !important; }
+  .eval-bar-wrap .eval-score.bot { bottom: 3px !important; }
+  .board-col { flex: 0 0 auto; min-width: 0; }
+  /* Size the board to fit the viewport.
+     container width = 100vw - 20px page-padding × 2 - 18px eval bar - 8px gap = 54px
+     Use 1fr tracks instead of calc() per-track, and let squares inherit
+     their size from the grid — one source of truth eliminates sub-pixel
+     rounding mismatches that would show as gaps between squares. */
   .board, #board {
-    width: 100% !important;
-    height: auto !important;
+    width: calc(100vw - 54px) !important;
+    height: calc(100vw - 54px) !important;
     max-width: none !important;
-    border-radius: 0 6px 6px 0;
-    /* Container is 100vw minus: 20px page padding × 2 + 18px eval bar = 58px */
-    grid-template-columns: repeat(8, calc((100vw - 58px) / 8)) !important;
-    grid-template-rows:    repeat(8, calc((100vw - 58px) / 8)) !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows:    repeat(8, 1fr) !important;
+    gap: 0 !important;
+    grid-gap: 0 !important;
+    column-gap: 0 !important;
+    row-gap: 0 !important;
+    background: var(--dark-sq, #b58863) !important;
   }
   #pageMain .square {
-    width:  calc((100vw - 58px) / 8) !important;
-    height: calc((100vw - 58px) / 8) !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Move nav controls: full row, ≥44px each */
@@ -1365,6 +1433,15 @@
     border: 0 !important;
     outline: 0 !important;
   }
+  /* The "fat lines" on the analysis board are actually three chained
+     drop-shadow() filters on #pageMain .piece-img from responsive.css:1575
+     (a 1px black + 2px white + 3px black halo). On a small mobile board
+     these read as thick borders around every piece. Drop them. */
+  #pageMain .piece-img,
+  #pageMain .square .piece-img,
+  #pageMain .square img {
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)) !important;
+  }
 
 
   /* ── Game Walkthrough overlay (.wt-overlay) ──
@@ -1376,13 +1453,14 @@
   .wt-overlay .wt-board-spotlight {
     flex: 0 0 auto !important;
     width: 100% !important;
-    padding: 14px 16px 8px !important;
+    padding: 8px 12px 4px !important;
     align-items: center !important;
     justify-content: center !important;
   }
   .wt-overlay .wt-board-clone {
-    width: min(320px, 78vw) !important;
-    height: min(320px, 78vw) !important;
+    /* Smaller board so the coach text below has room to breathe */
+    width: min(260px, 64vw) !important;
+    height: min(260px, 64vw) !important;
     aspect-ratio: 1 / 1 !important;
     max-width: none !important;
     margin: 0 auto !important;
@@ -1405,95 +1483,226 @@
     height: 88% !important;
     object-fit: contain !important;
   }
-  .wt-overlay .wt-board-nav { margin-top: 8px !important; }
-  .wt-overlay .wt-move-label { font-size: 14px !important; }
+  .wt-overlay .wt-board-nav { margin-top: 6px !important; }
+  .wt-overlay .wt-move-label { font-size: 13px !important; }
 
-  /* Walkthrough coach panel: roomier move analysis */
+  /* Walkthrough coach panel: compact so all text fits without scroll-clipping */
   .wt-overlay .wt-coach-panel {
-    padding: 16px 20px 12px !important;
+    padding: 10px 14px 6px !important;
+    min-height: 0 !important;
   }
   .wt-overlay .wt-coach-header {
-    gap: 10px !important;
-    margin-bottom: 12px !important;
-    padding-bottom: 10px !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
     border-bottom: 1px solid var(--border);
   }
   .wt-overlay .wt-coach-avatar {
-    width: 42px !important;
-    height: 42px !important;
-    font-size: 22px !important;
-    border-radius: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+    border-radius: 9px !important;
   }
   .wt-overlay .wt-coach-title {
-    font-size: 16px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
-    line-height: 1.3 !important;
+    line-height: 1.25 !important;
   }
   .wt-overlay .wt-close {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 14px !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
   }
   .wt-overlay .wt-coach-body {
-    padding: 4px 2px 12px 2px !important;
+    padding: 2px 0 8px 0 !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
   }
   .wt-overlay .wt-coach-body .aic-sentence,
   .wt-overlay .wt-coach-body .aic-numbered-card,
   .wt-overlay .wt-coach-body .aic-bullet-card {
-    font-size: 15px !important;
-    line-height: 1.65 !important;
-    padding: 14px 16px !important;
-    margin-bottom: 10px !important;
-    border-radius: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+    padding: 10px 12px !important;
+    margin-bottom: 6px !important;
+    border-radius: 10px !important;
   }
   .wt-overlay .wt-slide-header {
-    font-size: 17px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
     line-height: 1.3 !important;
-    padding: 0 0 12px !important;
-    margin-bottom: 14px !important;
+    padding: 0 0 8px !important;
+    margin-bottom: 8px !important;
   }
   .wt-overlay .wt-slide-body {
-    font-size: 15px !important;
-    line-height: 1.65 !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  .wt-overlay .wt-thought-area {
+    padding-top: 8px !important;
+    margin-top: 6px !important;
   }
   .wt-overlay .wt-thought-question {
-    font-size: 14px !important;
-    line-height: 1.4 !important;
-    margin-bottom: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 8px !important;
   }
   .wt-overlay .wt-thought-options {
-    gap: 8px !important;
-    margin-bottom: 10px !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
   }
   .wt-overlay .wt-thought-btn {
-    padding: 12px 16px !important;
-    font-size: 14px !important;
-    min-height: 44px !important;
-    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    min-height: 36px !important;
+    border-radius: 8px !important;
   }
   .wt-overlay .wt-thought-ai-reply {
-    font-size: 14px !important;
-    line-height: 1.65 !important;
-    padding: 14px 16px !important;
-    border-radius: 12px !important;
-  }
-  .wt-overlay .wt-coach-footer {
-    padding-top: 14px !important;
-    margin-top: 14px !important;
-    gap: 10px !important;
-    flex-wrap: wrap;
-  }
-  .wt-overlay .wt-btn-back,
-  .wt-overlay .wt-btn-next {
-    padding: 12px 18px !important;
-    font-size: 14px !important;
-    min-height: 44px !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+    padding: 10px 12px !important;
     border-radius: 10px !important;
   }
-  .wt-overlay .wt-coach-badge .badge {
+  .wt-overlay .wt-coach-footer {
+    padding-top: 8px !important;
+    margin-top: 8px !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+  .wt-overlay .wt-actions { gap: 6px !important; }
+  .wt-overlay .wt-btn-back,
+  .wt-overlay .wt-btn-next {
+    padding: 9px 14px !important;
     font-size: 12px !important;
-    padding: 5px 12px !important;
+    min-height: 36px !important;
+    border-radius: 8px !important;
+  }
+  .wt-overlay .wt-coach-badge { margin-bottom: 4px !important; }
+  .wt-overlay .wt-coach-badge .badge {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+  }
+  .wt-overlay .wt-progress { gap: 5px !important; }
+  .wt-overlay .wt-dot { width: 6px !important; height: 6px !important; }
+  .wt-overlay .wt-dot.active { width: 16px !important; }
+
+
+  /* ── Personality Collection cards: keep emojis readable on mobile ──
+     The locked cards were 45% opacity + 80% grayscale, so on a small
+     dark background the emojis read as blank. Soften the dim treatment
+     and bump font sizes. */
+  .prof-collection-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .prof-collect-card {
+    padding: 16px 10px !important;
+    min-height: 92px;
+    border-radius: 14px !important;
+  }
+  .prof-collect-card.locked {
+    opacity: 0.7 !important;
+    filter: none !important;
+  }
+  .prof-collect-emoji {
+    font-size: 32px !important;
+    line-height: 1 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+  }
+  .prof-collect-name {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+  .prof-collect-pct {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+  }
+  .prof-collect-lock {
+    font-size: 12px !important;
+    margin-top: 4px !important;
+  }
+
+
+  /* ── Hide "Personality Trend" sparkline on mobile ──
+     User feedback: not needed on phone view. */
+  .prof-sparkline-card,
+  #profSparklineCard {
+    display: none !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   ANALYSIS BOARD — MATCH THE DESKTOP VISUAL STYLE
+   --------------------------------------------------------------------
+   The user wants the mobile board to look and behave exactly like the
+   desktop board — same border, same radius, same subtle drop-shadow,
+   same piece rendering. Everything here just RESTORES the desktop
+   styles that responsive.css overrides at ≤860px.
+
+   Key override: responsive.css:1575 applies THREE chained drop-shadow
+   filters to every piece image at mobile widths (1px black + 2px
+   white + 3px black). On a small board those read as thick black
+   borders around every piece — the "fat lines" the user was seeing.
+   We replace them with desktop's single soft drop-shadow from
+   layout.css:256.
+
+   Uses max-width 860px (not 767px) so it covers tablet "mobile view"
+   widths too. Uses html-body-level specificity to beat every existing
+   mobile override in the cascade.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Outer board — desktop border + radius (from analysis.css:102).
+     Also kill grid gaps and any explicit square sizing to eliminate
+     sub-pixel gaps between squares. */
+  html body #pageMain .board {
+    border: 2px solid rgba(255,255,255,0.08) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+    gap: 0 !important;
+    grid-gap: 0 !important;
+    column-gap: 0 !important;
+    row-gap: 0 !important;
+    background: var(--dark-sq, #b58863) !important;
+  }
+  html body #pageMain .board .square {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+  }
+  /* Wrapper drop-shadow — desktop glow (from analysis.css:99) */
+  html body #pageMain .board-wrapper {
+    filter:
+      drop-shadow(0 8px 20px rgba(0,0,0,0.45))
+      drop-shadow(0 0 1px rgba(233,69,96,0.15)) !important;
+    box-shadow: none !important;
+  }
+  /* Squares — no borders, clean cells */
+  html body #pageMain .board .square,
+  html body #pageMain .square {
+    border: 0 !important;
+    outline: 0 !important;
+  }
+  /* Pieces — desktop's single soft shadow (from layout.css:256),
+     NOT the responsive.css:1575 chained 3-shadow stack. */
+  html body #pageMain .piece-img,
+  html body #pageMain .square .piece-img,
+  html body #pageMain .square .piece-img.pers-piece,
+  html body #pageMain .square img {
+    width: 84% !important;
+    height: 84% !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) !important;
   }
 }
 
