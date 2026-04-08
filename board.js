@@ -88,6 +88,14 @@ function renderBoard() {
           img.classList.add('pers-piece');
         }
         sq.appendChild(img);
+        // Mobile fallback: Unicode glyph rendered via CSS ::after
+        // (lichess SVGs sometimes don't display in mobile browsers)
+        const GLYPH = {
+          w: { k:'\u2654', q:'\u2655', r:'\u2656', b:'\u2657', n:'\u2658', p:'\u2659' },
+          b: { k:'\u265A', q:'\u265B', r:'\u265C', b:'\u265D', n:'\u265E', p:'\u265F' },
+        };
+        sq.setAttribute('data-piece', GLYPH[cell.color][cell.type] || '');
+        sq.setAttribute('data-pcolor', cell.color);
       }
 
       // Book icon on destination square

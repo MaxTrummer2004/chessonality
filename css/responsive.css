@@ -1785,6 +1785,63 @@
   }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   ░░░░░░  MOBILE BOARD: UNICODE GLYPH FALLBACK  ░░░░░░
+   On phones we render Unicode chess glyphs via ::after as the
+   primary visible piece (using data-piece set in board.js). The
+   underlying lichess <img> stays in the DOM but is hidden so we
+   never depend on the SVG actually loading & rendering.
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  /* Hide the lichess SVG <img> entirely on phones */
+  #pageMain .square .piece-img { display: none !important; }
+
+  /* Render the Unicode glyph from data-piece attr instead */
+  #pageMain .square[data-piece]::after {
+    content: attr(data-piece);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family:
+      "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2",
+      "DejaVu Sans", system-ui, sans-serif;
+    font-size: calc((100vw - 34px) / 8 * 0.85);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* White pieces: light fill + dark outline */
+  #pageMain .square[data-pcolor="w"]::after {
+    color: #f5f5f5;
+    text-shadow:
+       1px  0   0 #000,
+      -1px  0   0 #000,
+       0    1px 0 #000,
+       0   -1px 0 #000,
+       1px  1px 0 #000,
+      -1px -1px 0 #000,
+       1px -1px 0 #000,
+      -1px  1px 0 #000;
+  }
+  /* Black pieces: dark fill + light halo */
+  #pageMain .square[data-pcolor="b"]::after {
+    color: #0a0a0a;
+    text-shadow:
+       0.5px 0    0 #fff,
+      -0.5px 0    0 #fff,
+       0    0.5px 0 #fff,
+       0   -0.5px 0 #fff;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 860px) {
+  #pageMain .square[data-piece]::after {
+    font-size: calc(min(60px, (100vw - 50px) / 8) * 0.85);
+  }
+}
+
 /* ─────────────────────────────────────────────
    4) "LEARN MORE" — plain text label below
       Get Started, not a button. No scroll action,
