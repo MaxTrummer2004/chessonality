@@ -208,8 +208,10 @@ function showHighlightsPage(items) {
     el.className = 'hl-item';
     el.innerHTML = `
       <div class="hl-icon">${h.icon || '\u2728'}</div>
-      <div class="hl-title">${h.title || ''}</div>
-      <div class="hl-sub">${h.sub || ''}</div>
+      <div class="hl-item-text">
+        <div class="hl-title">${h.title || ''}</div>
+        <div class="hl-sub">${h.sub || ''}</div>
+      </div>
     `;
     container.appendChild(el);
   }

@@ -1199,49 +1199,130 @@
 
 /* ─────────────────────────────────────────────
    HIGHLIGHTS PAGE
-   .hl-card uses padding 44px 48px which eats
-   the entire phone width.
+   Goal: fit header + 3 highlights + CTA inside
+   the phone viewport without scrolling. Items
+   become horizontal rows (icon left, text right)
+   to slash vertical height.
 ───────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .hl-overlay-inner { padding: 14px; align-items: flex-start; }
+  .hl-overlay-inner {
+    padding: 12px;
+    min-height: 100svh;
+    align-items: center;
+  }
   .hl-card {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 26px 18px 22px !important;
+    padding: 18px 16px 16px !important;
+    border-radius: 18px;
   }
-  .hl-header { font-size: 0.78rem !important; margin-bottom: 14px !important; }
-  .hl-items { flex-direction: column !important; gap: 10px !important; }
+  .hl-header {
+    font-size: 0.72rem !important;
+    margin-bottom: 12px !important;
+  }
+  .hl-items {
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
   .hl-item {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left;
+    gap: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px;
   }
+  .hl-item > .hl-icon {
+    font-size: 1.7rem !important;
+    flex-shrink: 0;
+  }
+  .hl-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+  .hl-title { font-size: 0.92rem !important; }
+  .hl-sub { font-size: 0.74rem !important; line-height: 1.35 !important; }
   .hl-btn {
     width: 100%;
-    padding: 14px 18px !important;
-    font-size: 0.95rem !important;
-    margin-top: 8px;
+    padding: 12px 18px !important;
+    font-size: 0.92rem !important;
+    margin-top: 4px;
   }
 }
 
 /* ─────────────────────────────────────────────
    PERSONALITY REVEAL PAGE
+   Goal: fit subtitle + emoji + name + tagline +
+   description + traits + famous + 2 CTAs into
+   a single phone viewport.
 ───────────────────────────────────────────── */
 @media (max-width: 700px) {
   .pers-piece,
   .pers-reveal,
-  #pagePersonality .container { padding: 22px 16px !important; }
-  .pers-emoji { font-size: 3.4rem !important; margin-bottom: 10px !important; }
-  .pers-name { font-size: clamp(1.7rem, 8vw, 2.6rem) !important; }
-  .pers-tagline { font-size: 0.95rem !important; }
-  .pers-traits { gap: 6px !important; }
-  .pers-trait { font-size: 0.72rem !important; padding: 4px 11px !important; }
-  .pers-desc, .pers-piece-desc { font-size: 0.9rem !important; padding: 0 6px !important; }
+  #pagePersonality .container {
+    padding: 16px 16px !important;
+    min-height: 100svh;
+  }
+  .pers-content { max-width: 100%; }
+  .pers-subtitle {
+    font-size: 0.7rem !important;
+    margin-bottom: 8px !important;
+    letter-spacing: 1.5px !important;
+  }
+  .pers-emoji {
+    font-size: 2.8rem !important;
+    margin-bottom: 6px !important;
+  }
+  .pers-name {
+    font-size: clamp(1.6rem, 7vw, 2.2rem) !important;
+    margin-bottom: 4px !important;
+  }
+  .pers-tagline {
+    font-size: 0.88rem !important;
+    margin-bottom: 12px !important;
+  }
+  .pers-description {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 12px !important;
+  }
+  .pers-traits {
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+  .pers-trait {
+    font-size: 0.7rem !important;
+    padding: 4px 10px !important;
+  }
+  .pers-famous {
+    font-size: 0.74rem !important;
+    margin-top: 4px !important;
+  }
+  .pers-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .pers-actions .hl-btn,
+  .pers-share-btn {
+    width: 100%;
+    padding: 11px 18px !important;
+    font-size: 0.9rem !important;
+    margin-top: 0 !important;
+  }
+  .pers-desc, .pers-piece-desc { font-size: 0.85rem !important; padding: 0 4px !important; }
   .pers-cta, .pers-piece-btn {
     width: 100%;
-    padding: 14px 18px !important;
-    font-size: 0.95rem !important;
-    margin-top: 16px;
+    padding: 12px 18px !important;
+    font-size: 0.92rem !important;
+    margin-top: 12px;
   }
 }
 

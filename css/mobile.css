@@ -967,26 +967,26 @@
      ════════════════════════════════════════════════════════════ */
 
   #pageMain .container {
-    padding: 12px 20px 20px !important;
+    padding: 8px 16px 12px !important;
     max-width: none !important;
   }
 
-  /* Personality mini-card: visible reveal */
+  /* Personality mini-card: visible reveal — compact so board has room */
   .analysis-pers-card {
     flex-direction: row;
     align-items: center;
-    gap: 12px;
-    padding: 14px 16px !important;
-    border-radius: 16px !important;
-    margin-bottom: 12px !important;
+    gap: 10px;
+    padding: 10px 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 8px !important;
   }
-  .analysis-pers-card .apc-emoji { font-size: 36px !important; }
+  .analysis-pers-card .apc-emoji { font-size: 28px !important; }
   .analysis-pers-card .apc-name {
-    font-size: 18px !important;
+    font-size: 15px !important;
     font-weight: 700 !important;
   }
   .analysis-pers-card .apc-label {
-    font-size: 12px !important;
+    font-size: 11px !important;
     color: var(--text-dim);
   }
   /* Reveal animation when shown */
@@ -995,11 +995,11 @@
     animation: ce-badge-reveal 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Game stats pills: wrap nicely */
+  /* Game stats pills: wrap nicely, tighter spacing */
   .game-stats {
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
   .gs-pill {
     font-size: 12px !important;
@@ -1013,6 +1013,10 @@
     flex-direction: column !important;
     gap: 16px;
   }
+
+  /* Tighter vertical rhythm so the board + sticky Explain bar both fit
+     on a single phone screen without scrolling. */
+  .main-grid { gap: 10px !important; }
 
   /* Board area: identical visual style to desktop, only scaled down.
      Layout = eval bar (18px) + board (remaining width), stacked as a
@@ -1046,8 +1050,9 @@
      their size from the grid — one source of truth eliminates sub-pixel
      rounding mismatches that would show as gaps between squares. */
   .board, #board {
-    width: calc(100vw - 54px) !important;
-    height: calc(100vw - 54px) !important;
+    /* container width = 100vw - 16px page-padding × 2 - 18px eval bar - 8px gap = 46px */
+    width: calc(100vw - 46px) !important;
+    height: calc(100vw - 46px) !important;
     max-width: none !important;
     grid-template-columns: repeat(8, 1fr) !important;
     grid-template-rows:    repeat(8, 1fr) !important;
@@ -1066,18 +1071,18 @@
     padding: 0 !important;
   }
 
-  /* Move nav controls: full row, ≥44px each */
+  /* Move nav controls: full row, ≥44px each — tighter for mobile fit */
   .nav-controls {
     display: flex !important;
     justify-content: space-between;
-    gap: 8px;
-    margin-top: 12px !important;
+    gap: 6px;
+    margin-top: 8px !important;
   }
   .nav-btn {
     flex: 1;
-    min-height: 48px !important;
+    min-height: 44px !important;
     font-size: 18px !important;
-    border-radius: 12px !important;
+    border-radius: 10px !important;
   }
 
   /* Right panel: drop into normal flow */
@@ -1117,10 +1122,14 @@
   }
   .move-cell.active { transition: background 150ms ease; }
 
-  /* AI coach panel as scrollable card */
+  /* AI coach panel: drop the card framing on mobile — the Explain button
+     floats as a sticky bottom bar (see below), so the inline panel only
+     needs to host the output area when a deck is shown. */
   .ai-coach-panel {
-    padding: 20px !important;
-    border-radius: 16px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
   }
   .btn-explain {
     width: 100% !important;
@@ -1132,13 +1141,46 @@
   .aic-output {
     font-size: 15px !important;
     line-height: 1.65 !important;
-    padding: 16px 0 0 !important;
+    padding: 4px 2px 0 !important;
   }
   .aic-hint {
-    font-size: 13px !important;
+    font-size: 12px !important;
     color: var(--text-dim);
-    margin-top: 8px;
+    margin-top: 6px;
     text-align: center;
+  }
+
+  /* ─── Sticky Explain bar (analysis page only) ──────────────────────
+     The Explain button is the primary action on this page, so it must
+     stay reachable no matter where the user has scrolled. We promote
+     the existing .aic-btn-group to a fixed bottom bar above the tab
+     bar; the existing JS already toggles its display when output is
+     shown / a new move is selected, so no JS change is needed. */
+  body[data-page="main"] .aic-btn-group {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 95;
+    margin: 0 !important;
+    padding: 10px 16px 12px !important;
+    background: var(--bg, #0f0f12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.18);
+  }
+  body[data-page="main"] .aic-btn-group .aic-hint {
+    margin-top: 2px;
+  }
+  /* Reserve room at the bottom of the analysis page so the sticky bar
+     never covers the last bit of content (the AI Coach CTA card). */
+  body[data-page="main"] {
+    padding-bottom: calc(56px + 84px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Walkthrough + coach CTAs: full-width tappable cards */
