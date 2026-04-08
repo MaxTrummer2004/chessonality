@@ -1241,6 +1241,15 @@
 .aic-slide-dot.slide-tactics.active   { background: #f59e0b; }
 .aic-slide-dot.slide-structure.active { background: #22c55e; }
 
+/* ── Light mode: Structure uses a darker blue instead of green ── */
+[data-theme="light"] .sec-structure { --sec-color: #1d4ed8; }
+[data-theme="light"] .slide-structure {
+  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.10);
+  border-color: rgba(29, 78, 216, 0.25);
+}
+[data-theme="light"] .aic-slide-dot.slide-structure.active { background: #1d4ed8; }
+
 /* ── Button group ── */
 /* Button group: centers the Explain button in the available space */
 .aic-btn-group {

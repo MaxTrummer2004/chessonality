@@ -624,6 +624,14 @@
   background: none;
   border-bottom-color: rgba(34, 197, 94, 0.35);
 }
+/* Light mode: Structure header uses a darker blue instead of green */
+[data-theme="light"] .wt-slide-header.slide-structure,
+[data-theme="light"] .wt-slide-structure {
+  color: #1d4ed8;
+  border-bottom-color: rgba(29, 78, 216, 0.40);
+}
+[data-theme="light"] .wt-slide-dot.slide-structure.active,
+[data-theme="light"] .wt-slide-dot.wt-slide-structure.active { background: #1d4ed8; }
 .wt-slide-header.slide-continuation,
 .wt-slide-continuation {
   color: #a78bfa;
