@@ -528,22 +528,13 @@ async function initRepInput() {
   } catch {}
 }
 
-// Called from choice modal - auto-starts if username is saved
-async function startRepFromChoice() {
-  try {
-    const plat = await dbGetProfile('lastPlatform');
-    const user = await dbGetProfile('lastUsername');
-    if (user) {
-      // Auto-start: set platform, populate input, and go
-      if (plat) _repPlatform = plat;
-      document.getElementById('repUsernameInput').value = user;
-      startRepertoireFlow();
-    } else {
-      showPage('repInput');
-    }
-  } catch {
-    showPage('repInput');
-  }
+// Called from choice modal - always show the input page so the user
+// can confirm/change the username (matches the Game Analysis flow which
+// goes to gameSelect rather than auto-starting). showPage('repInput')
+// triggers initRepInput() in navigation.js, which pre-fills the saved
+// username + platform.
+function startRepFromChoice() {
+  showPage('repInput');
 }
 
 function setRepPlatform(p) {
