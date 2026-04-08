@@ -1192,7 +1192,7 @@ async function explainMoveAndAsk() {
   let topMovesStr = '';
   if (preFen) {
     try {
-      let topMoves = await fetchTopMoves(preFen, 3);
+      let topMoves = await fetchTopMoves(preFen, 4);
       // ── Reconcile: board arrow always shows evBefore.bestUCI ──
       // If Lichess returns a different #1, swap so Claude agrees with the board.
       if (topMoves.length > 0 && evBefore && evBefore.bestUCI) {
@@ -1211,7 +1211,7 @@ async function explainMoveAndAsk() {
               rank: 1, moveSAN: boardSAN, lineSAN: evBefore.lineSAN || boardSAN,
               moveUCI: boardBest, cp: evBefore.cp, mate: evBefore.mate
             });
-            topMoves = topMoves.slice(0, 3);
+            topMoves = topMoves.slice(0, 4);
             topMoves.forEach((m, i) => m.rank = i + 1);
           }
         }
@@ -1414,7 +1414,7 @@ async function explainPositionAndAsk() {
   let topMovesStr = '';
   if (curFen) {
     try {
-      const topMoves = await fetchTopMoves(curFen, 3);
+      const topMoves = await fetchTopMoves(curFen, 4);
       topMovesStr = formatTopMoves(topMoves);
     } catch (e) { console.warn('[TopMoves] fetch failed:', e.message); }
   }
@@ -2073,7 +2073,7 @@ async function _wtFetchExplanation(step, cacheKey) {
     let topMovesStr = '';
     if (preFen) {
       try {
-        let topMoves = await fetchTopMoves(preFen, 3);
+        let topMoves = await fetchTopMoves(preFen, 4);
         // ── Reconcile: board arrow always shows evB.bestUCI ──
         if (topMoves.length > 0 && evB && evB.bestUCI) {
           const boardBest = evB.bestUCI;
@@ -2089,7 +2089,7 @@ async function _wtFetchExplanation(step, cacheKey) {
                 rank: 1, moveSAN: boardSAN, lineSAN: evB.lineSAN || boardSAN,
                 moveUCI: boardBest, cp: evB.cp, mate: evB.mate
               });
-              topMoves = topMoves.slice(0, 3);
+              topMoves = topMoves.slice(0, 4);
               topMoves.forEach((m, i) => m.rank = i + 1);
             }
           }

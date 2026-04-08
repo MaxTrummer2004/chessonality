@@ -28,6 +28,7 @@ const GROUNDING_GUARD = `STRICT RULES (violations are never acceptable):
 1. Only mention pieces and squares explicitly listed in the board positions below.
 2. NEVER name a specific move unless it appears in: (a) the engine's top moves list, OR (b) the "WHAT HAPPENS NEXT" continuation lines.
 2b. ENGINE VERDICT is the single source of truth for whether the played move was the engine's top choice. If it says "IS the engine's #1 choice" - never say the engine preferred something else. If it says "was NOT the engine's top choice" - never say it was. Do not contradict this line under any circumstances.
+2c. TOP-4 SILENT CONSIDERATION: Before writing ANY section you must silently read the engine's top 4 ranked moves for the position. Every factual claim in your Overview, Structure, and Best Move sections must be consistent with those 4 moves. You may only NAME move #1 in your output - moves #2, #3, and #4 exist solely to ground your reasoning and catch false statements. If a sentence you are about to write would imply the engine likes a move not in the top 4, DELETE that sentence.
 3. When the engine shows forced mate, you MUST mention it.
 4. NEVER confuse "check" with "checkmate". Only call something checkmate if it is labelled "CHECKMATE IN ONE MOVE" in the data.
 5. CASTLING STATUS: Read the "Castling facts" block verbatim. NEVER say a side "hasn't castled" if the facts say they have.
@@ -59,9 +60,11 @@ Max 230 characters. What move was played, and in one clause whether it was the r
 
 ## Structure
 Max 230 characters. Pick EXACTLY ONE of these 10 concepts from the FACTS block and describe it: doubled/tripled pawns, isolated pawns, passed pawns, bishop pair, open files, castling rights, king safety, material balance, piece activity, or space. Use the deterministic facts. NEVER invent any other positional concept (no weak squares, no outposts, no color complexes). Pick the one most relevant to the move just played.
+GROUNDING REQUIREMENT: Before writing this section, silently read the engine's TOP 4 moves list. If the concept you are about to describe contradicts what those 4 moves imply about the position (e.g. you want to say "Black's king is exposed" but all 4 engine moves are quiet positional moves for White), pick a different concept that IS consistent with the top 4. Do NOT mention the top-4 moves themselves in this section unless absolutely necessary - they are grounding only.
 
 ## Best Move
-Max 230 characters. State the engine's preferred move and explain its benefit using EXACTLY ONE of the 10 allowed concepts. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) and pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
+Max 230 characters. State the engine's preferred move and explain its benefit using EXACTLY ONE of the 10 allowed concepts. You MUST silently compare the played move against ALL 4 top engine moves before writing this section - this prevents you from claiming "the engine preferred X" when X is wrong. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) and pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
+NAME ONLY MOVE #1: even though you silently considered all 4, you may only write the name of move #1. Do NOT name moves #2-#4 in your output.
 CRITICAL PRONOUN RULE: If this is the STUDENT'S OWN move, write "you could have played X". If this is the OPPONENT'S move, write "your opponent could have played X" - NEVER "you should have played X" for opponent's turn.
 BANNED: listing move sequences, quoting brackets, inventing tactics, mentioning weak squares or outposts.
 Two sentences maximum.`.trim();
@@ -72,7 +75,8 @@ Write EXACTLY one ## markdown section header. No bullet points. No bold text. No
 AUDIENCE: Complete beginner. Use simple, everyday language. NEVER list move sequences in your output.
 
 ## Best Move
-Max 280 characters. State the engine's preferred move and explain its benefit using EXACTLY ONE of the 10 allowed concepts. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) and pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
+Max 280 characters. State the engine's preferred move and explain its benefit using EXACTLY ONE of the 10 allowed concepts. You MUST silently compare the played move against ALL 4 top engine moves before writing - this prevents you from claiming "the engine preferred X" when X is wrong. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) and pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
+NAME ONLY MOVE #1: even though you silently considered all 4 top moves, you may only write the name of move #1 in your output. Do NOT name moves #2-#4.
 CRITICAL PRONOUN RULE: If this is the STUDENT'S OWN move, write "you could have played X". If this is the OPPONENT'S move, write "your opponent could have played X" - NEVER "you should have played X" for opponent's turn.
 BANNED: listing move sequences, quoting brackets, inventing tactics, mentioning weak squares or outposts.
 Two to three sentences maximum.`.trim();
@@ -666,7 +670,12 @@ function moveDetail(d) {
 
   // ── Engine top moves for this position (before the move was played) ──
   const topMovesStr = d.topMoves
-    ? `\nEngine's ranked move options for this position (BEFORE the move was played):\n${d.topMoves}\nIMPORTANT: These are what the engine considered for this position. Use the ENGINE VERDICT line above to decide whether the played move was #1 or not - do NOT infer that from this list independently. You may name move #1 as the best alternative (if the played move wasn't #1). Never name moves #3 or lower.`
+    ? `\nEngine's TOP 4 ranked move options for this position (BEFORE the move was played):\n${d.topMoves}
+IMPORTANT - SILENT CONSIDERATION RULE: You MUST read and understand ALL 4 of these moves before writing ANY section (Overview, Structure, or Best Move). This is your factual ground truth - it stops you from making false claims about what the "engine prefers" or what "would have been better". Cross-check every statement you are about to write against this list.
+- Use the ENGINE VERDICT line above to decide whether the played move was #1 or not - do NOT infer that from this list independently.
+- You may NAME only move #1 aloud (as the best alternative, when the played move wasn't #1). Moves #2, #3, and #4 are INTERNAL grounding only - do NOT name them in your output unless move #1 is unavailable.
+- Any claim you make about "the best move", "the engine prefers", "a better continuation", or "what you should have played" MUST be consistent with this ranked list. If your claim contradicts the list, DELETE the claim.
+- If you are tempted to say "the engine preferred X" and X is not in positions #1-#4, STOP and do not say it.`
     : '';
 
   // ── Checkmate-in-one detection (only mates, no checks) ──
@@ -798,8 +807,10 @@ ${d.evalCtx ? d.evalCtx + '\n' : ''}${persHint()}
 STRICT OUTPUT RULES:
 - If a CHECKMATE IN ONE is listed above, mention it first.
 - Do NOT mention centipawns, material numbers, or "pawns worth".
-- You may ONLY name the engine's #1 and #2 moves.
+- SILENT CONSIDERATION: You MUST read and consider ALL 4 ranked engine moves before writing. They are your factual ground truth against which every claim must be cross-checked.
+- You may ONLY name the engine's #1 move in your output. Moves #2, #3, and #4 are silent grounding only - do NOT mention them.
 - NEVER invent threats, plans, or tactical ideas not explicitly shown in the engine data above. If the engine lists a move, you may say the player (or opponent) will likely play that. Otherwise do not speculate.
+- If a claim you are about to write would contradict any of the top 4 engine moves, DELETE the claim.
 - If the pawn structure notes list doubled or tripled pawns, you may mention them as a positional factor.
 - CRITICAL: If it is the opponent's turn, NEVER say "you should play X" or "you can capture Y". Say what the OPPONENT is likely to do.
 
