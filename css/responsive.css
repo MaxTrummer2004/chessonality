@@ -1722,6 +1722,14 @@
     flex: 1 1 auto !important;
     min-height: 0 !important;
   }
+  /* Loading state: keep the coach panel filled so the layout doesn't
+     collapse and feel cramped while the explanation is still being
+     fetched. */
+  .wt-coach-body .wt-loading {
+    flex: 1 1 auto !important;
+    min-height: 60vh !important;
+    justify-content: center !important;
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -1848,7 +1856,8 @@
     border-radius: 0 !important;
     box-shadow: none !important;
     animation: none !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
     width: 100% !important;
     text-align: center !important;
     color: var(--text-dim) !important;
