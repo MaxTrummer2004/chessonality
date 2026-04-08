@@ -1155,6 +1155,33 @@
   }
   .hero-input { width: 100%; }
   .hero-plat-btn { padding: 10px 14px !important; font-size: 0.85rem !important; }
+
+  /* Center the username input page (game select + repertoire) and
+     make the Back button compact instead of stretching across the
+     full row. */
+  .hero-input-wrap {
+    align-items: center !important;
+    padding: 18px 14px 0 !important;
+    padding-top: max(4vh, 18px) !important;
+  }
+  .hero-input-wrap .gs-back {
+    align-self: flex-start !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 0 14px !important;
+    padding: 8px 14px !important;
+    font-size: 0.85rem !important;
+    flex: 0 0 auto !important;
+  }
+  .hero-input-zone,
+  .hero-list-zone {
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .hero-input-card {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -1570,30 +1597,11 @@
   #pageMain .move-annot { display: none !important; }
 }
 
-/* ─────────────────────────────────────────────
-   3) RESTORE "LEARN MORE" SCROLL HINT ON MOBILE
-      Earlier we hid it; user wants it back. Make
-      it sit just above the consent banner and
-      remain tappable.
-───────────────────────────────────────────── */
-@media (max-width: 860px) {
-  .landing-scroll-hint {
-    display: flex !important;
-    position: static !important;
-    transform: none !important;
-    margin: 18px auto 8px !important;
-    animation: none !important;
-    padding: 10px 18px !important;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border, rgba(255,255,255,0.12));
-    border-radius: 999px;
-  }
-  .landing-scroll-hint .lsh-label { font-size: 0.78rem; opacity: 0.95; }
-  .landing-scroll-hint .lsh-arrow { font-size: 1rem; }
-  /* No more bottom padding to make room for an absolute hint */
-  .landing-fold { padding-bottom: 24px !important; }
-  body.consent-dismissed .landing-fold { padding-bottom: 24px !important; }
-}
+/* (Removed older "restore Learn more pill" block — superseded
+    by the plain-text rule lower in this file. Two conflicting
+    @media blocks were causing the hint to either become a pill
+    next to Get Started OR a non-clickable label depending on
+    cascade order.) */
 
 /* ─────────────────────────────────────────────
    4) HIDE LANDING FEATURE BULLETS ON MOBILE
@@ -1851,7 +1859,7 @@
     z-index: 5 !important;
     transform: none !important;
     margin: 14px auto 0 !important;
-    padding: 8px 12px !important;
+    padding: 10px 12px !important;
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -1860,9 +1868,13 @@
     pointer-events: auto !important;
     cursor: pointer !important;
     width: 100% !important;
+    flex: 0 0 100% !important;
+    flex-basis: 100% !important;
+    order: 99 !important;
     text-align: center !important;
     color: var(--text-dim) !important;
     font-weight: 400 !important;
+    -webkit-tap-highlight-color: transparent;
   }
   .landing-scroll-hint .lsh-label {
     font-size: 0.75rem !important;
