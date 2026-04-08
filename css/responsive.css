@@ -1715,40 +1715,61 @@
 }
 
 /* ─────────────────────────────────────────────
-   3) ANALYSIS HEADER BAR — give it room to breathe
+   3) ANALYSIS HEADER BAR — single row, compact
 ───────────────────────────────────────────── */
 @media (max-width: 700px) {
   #pageMain header {
-    flex-wrap: wrap;
-    gap: 6px !important;
-    padding: 8px 10px !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
     min-height: auto !important;
     height: auto !important;
+    align-items: center !important;
   }
   #pageMain .header-brand {
-    flex: 1 1 100%;
-    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    gap: 4px !important;
     justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
   }
   #pageMain .header-brand h1 {
-    font-size: 0.85rem !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 !important;
   }
   #pageMain .back-btn {
-    padding: 6px 10px !important;
-    font-size: 0.72rem !important;
+    padding: 4px 7px !important;
+    font-size: 0.62rem !important;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   #pageMain .header-actions {
-    flex: 1 1 100%;
+    flex: 0 0 auto !important;
     justify-content: flex-end;
-    gap: 6px !important;
+    gap: 3px !important;
+    flex-wrap: nowrap !important;
   }
-  #pageMain .header-actions button {
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
+  #pageMain .header-actions button,
+  #pageMain .header-actions .icon-btn,
+  #pageMain .header-actions .profile-btn,
+  #pageMain .header-actions .profile-btn-lg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
     padding: 0 !important;
+    font-size: 0.78rem !important;
+    flex-shrink: 0;
   }
-  #pageMain .profile-btn-lg { width: 34px !important; height: 34px !important; }
+  #pageMain .header-actions svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  #pageMain .help-tour-icon { font-size: 0.7rem !important; }
 }
 
 /* ─────────────────────────────────────────────
