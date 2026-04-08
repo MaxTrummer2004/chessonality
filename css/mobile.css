@@ -121,7 +121,7 @@
 
   .mobile-tabbar {
     display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     position: fixed;
     left: 0; right: 0; bottom: 0;
     height: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -159,7 +159,6 @@
   .mtab[aria-current="page"],
   body[data-page="landing"]    .mtab-home,
   body[data-page="profile"]    .mtab-profile,
-  body[data-page="repertoire"] .mtab-repertoire,
   body[data-page="gameSelect"] .mtab-analyze {
     color: var(--accent, #e94560);
     font-weight: 700;
@@ -297,6 +296,41 @@
     display: inline-block;
     letter-spacing: 0.01em;
   }
+  /* The repertoire/coach back buttons embed an inner <span class="ins-back-arrow">←</span>
+     which has its own font-size: 1rem rule in coach.css — that survives the
+     parent's font-size: 0 hide trick and renders a stray arrow on the right
+     of the pill (after the injected "← Back"). Hide it on mobile. */
+  .ins-back-btn .ins-back-arrow,
+  .coach-back-btn .ins-back-arrow {
+    display: none !important;
+  }
+
+  /* Repertoire ("Your Ideal Openings") header: the back button + 64px
+     spacer layout pushes the centered title slightly off-axis. Absolutely
+     center the title block so it sits in the true middle of the header
+     regardless of the back button width. */
+  .rep-page-header { position: relative !important; }
+  .rep-page-header .ins-header-center {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    flex: 0 0 auto !important;
+    padding: 0 !important;
+    width: max-content;
+    max-width: calc(100% - 160px);
+    pointer-events: none;
+  }
+  .rep-page-header .ins-header-title {
+    text-align: center !important;
+    white-space: nowrap;
+  }
+  .rep-page-header .ins-header-sub {
+    text-align: center !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
 
   /* ════════════════════════════════════════════════════════════
@@ -313,7 +347,7 @@
      the spotlight; the Lion sample is anchored to the bottom and pushed
      ~1/3 below the fold so users have to scroll to see the rest. */
   .landing-fold {
-    min-height: 100dvh;
+    min-height: 0;
     display: flex !important;
     flex-direction: column;
     justify-content: flex-start;
@@ -333,14 +367,12 @@
   .landing-hero-text {
     align-items: stretch !important;
     width: 100%;
-    /* Slightly taller than the visible fold so the Lion sample,
-       pinned to the bottom, overflows ~100px (≈ 1/3 of its height)
-       below the viewport, leaving ~2/3 visible above the fold. */
-    min-height: calc(100dvh - 52px + 110px);
+    /* Shrink to content so there's no empty space below the Lion sample. */
+    min-height: 0 !important;
     display: flex !important;
     flex-direction: column !important;
     padding-top: 28px;
-    padding-bottom: 0 !important;
+    padding-bottom: 24px !important;
   }
   .landing-title-cro {
     font-size: 36px !important;
@@ -709,8 +741,12 @@
     width: 100% !important;
     max-width: none !important;
     border-radius: 24px 24px 0 0 !important;
-    padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
-    max-height: 88vh !important;
+    padding: 6px 20px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    /* Was 88vh — too short on many phones, the second ("Game analysis")
+       card was clipped below the fold. Use small-viewport units so we
+       still fit when the iOS toolbar is showing, and grab more height. */
+    max-height: 95svh !important;
+    max-height: 95dvh !important;
     overflow-y: auto;
     transform: translateY(0);
     animation: ce-sheet-in 280ms ease-out;
@@ -723,7 +759,7 @@
     background: var(--text-dim);
     opacity: 0.4;
     border-radius: 2px;
-    margin: 6px auto 14px;
+    margin: 4px auto 8px;
   }
   .choice-modal-close {
     top: 12px !important;
@@ -738,7 +774,7 @@
   .choice-modal-sub {
     font-size: 14px !important;
     text-align: center;
-    margin: 0 0 20px !important;
+    margin: 0 0 14px !important;
   }
   .choice-modal-cards {
     grid-template-columns: 1fr !important;
