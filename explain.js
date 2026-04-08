@@ -1089,20 +1089,33 @@ function handleExplain() {
 
   // On mobile, always scroll the explain output into the center of the
   // viewport so the user sees the loading state / result without having
-  // to manually scroll. Runs for both cache-hit and fresh-fetch paths.
+  // to manually scroll. Uses an absolute window.scrollTo with computed
+  // top so iOS Safari honors it from a fixed-position click context.
   const _scrollExplainIntoView = () => {
     if (window.innerWidth > 860) return;
-    const el =
-      document.getElementById('aicOutput') ||
-      document.getElementById('aiCoachPanel');
-    if (!el) return;
-    requestAnimationFrame(() => {
+    const doScroll = () => {
+      const el =
+        document.getElementById('aicOutput') ||
+        document.getElementById('aiCoachPanel');
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      // Target Y so the element top sits ~25% from top of viewport
+      const targetY = rect.top + window.scrollY - vh * 0.25;
+      try {
+        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+      } catch (_) {
+        window.scrollTo(0, Math.max(0, targetY));
+      }
+      // Fallback: also call scrollIntoView in case scrollTo is blocked
       try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-      // Retry once after content renders so the final card is centered too
-      setTimeout(() => {
-        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-      }, 350);
-    });
+    };
+    // Run immediately, then again after layout/content settles so the
+    // final rendered card lands centered (the loading spinner is shorter
+    // than the final slide deck).
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 120);
+    setTimeout(doScroll, 450);
   };
 
   const deckKey = _explainKey('deck', currentPly);

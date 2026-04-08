@@ -420,9 +420,8 @@
   .mobile-lion-sample {
     display: block !important;
     width: 100%;
-    /* Large top margin pushes the sample card below the fold so the
-       title + CTA own the above-the-fold real estate. */
-    margin: 96px 0 0 !important;
+    /* Tightened gap above sample so it sits closer to the headline text. */
+    margin: 14px 0 0 !important;
     padding: 18px 18px 16px;
     background:
       radial-gradient(120% 140% at 0% 0%, rgba(233,69,96,0.14) 0%, rgba(233,69,96,0) 60%),
@@ -1136,11 +1135,16 @@
   }
   .btn-explain {
     width: 100% !important;
-    min-height: 52px !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    border-radius: 12px !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    padding: 8px 18px !important;
+    line-height: 1 !important;
   }
+  /* Make sure no pseudo-element renders an emoji on the mobile button */
+  .btn-explain::before { content: none !important; display: none !important; }
   .aic-output {
     font-size: 15px !important;
     line-height: 1.65 !important;
