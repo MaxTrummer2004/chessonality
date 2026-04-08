@@ -272,7 +272,7 @@
   .landing-hero-text {
     align-items: stretch !important;
     width: 100%;
-    padding-top: 12vh; /* push CTA into thumb-zone */
+    padding-top: 16px; /* tight — the Lion sample below the counter fills the fold */
   }
   .landing-title-cro {
     font-size: 28px !important;
@@ -316,6 +316,97 @@
     opacity: 0.7 !important;
   }
   .cro-counter-num { font-size: 13px !important; }
+
+  /* Sample Lion profile card — fills the gap below the counter and
+     gives visitors a preview of what they'll get. */
+  .mobile-lion-sample {
+    display: block !important;
+    width: 100%;
+    margin: 20px 0 4px;
+    padding: 18px 18px 16px;
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(233,69,96,0.18) 0%, rgba(233,69,96,0) 60%),
+      var(--surface, rgba(255,255,255,0.04));
+    border: 1px solid rgba(233,69,96,0.35);
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  }
+  .mls-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .mls-emoji {
+    font-size: 38px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .mls-meta { min-width: 0; flex: 1; }
+  .mls-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-dim);
+    opacity: 0.8;
+  }
+  .mls-name {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+  .mls-tag {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .mls-traits {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mls-trait { width: 100%; }
+  .mls-trait-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .mls-trait-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .mls-trait-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    opacity: 0.85;
+  }
+  .mls-trait-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .mls-trait-fill {
+    height: 100%;
+    width: var(--w, 0%);
+    background: linear-gradient(90deg, #7f1d1d 0%, #e94560 60%, #ff6b6b 100%);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(233,69,96,0.45);
+    animation: ce-mls-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes ce-mls-grow {
+    from { width: 0%; }
+    to   { width: var(--w, 0%); }
+  }
 
   /* Hide desktop-only sections */
   .ea-banner,
@@ -1175,13 +1266,17 @@
     12. ANIMATIONS & ACTIVE STATES
      ════════════════════════════════════════════════════════════ */
 
-  /* Page entrance fade-up — applied via .page-enter (already exists) */
+  /* Page entrance fade — opacity only.
+     IMPORTANT: do NOT animate transform here. With animation-fill-mode: both,
+     a `transform: translateY(0)` end state makes .app-page a containing block
+     for fixed descendants — which breaks the choice-modal overlay (it would
+     position relative to the long landing page instead of the viewport). */
   .app-page.page-enter {
     animation: ce-page-fade 300ms ease-out 40ms both;
   }
   @keyframes ce-page-fade {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   /* Bottom-sheet entrance */
