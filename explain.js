@@ -1680,6 +1680,16 @@ function launchWalkthrough() {
   overlay.classList.remove('wt-fadeout');
   requestAnimationFrame(() => overlay.classList.add('wt-visible'));
 
+  // iOS Safari: nudge the page so the address bar / bottom toolbar
+  // collapse, giving the walkthrough the full viewport instead of
+  // the cramped "small viewport" with browser chrome visible.
+  if (window.innerWidth <= 860) {
+    try {
+      window.scrollTo(0, 1);
+      setTimeout(() => window.scrollTo(0, 1), 50);
+    } catch (e) {}
+  }
+
   _wtRenderStep(0);
 }
 

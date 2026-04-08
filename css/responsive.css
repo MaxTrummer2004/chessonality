@@ -1660,7 +1660,12 @@
   .wt-overlay { padding: 0; align-items: stretch; }
   .wt-layout {
     width: 100vw !important;
+    /* Use small-viewport height so we always fit even when iOS Safari
+       has the address bar + bottom toolbar visible. dvh as fallback
+       for browsers that adjust dynamically. */
+    height: 100svh !important;
     height: 100dvh !important;
+    max-height: 100svh !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
     border: none !important;
@@ -1668,13 +1673,13 @@
   }
   .wt-board-spotlight {
     flex: 0 0 auto !important;
-    padding: 10px !important;
+    padding: 6px !important;
   }
-  .wt-board-clone { width: min(220px, 56vw) !important; }
+  .wt-board-clone { width: min(180px, 48vw) !important; }
   .wt-coach-panel {
     flex: 1 1 0 !important;
     min-height: 0;
-    padding: 12px 14px 12px !important;
+    padding: 8px 12px 8px !important;
     overflow: hidden;
   }
   .wt-coach-body {
