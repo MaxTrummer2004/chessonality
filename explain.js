@@ -122,8 +122,16 @@ function setAicOutput(html, isDim, placeholder) {
     if (el) { el.style.display = 'none'; el.innerHTML = ''; }
     if (hint) { hint.style.display = ''; hint.textContent = placeholder || ''; }
   } else {
+    const wasHidden = el && el.style.display === 'none';
     if (el) { el.style.display = ''; el.innerHTML = html; }
     if (hint) hint.style.display = 'none';
+    // When output first becomes visible, scroll it into the center of the viewport
+    // so the user sees the freshly generated explanation without manual scrolling.
+    if (el && wasHidden) {
+      requestAnimationFrame(() => {
+        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      });
+    }
   }
 }
 
