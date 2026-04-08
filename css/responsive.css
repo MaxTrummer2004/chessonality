@@ -1752,24 +1752,42 @@
 }
 
 /* ─────────────────────────────────────────────
-   4) "LEARN MORE" CLICKABLE — promote above
-      consent banner (z-index 300) so it can be
-      tapped, and ensure it's not obscured.
+   4) "LEARN MORE" — plain text label below
+      Get Started, not a button. No scroll action,
+      just a subtle hint.
 ───────────────────────────────────────────── */
 @media (max-width: 860px) {
   .landing-scroll-hint {
-    position: relative !important;
-    z-index: 320 !important;
-    pointer-events: auto !important;
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    margin: 14px auto 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    pointer-events: none !important;
+    width: 100% !important;
+    text-align: center !important;
+    color: var(--text-dim) !important;
+    font-weight: 400 !important;
   }
-  /* Keep extra room at bottom of fold so the consent banner
-     doesn't physically overlap the hint pill */
-  .landing-fold {
-    padding-bottom: 120px !important;
+  .landing-scroll-hint .lsh-label {
+    font-size: 0.75rem !important;
+    opacity: 0.6 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 400 !important;
   }
-  body.consent-dismissed .landing-fold {
-    padding-bottom: 32px !important;
+  .landing-scroll-hint .lsh-arrow {
+    font-size: 0.85rem !important;
+    opacity: 0.5 !important;
+    margin-left: 4px;
   }
+  .landing-fold { padding-bottom: 120px !important; }
+  body.consent-dismissed .landing-fold { padding-bottom: 32px !important; }
 }
 
 /* ─────────────────────────────────────────────
