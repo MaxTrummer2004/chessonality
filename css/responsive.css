@@ -583,9 +583,19 @@
 
 }
 @media (max-width: 480px) {
-  .showcase-section { padding: 32px 16px 28px; }
-  .showcase-heading { font-size: 1.05rem; }
-  .social-proof-section { padding: 24px 16px 40px; }
+  .showcase-section { padding: 14px 16px 14px; }
+  .showcase-heading { font-size: 1.05rem; margin-bottom: 14px; }
+  .social-proof-section { padding: 10px 16px 32px; }
+  .social-proof-counter { margin-bottom: 18px; }
+}
+/* Tighten the gap between the personality carousel and the
+   "players discovered their style" counter on all phone sizes. */
+@media (max-width: 860px) {
+  .landing-fold { padding-bottom: 18px !important; }
+  .showcase-section { padding-top: 16px !important; padding-bottom: 14px !important; }
+  .showcase-heading { margin-bottom: 14px !important; }
+  .social-proof-section { padding-top: 10px !important; }
+  .social-proof-counter { margin-bottom: 18px !important; }
 }
 
 /* ══════════════════════════════════════════════
@@ -2339,38 +2349,36 @@
     padding: 0 !important;
   }
 
-  /* EXPLAIN button: redesigned for mobile — prominent gradient pill with
-     icon, strong shadow, and clear affordance. Full width, tall tap area. */
+  /* EXPLAIN button: compact gradient pill for mobile — no icon,
+     ~2/3 of the original height for a lighter footprint. */
   #pageMain .btn-explain {
     width: 100% !important;
-    min-height: 58px !important;
-    font-size: 1.1rem !important;
+    min-height: 40px !important;
+    font-size: 0.95rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.02em !important;
-    padding: 16px 20px !important;
-    margin: 8px 0 0 !important;
-    border-radius: 14px !important;
+    padding: 10px 18px !important;
+    margin: 6px 0 0 !important;
+    border-radius: 10px !important;
     border: none !important;
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%) !important;
     color: #fff !important;
     box-shadow:
-      0 4px 14px rgba(124, 58, 237, 0.45),
-      0 2px 6px rgba(0, 0, 0, 0.25),
+      0 3px 10px rgba(124, 58, 237, 0.40),
+      0 1px 4px rgba(0, 0, 0, 0.22),
       inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
     text-transform: uppercase !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
     position: relative !important;
     overflow: hidden !important;
     transition: transform 0.12s ease, box-shadow 0.12s ease !important;
     animation: explainPulse 2.4s ease-in-out infinite !important;
   }
   #pageMain .btn-explain::before {
-    content: "✨" !important;
-    font-size: 1.2rem !important;
-    display: inline-block !important;
+    content: none !important;
   }
   #pageMain .btn-explain:active:not(:disabled) {
     transform: scale(0.97) !important;
