@@ -1773,6 +1773,19 @@
 }
 
 /* ─────────────────────────────────────────────
+   PROFILE PAGE — hide Personality Breakdown
+   section on phones (user request)
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  #pageProfile .prof-section-breakdown {
+    display: none !important;
+  }
+  #pageProfile .prof-top-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
    4) "LEARN MORE" — plain text label below
       Get Started, not a button. No scroll action,
       just a subtle hint.
