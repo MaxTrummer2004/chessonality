@@ -510,6 +510,9 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   color: #e94560;
   margin-bottom: 2px;
 }
+[data-theme="light"] .showcase-card-title {
+  color: #b81d3a;
+}
 .showcase-card-sub {
   font-size: 0.82rem;
   color: var(--muted);
@@ -1476,6 +1479,12 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   font-weight: 800;
   line-height: 1.05;
   background: linear-gradient(135deg, #fff 20%, #e94560 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-theme="light"] .hv-persona-name {
+  background: linear-gradient(135deg, #14142a 20%, #b81d3a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
