@@ -308,9 +308,12 @@
   .lt-mobile, .ls-mobile { display: inline !important; }
   .cta-mobile { display: inline !important; }
 
-  /* Above-the-fold: pure vertical stack, no hero illustration */
+  /* Above-the-fold: pure vertical stack, no hero illustration.
+     Landing-fold matches the viewport so the title→counter block gets
+     the spotlight; the Lion sample is anchored to the bottom and pushed
+     ~1/3 below the fold so users have to scroll to see the rest. */
   .landing-fold {
-    min-height: calc(100vh - 52px - 56px);
+    min-height: 100dvh;
     display: flex !important;
     flex-direction: column;
     justify-content: flex-start;
@@ -322,31 +325,40 @@
     gap: 0 !important;
     padding: 0 20px !important;
     max-width: none !important;
+    flex: 1 1 auto;
+    min-height: 0;
   }
   .hero-visual { display: none !important; }
 
   .landing-hero-text {
     align-items: stretch !important;
     width: 100%;
-    padding-top: 16px; /* tight — the Lion sample below the counter fills the fold */
+    /* Slightly taller than the visible fold so the Lion sample,
+       pinned to the bottom, overflows ~100px (≈ 1/3 of its height)
+       below the viewport, leaving ~2/3 visible above the fold. */
+    min-height: calc(100dvh - 52px + 110px);
+    display: flex !important;
+    flex-direction: column !important;
+    padding-top: 28px;
+    padding-bottom: 0 !important;
   }
   .landing-title-cro {
-    font-size: 28px !important;
-    font-weight: 500 !important;
-    line-height: 1.2 !important;
-    letter-spacing: -0.02em !important;
+    font-size: 36px !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.025em !important;
     text-align: center !important;
-    margin: 0 0 12px !important;
+    margin: 0 0 18px !important;
   }
   .landing-title-cro .lt-mobile {
     background: none;
     -webkit-text-fill-color: currentColor;
   }
   .landing-sub-cro {
-    font-size: 15px !important;
-    line-height: 1.65 !important;
+    font-size: 17px !important;
+    line-height: 1.55 !important;
     text-align: center !important;
-    margin: 0 0 24px !important;
+    margin: 0 0 32px !important;
     max-width: none !important;
     color: var(--text-dim);
   }
@@ -356,29 +368,30 @@
   #heroCtaBtn {
     align-self: stretch !important;
     width: 100% !important;
-    min-height: 52px !important;
-    font-size: 16px !important;
+    min-height: 56px !important;
+    font-size: 17px !important;
     font-weight: 600 !important;
     border-radius: 14px !important;
     margin-top: 4px !important;
-    padding: 14px 20px !important;
+    padding: 16px 20px !important;
   }
 
   /* Counter under CTA */
   .cro-counter {
     justify-content: center !important;
-    margin: 16px 0 0 !important;
-    font-size: 13px !important;
-    opacity: 0.7 !important;
+    margin: 20px 0 0 !important;
+    font-size: 14px !important;
+    opacity: 0.75 !important;
   }
-  .cro-counter-num { font-size: 13px !important; }
+  .cro-counter-num { font-size: 14px !important; }
 
-  /* Sample Lion profile card — fills the gap below the counter and
-     gives visitors a preview of what they'll get. */
+  /* Sample Lion profile card — pinned to the bottom of the hero text
+     area, which is taller than the viewport, so the card peeks ~2/3
+     above the fold and the rest is reached via scroll. */
   .mobile-lion-sample {
     display: block !important;
     width: 100%;
-    margin: 20px 0 4px;
+    margin: auto 0 0 !important;  /* push to bottom of flex column */
     padding: 18px 18px 16px;
     background:
       radial-gradient(120% 140% at 0% 0%, rgba(233,69,96,0.18) 0%, rgba(233,69,96,0) 60%),

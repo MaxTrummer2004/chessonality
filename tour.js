@@ -290,12 +290,14 @@ function closeTour() {
 }
 
 function checkAnalysisTour() {
+  if (window.innerWidth <= 860) return;
   if (!localStorage.getItem('ce-analysis-toured')) {
     setTimeout(() => startTour(ANALYSIS_TOUR_STEPS, 'ce-analysis-toured'), 800);
   }
 }
 
 function checkProfileTour() {
+  if (window.innerWidth <= 860) return;
   if (!localStorage.getItem('ce-profile-toured')) {
     setTimeout(() => startTour(PROFILE_TOUR_STEPS, 'ce-profile-toured'), 600);
   }
