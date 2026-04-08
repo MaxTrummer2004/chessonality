@@ -1308,6 +1308,193 @@
     transform: scale(0.99);
     transition: transform 80ms ease;
   }
+
+
+  /* ════════════════════════════════════════════════════════════
+    13. FIXES — user feedback round
+     ════════════════════════════════════════════════════════════ */
+
+  /* ── Profile primary card: center the personality element ──
+     Desktop puts the card in a 280px grid track, so the inner content
+     looked centered. On mobile we collapse to a single column and need
+     to explicitly stack + center the inner content. */
+  .prof-primary {
+    padding: 0 !important;          /* avoid doubled padding with inner */
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .prof-primary-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 28px 20px !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+  .prof-primary-sub,
+  .prof-primary-emoji,
+  .prof-primary-name,
+  .prof-primary-tagline {
+    width: 100% !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .prof-primary-emoji {
+    margin: 0 0 12px !important;
+  }
+
+
+  /* ── Analysis board: kill the dark borders around the board ──
+     layout.css adds a 2px rgba(0,0,0,0.3) ring and analysis.css adds
+     another 2px rgba(255,255,255,0.08) ring. On a small mobile board
+     these read as a thick dark frame. Drop them on mobile. */
+  #pageMain .board,
+  #pageMain .board.board {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+  }
+  #pageMain .board-wrapper {
+    filter: none !important;
+    box-shadow: none !important;
+  }
+  #pageMain .square {
+    border: 0 !important;
+    outline: 0 !important;
+  }
+
+
+  /* ── Game Walkthrough overlay (.wt-overlay) ──
+     Existing responsive.css 1680 caps the board at min(180px, 48vw)
+     which is too small AND combined with the column-flex layout often
+     renders the squares non-square. Force a fixed square via explicit
+     width AND height (don't rely on aspect-ratio — Safari sometimes
+     ignores it inside grids). */
+  .wt-overlay .wt-board-spotlight {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    padding: 14px 16px 8px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .wt-overlay .wt-board-clone {
+    width: min(320px, 78vw) !important;
+    height: min(320px, 78vw) !important;
+    aspect-ratio: 1 / 1 !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+  }
+  .wt-overlay .wt-mini-board {
+    width: 100% !important;
+    height: 100% !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows:    repeat(8, 1fr) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .wt-overlay .wt-mini-board .square {
+    width: auto !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+  .wt-overlay .wt-mini-board .piece-img {
+    width: 88% !important;
+    height: 88% !important;
+    object-fit: contain !important;
+  }
+  .wt-overlay .wt-board-nav { margin-top: 8px !important; }
+  .wt-overlay .wt-move-label { font-size: 14px !important; }
+
+  /* Walkthrough coach panel: roomier move analysis */
+  .wt-overlay .wt-coach-panel {
+    padding: 16px 20px 12px !important;
+  }
+  .wt-overlay .wt-coach-header {
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .wt-overlay .wt-coach-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 22px !important;
+    border-radius: 12px !important;
+  }
+  .wt-overlay .wt-coach-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+  }
+  .wt-overlay .wt-close {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+  .wt-overlay .wt-coach-body {
+    padding: 4px 2px 12px 2px !important;
+  }
+  .wt-overlay .wt-coach-body .aic-sentence,
+  .wt-overlay .wt-coach-body .aic-numbered-card,
+  .wt-overlay .wt-coach-body .aic-bullet-card {
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+    padding: 14px 16px !important;
+    margin-bottom: 10px !important;
+    border-radius: 12px !important;
+  }
+  .wt-overlay .wt-slide-header {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    padding: 0 0 12px !important;
+    margin-bottom: 14px !important;
+  }
+  .wt-overlay .wt-slide-body {
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+  }
+  .wt-overlay .wt-thought-question {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 12px !important;
+  }
+  .wt-overlay .wt-thought-options {
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+  .wt-overlay .wt-thought-btn {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+    border-radius: 10px !important;
+  }
+  .wt-overlay .wt-thought-ai-reply {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  .wt-overlay .wt-coach-footer {
+    padding-top: 14px !important;
+    margin-top: 14px !important;
+    gap: 10px !important;
+    flex-wrap: wrap;
+  }
+  .wt-overlay .wt-btn-back,
+  .wt-overlay .wt-btn-next {
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+    border-radius: 10px !important;
+  }
+  .wt-overlay .wt-coach-badge .badge {
+    font-size: 12px !important;
+    padding: 5px 12px !important;
+  }
 }
 
 
