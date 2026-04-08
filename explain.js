@@ -1087,11 +1087,31 @@ function handleExplain() {
 
   _activeAnalysisView = 'move'; // compat
 
+  // On mobile, always scroll the explain output into the center of the
+  // viewport so the user sees the loading state / result without having
+  // to manually scroll. Runs for both cache-hit and fresh-fetch paths.
+  const _scrollExplainIntoView = () => {
+    if (window.innerWidth > 860) return;
+    const el =
+      document.getElementById('aicOutput') ||
+      document.getElementById('aiCoachPanel');
+    if (!el) return;
+    requestAnimationFrame(() => {
+      try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      // Retry once after content renders so the final card is centered too
+      setTimeout(() => {
+        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      }, 350);
+    });
+  };
+
   const deckKey = _explainKey('deck', currentPly);
   if (_explainCache[deckKey]) {
     updateExplainButtons();
+    _scrollExplainIntoView();
     return;
   }
+  _scrollExplainIntoView();
   explainMoveAndAsk();
 }
 
@@ -1128,6 +1148,11 @@ async function explainMoveAndAsk() {
   if (output) {
     output.style.display = '';
     output.innerHTML = '<div class="aic-loading"><span class="spinner"></span> Analyzing\u2026</div>';
+    // Scroll the explain box into the center of the viewport immediately on click,
+    // so the user sees the loading state (and then the result) without manual scrolling.
+    requestAnimationFrame(() => {
+      try { output.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    });
   }
 
   // Fetch engine top moves for the position BEFORE this move (what should have been played)
