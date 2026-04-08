@@ -84,18 +84,12 @@ function renderBoard() {
       if (cell) {
         const img = pieceImg(cell.color, cell.type);
         // Thin personality-colored outline on player's own pieces
-        if (cell.color === playerColor && currentPersonality) {
+        // (skipped on phones — iOS Safari renders the multi-drop-shadow
+        //  filter as a silhouette only, hiding the white piece itself)
+        if (cell.color === playerColor && currentPersonality && window.innerWidth > 860) {
           img.classList.add('pers-piece');
         }
         sq.appendChild(img);
-        // Mobile fallback: Unicode glyph rendered via CSS ::after
-        // (lichess SVGs sometimes don't display in mobile browsers)
-        const GLYPH = {
-          w: { k:'\u2654', q:'\u2655', r:'\u2656', b:'\u2657', n:'\u2658', p:'\u2659' },
-          b: { k:'\u265A', q:'\u265B', r:'\u265C', b:'\u265D', n:'\u265E', p:'\u265F' },
-        };
-        sq.setAttribute('data-piece', GLYPH[cell.color][cell.type] || '');
-        sq.setAttribute('data-pcolor', cell.color);
       }
 
       // Book icon on destination square
