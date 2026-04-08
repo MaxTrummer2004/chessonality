@@ -1696,6 +1696,27 @@
   .wt-coach-title { font-size: 1rem; }
   .wt-slide-header { font-size: 1.05rem !important; padding-bottom: 10px; margin-bottom: 12px; }
   .wt-slide-body { font-size: 0.95rem !important; line-height: 1.6 !important; }
+
+  /* Intro slide: hide the starting-position board so the intro card
+     can span the full screen (the board adds nothing to "Let's walk
+     through your game"). */
+  .wt-overlay.wt-step-intro .wt-board-spotlight { display: none !important; }
+  .wt-overlay.wt-step-intro .wt-coach-panel { flex: 1 1 100% !important; }
+
+  /* Slide deck: ensure the deck itself fills the coach body so the
+     footer (with progress dots) sits at a consistent position across
+     slides. Without this, the overview slide has shorter content and
+     the footer drifts down compared to structure / best move. */
+  .wt-coach-body .wt-slide-deck {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 100% !important;
+  }
+  .wt-coach-body .wt-slide {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
 }
 
 /* ─────────────────────────────────────────────

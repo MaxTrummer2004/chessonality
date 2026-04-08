@@ -1835,6 +1835,13 @@ function _wtRenderStep(idx) {
   const pers = currentPersonality?.primary;
   avatar.textContent = pers?.emoji || '\u2654';
 
+  // Tag overlay with current step type so CSS can adjust per-slide
+  const _wtOv = document.getElementById('wtOverlay');
+  if (_wtOv) {
+    _wtOv.classList.remove('wt-step-intro', 'wt-step-outro', 'wt-step-move');
+    _wtOv.classList.add('wt-step-' + step.type);
+  }
+
   if (step.type === 'intro') {
     _wtCloneBoard(0);
     title.textContent = 'Game Walkthrough';
