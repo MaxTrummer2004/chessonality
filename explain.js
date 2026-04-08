@@ -1080,6 +1080,54 @@ function updateExplainButtons() {
 }
 
 // Single entry point - "Explain" button click (shows full 3-slide deck)
+// Mobile scroll helper — bulletproof version.
+// Uses the AI coach panel (always in flow, stable position) as the scroll
+// target instead of the output (which can be display:none at click time).
+// Writes to all three scroll roots (window, documentElement, body) with
+// instant (non-smooth) scrolls because Android Chrome drops smooth scrolls
+// that arrive during an already-running animation or from a fixed-position
+// click context. Retries at multiple intervals to land after each layout
+// change (btnGroup hide → loading spinner → final slide deck).
+function _scrollToExplainTarget() {
+  if (window.innerWidth > 860) return;
+  const getTarget = () => {
+    const out = document.getElementById('aicOutput');
+    if (out && out.offsetHeight > 0) return out;
+    return document.getElementById('aiCoachPanel')
+        || document.querySelector('.moves-right')
+        || document.querySelector('.moves-panel');
+  };
+  const doScroll = () => {
+    const el = getTarget();
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const currentY = window.pageYOffset
+      || document.documentElement.scrollTop
+      || document.body.scrollTop
+      || 0;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    // Put target ~20% from top of viewport
+    const targetY = Math.max(0, rect.top + currentY - vh * 0.2);
+    // Instant scroll on all roots — most reliable on Android Chrome
+    try { window.scrollTo(0, targetY); } catch (_) {}
+    try { document.documentElement.scrollTop = targetY; } catch (_) {}
+    try { document.body.scrollTop = targetY; } catch (_) {}
+    // Also nudge the scrolling element (respects html vs body quirks)
+    try {
+      if (document.scrollingElement) {
+        document.scrollingElement.scrollTop = targetY;
+      }
+    } catch (_) {}
+  };
+  // Fire immediately and on several timers to catch every layout change
+  doScroll();
+  setTimeout(doScroll, 30);
+  setTimeout(doScroll, 120);
+  setTimeout(doScroll, 280);
+  setTimeout(doScroll, 550);
+  setTimeout(doScroll, 900);
+}
+
 function handleExplain() {
   // No explain for free moves - the engine bar is enough
   if (liveBoard.userMoves.length > 0) return;
@@ -1087,45 +1135,14 @@ function handleExplain() {
 
   _activeAnalysisView = 'move'; // compat
 
-  // On mobile, always scroll the explain output into the center of the
-  // viewport so the user sees the loading state / result without having
-  // to manually scroll. Uses an absolute window.scrollTo with computed
-  // top so iOS Safari honors it from a fixed-position click context.
-  const _scrollExplainIntoView = () => {
-    if (window.innerWidth > 860) return;
-    const doScroll = () => {
-      const el =
-        document.getElementById('aicOutput') ||
-        document.getElementById('aiCoachPanel');
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      // Target Y so the element top sits ~25% from top of viewport
-      const targetY = rect.top + window.scrollY - vh * 0.25;
-      try {
-        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-      } catch (_) {
-        window.scrollTo(0, Math.max(0, targetY));
-      }
-      // Fallback: also call scrollIntoView in case scrollTo is blocked
-      try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-    };
-    // Run immediately, then again after layout/content settles so the
-    // final rendered card lands centered (the loading spinner is shorter
-    // than the final slide deck).
-    requestAnimationFrame(doScroll);
-    setTimeout(doScroll, 120);
-    setTimeout(doScroll, 450);
-  };
-
   const deckKey = _explainKey('deck', currentPly);
   if (_explainCache[deckKey]) {
     updateExplainButtons();
-    _scrollExplainIntoView();
+    _scrollToExplainTarget();
     return;
   }
-  _scrollExplainIntoView();
   explainMoveAndAsk();
+  _scrollToExplainTarget();
 }
 
 // Keep old name as alias for any external callers
