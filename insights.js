@@ -569,20 +569,27 @@ function markdownToHtml(md) {
 }
 
 // ── AI Coach: persistence helpers ──
+// NOTE: cache key is suffixed with a version. Bump this when the
+// prompt or resource list changes so old cached plans are discarded.
+const _COACH_CACHE_STORAGE_KEY = 'ce-coach-cache-v2';
 function _loadCoachCacheFromStorage() {
   try {
-    const raw = localStorage.getItem('ce-coach-cache');
+    const raw = localStorage.getItem(_COACH_CACHE_STORAGE_KEY);
     if (raw) return JSON.parse(raw);
+    // Drop the legacy cache so users automatically get the new plan
+    // with whitelisted study links instead of the old YouTube search.
+    localStorage.removeItem('ce-coach-cache');
   } catch {}
   return { key: null, html: null, tasks: null };
 }
 function _saveCoachCacheToStorage() {
   try {
-    localStorage.setItem('ce-coach-cache', JSON.stringify(_coachCache));
+    localStorage.setItem(_COACH_CACHE_STORAGE_KEY, JSON.stringify(_coachCache));
   } catch {}
 }
 function invalidateCoachPlan() {
   _coachCache = { key: null, html: null, tasks: null };
+  localStorage.removeItem(_COACH_CACHE_STORAGE_KEY);
   localStorage.removeItem('ce-coach-cache');
 }
 
@@ -657,6 +664,29 @@ async function _generateCoachAdviceShared(content, btn) {
     ? 'https://www.chess.com/puzzles'
     : 'https://lichess.org/training';
 
+  // ── Whitelisted study resources ──
+  // Task 2 must pick exactly ONE of these (Claude is not allowed to invent URLs).
+  const STUDY_RESOURCES = [
+    { id: 'tactical-targets', title: 'Tactical Targets in Chess',
+      url: 'https://chessfox.com/tactical-targets-in-chess/',
+      topic: 'tactical targets, weak squares, undefended pieces' },
+    { id: 'chess-elements',   title: 'The Chess Elements (why pieces have the values they have)',
+      url: 'https://www.youtube.com/watch?v=L2CK5FKC5Zs&t=2468s',
+      topic: 'piece values, material, fundamental elements of chess' },
+    { id: 'chess-weaknesses', title: 'Chess Weaknesses',
+      url: 'https://www.youtube.com/watch?v=KZNUV2wiBAc',
+      topic: 'pawn weaknesses, weak squares, structural weaknesses' },
+    { id: 'tactics-u1800',    title: 'Complete Chess Tactics Guide For Under-1800 Rated Players',
+      url: 'https://www.youtube.com/watch?v=fN3xjmw6wzY',
+      topic: 'tactics fundamentals, pattern recognition, calculation' },
+    { id: 'positional',       title: 'Positional Chess',
+      url: 'https://www.youtube.com/watch?v=WGeQ8pSmSiE',
+      topic: 'positional play, planning, strategic thinking' },
+  ];
+  const studyMenu = STUDY_RESOURCES
+    .map(r => `[${r.id}] "${r.title}" — covers ${r.topic}`)
+    .join('\n');
+
   const prompt = `You are a bold chess personality coach. A player analyzed ${count} game${count !== 1 ? 's' : ''}.
 
 Player data:
@@ -681,7 +711,9 @@ One sentence on what to focus on. No links needed.
 
 ## Task 2: Study a Key Concept
 TASK: Study [very specific concept] | [why it addresses their gap]
-Then on a new line write "SEARCH: [YouTube channel name] [specific topic]" (e.g. "SEARCH: Daniel Naroditsky rook endgames"). One sentence only.
+Then pick EXACTLY ONE resource from this whitelist that best matches the player's weakness:
+${studyMenu}
+On a new line write "RESOURCE: [id]" using the bracketed id of your chosen resource. Do NOT invent URLs, do NOT write "SEARCH:", and do NOT recommend any other resource. One sentence on what to focus on while watching/reading.
 
 ## Task 3: Play Focused Games
 TASK: Play [N] games at [time control] | [why this time control]
@@ -736,16 +768,22 @@ Then exactly 2 famous master games. Each on its own line: "GAME: [White] vs [Bla
         }
       }
     }
-    // Parse SEARCH: line for Task 2 (study) - build YouTube link
-    const searchRx = /SEARCH:\s*(.+)/;
-    const searchMatch = searchRx.exec(raw);
-    if (searchMatch) {
-      const studyTask = tasks.find(t => t.type === 'study');
-      if (studyTask) {
-        const q = searchMatch[1].trim();
-        studyTask.studyLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
-        studyTask.studyQuery = q;
+    // Parse RESOURCE: line for Task 2 (study) - look up the chosen
+    // resource from the whitelist. Claude is restricted to picking
+    // exactly one entry; if it picks nothing valid, fall back to the
+    // first whitelist entry rather than exposing a search query URL.
+    const resourceRx = /RESOURCE:\s*\[?([a-z0-9-]+)\]?/i;
+    const resourceMatch = resourceRx.exec(raw);
+    const studyTask = tasks.find(t => t.type === 'study');
+    if (studyTask) {
+      let chosen = null;
+      if (resourceMatch) {
+        const wantedId = resourceMatch[1].trim().toLowerCase();
+        chosen = STUDY_RESOURCES.find(r => r.id === wantedId);
       }
+      if (!chosen) chosen = STUDY_RESOURCES[0];
+      studyTask.studyLink = chosen.url;
+      studyTask.studyQuery = chosen.title;
     }
     _coachTasks = tasks;
 
@@ -900,8 +938,10 @@ function _buildSingleTaskCard(t, idx) {
     </div>`;
   }
   if (t.studyLink) {
+    const isYt = /youtube\.com|youtu\.be/i.test(t.studyLink);
+    const verb = isYt ? 'Watch on YouTube' : 'Read article';
     extra += `<div class="coach-task-study">
-      <a class="coach-task-study-link" href="${_escHtml(t.studyLink)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Watch on YouTube: ${_escHtml(t.studyQuery || 'Study video')}</a>
+      <a class="coach-task-study-link" href="${_escHtml(t.studyLink)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${verb}: ${_escHtml(t.studyQuery || 'Study resource')}</a>
     </div>`;
   }
   if (t.games && t.games.length) {
@@ -978,10 +1018,12 @@ function _buildTaskPlanHtml(tasks) {
               ${t.questions.map(q => `<div class="coach-task-q">${_escHtml(q)}</div>`).join('')}
             </div>`;
           }
-          // Task 2: show YouTube study link
+          // Task 2: show study link (whitelist resource — YouTube or article)
           if (t.studyLink) {
+            const isYt = /youtube\.com|youtu\.be/i.test(t.studyLink);
+            const verb = isYt ? '&#9654; Watch on YouTube' : '&#9654; Read article';
             extra += `<div class="coach-task-study">
-              <a class="coach-task-study-link" href="${_escHtml(t.studyLink)}" target="_blank" rel="noopener">&#9654; Watch on YouTube: ${_escHtml(t.studyQuery || 'Study video')}</a>
+              <a class="coach-task-study-link" href="${_escHtml(t.studyLink)}" target="_blank" rel="noopener">${verb}: ${_escHtml(t.studyQuery || 'Study resource')}</a>
             </div>`;
           }
           // Task 4: show master games
