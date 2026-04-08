@@ -1888,6 +1888,81 @@
 }
 
 /* ════════════════════════════════════════════════════════════════
+   ░░░░░░  BOARD FIX v3 — APRIL 8 2026  ░░░░░░
+   Pieces still invisible on phones because the .square cells were
+   collapsing to 0 height in the previous grid setup, so 90% of 0
+   = 0 piece. Fix: give every grid TRACK an explicit pixel size via
+   calc, AND give .square the same explicit pixel size, AND give
+   .piece-img absolute positioning inside the square so it always
+   fills its visible parent regardless of grid quirks.
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  #pageMain .board {
+    width: auto !important;
+    height: auto !important;
+    grid-template-columns: repeat(8, calc((100vw - 34px) / 8)) !important;
+    grid-template-rows:    repeat(8, calc((100vw - 34px) / 8)) !important;
+  }
+  #pageMain .square {
+    width:  calc((100vw - 34px) / 8) !important;
+    height: calc((100vw - 34px) / 8) !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+  #pageMain .board-col {
+    width: auto !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
+  }
+  #pageMain .eval-bar-wrap {
+    width: 18px !important;
+    flex: 0 0 18px !important;
+    align-self: stretch !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  /* Pieces: absolutely fill the visible square — bullet-proof */
+  #pageMain .piece-img {
+    position: absolute !important;
+    top: 5% !important;
+    left: 5% !important;
+    width: 90% !important;
+    height: 90% !important;
+    object-fit: contain !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    z-index: 2;
+  }
+  /* Coords inside the square */
+  #pageMain .coord-label { z-index: 3; }
+}
+
+@media (min-width: 601px) and (max-width: 860px) {
+  #pageMain .board {
+    width: auto !important;
+    height: auto !important;
+    grid-template-columns: repeat(8, min(60px, calc((100vw - 50px) / 8))) !important;
+    grid-template-rows:    repeat(8, min(60px, calc((100vw - 50px) / 8))) !important;
+  }
+  #pageMain .square {
+    width:  min(60px, calc((100vw - 50px) / 8)) !important;
+    height: min(60px, calc((100vw - 50px) / 8)) !important;
+    position: relative !important;
+  }
+  #pageMain .piece-img {
+    position: absolute !important;
+    top: 5% !important;
+    left: 5% !important;
+    width: 90% !important;
+    height: 90% !important;
+    object-fit: contain !important;
+    filter: none !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
    ░░░░░░  GUIDED TOUR / ONBOARDING TOOLTIP — APRIL 8 2026  ░░░░░░
    The JS in tour.js positions .tour-tooltip absolutely next to the
    highlighted element. On phones the tooltip falls offscreen and
