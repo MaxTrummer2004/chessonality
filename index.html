@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chessonality: Discover Your Chess Personality</title>
-<meta name="description" content="Discover your chess personality. AI analysis meets self-discovery.">
+<title>Chessonality — Chess analysis from your actual games</title>
+<meta name="description" content="Discover your chess playing style through AI analysis of your real games. Not a quiz — import from Chess.com or Lichess and get your chess personality instantly.">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/panels.css">
@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="css/paywall.css">
 <link rel="stylesheet" href="css/walkthrough.css">
 <link rel="stylesheet" href="css/esports.css">
+<link rel="stylesheet" href="css/mobile.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 </head>
@@ -50,40 +51,128 @@
     </div>
   </header>
 
-  <!-- ── Above-fold hero: fills exactly the viewport ── -->
-  <div class="landing-fold">
+  <!-- ── Above-fold hero: two-column on desktop ── -->
+  <div class="landing-fold landing-fold-2col">
 
-    <!-- Personality carousel -->
-    <div class="pers-carousel" id="persCarousel">
-      <button class="carousel-arrow carousel-prev" onclick="carouselPrev()">&#8249;</button>
-      <div class="carousel-slide" id="carouselSlide" onclick="openPglos(carouselIdx)"><!-- filled by JS --></div>
-      <button class="carousel-arrow carousel-next" onclick="carouselNext()">&#8250;</button>
-      <div class="carousel-dots" id="carouselDots"></div>
-    </div>
+    <div class="landing-hero landing-hero-2col">
+      <div class="landing-hero-text">
+        <h2 class="landing-title landing-title-cro">
+          <span class="lt-desktop">Discover what your chess moves say about you.</span>
+          <span class="lt-mobile">What kind of player were you just now?</span>
+        </h2>
+        <p class="landing-sub landing-sub-cro">
+          <span class="ls-desktop">Every game reveals a different side of you. Import one and find your chess identity in minutes.</span>
+          <span class="ls-mobile">Import your last game. Get your chess personality in 30 seconds.</span>
+        </p>
 
-    <div class="landing-hero landing-hero-center">
-      <h2 class="landing-title">Train like the player<br><span>you really are</span></h2>
-      <p class="landing-sub">Discover your chess personality, per game. Get AI explanations and coach tips built around how <em>you</em> actually play.</p>
+        <button class="btn-analyze btn-get-started btn-cro-primary" id="heroCtaBtn" onclick="showChoiceModal()">
+          <span class="cta-desktop">Import my last game</span>
+          <span class="cta-mobile">Analyze my last game</span>
+        </button>
 
-      <div class="landing-features landing-features-row">
-        <div class="lf-item"><span class="lf-dot" style="background:var(--good)"></span>Personality detected per game</div>
-        <div class="lf-item"><span class="lf-dot" style="background:var(--accent)"></span>Explanations matched to your style</div>
-        <div class="lf-item"><span class="lf-dot" style="background:var(--book-light)"></span>Personalised improvement tips</div>
-        <div class="lf-item"><span class="lf-dot" style="background:#8b5cf6"></span>Track your identity over time</div>
+        <div class="cro-counter" id="croCounter">
+          <span class="cro-counter-num" id="gamesAnalyzedNum">1,247</span>
+          <span class="cro-counter-label">games analyzed</span>
+        </div>
       </div>
 
-      <button class="btn-analyze btn-get-started" onclick="showChoiceModal()">
-        <span>Get Started</span>
-      </button>
+      <!-- Hero visual: illustrated mockup of analysis page -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hv-window">
+          <div class="hv-window-head">
+            <span class="hv-window-title">Your Chess Identity</span>
+          </div>
+          <div class="hv-body">
+            <!-- Wide-format persona card -->
+            <div class="hv-persona hv-persona-wide">
+              <div class="hv-persona-glow"></div>
+              <div class="hv-persona-top">
+                <div class="hv-persona-icon">&#129409;</div>
+                <div class="hv-persona-meta">
+                  <div class="hv-persona-label">Personality Detected</div>
+                  <div class="hv-persona-name">The Lion</div>
+                  <div class="hv-persona-tag">Attack. Dominate. Conquer.</div>
+                </div>
+              </div>
+              <div class="hv-traits">
+                <div class="hv-trait">
+                  <div class="hv-trait-row"><span class="hv-trait-name">Aggression</span><span class="hv-trait-val">94</span></div>
+                  <div class="hv-trait-bar"><div class="hv-trait-fill" style="--w:94%"></div></div>
+                </div>
+                <div class="hv-trait">
+                  <div class="hv-trait-row"><span class="hv-trait-name">Intuition</span><span class="hv-trait-val">81</span></div>
+                  <div class="hv-trait-bar"><div class="hv-trait-fill" style="--w:81%"></div></div>
+                </div>
+                <div class="hv-trait">
+                  <div class="hv-trait-row"><span class="hv-trait-name">Calculation</span><span class="hv-trait-val">67</span></div>
+                  <div class="hv-trait-bar"><div class="hv-trait-fill" style="--w:67%"></div></div>
+                </div>
+                <div class="hv-trait">
+                  <div class="hv-trait-row"><span class="hv-trait-name">Creativity</span><span class="hv-trait-val">88</span></div>
+                  <div class="hv-trait-bar"><div class="hv-trait-fill" style="--w:88%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Personality score trajectory line chart -->
+            <div class="hv-chart-card">
+              <div class="hv-chart-head">
+                <span class="hv-chart-label">Personality score trajectory</span>
+                <span class="hv-chart-delta">Avg 78%</span>
+              </div>
+              <svg class="hv-chart-svg" viewBox="0 0 320 90" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="hvChartFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%"  stop-color="#e94560" stop-opacity="0.32"/>
+                    <stop offset="60%" stop-color="#e94560" stop-opacity="0.10"/>
+                    <stop offset="100%" stop-color="#e94560" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Horizontal grid lines -->
+                <line x1="0" y1="18" x2="320" y2="18" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line x1="0" y1="42" x2="320" y2="42" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line x1="0" y1="66" x2="320" y2="66" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <!-- Area fill under main line -->
+                <path d="M0,64 L32,58 L64,66 L96,46 L128,52 L160,36 L192,42 L224,24 L256,30 L288,16 L320,10 L320,90 L0,90 Z" fill="url(#hvChartFill)"/>
+                <!-- Running average (dashed) -->
+                <path d="M0,70 L32,64 L64,60 L96,54 L128,48 L160,42 L192,38 L224,32 L256,26 L288,20 L320,16" fill="none" stroke="#e94560" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="5 5" stroke-linecap="round"/>
+                <!-- Main line -->
+                <path d="M0,64 L32,58 L64,66 L96,46 L128,52 L160,36 L192,42 L224,24 L256,30 L288,16 L320,10" fill="none" stroke="#e94560" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Dots along the line -->
+                <circle cx="32"  cy="58" r="2.2" fill="#e94560"/>
+                <circle cx="96"  cy="46" r="2.2" fill="#e94560"/>
+                <circle cx="160" cy="36" r="2.2" fill="#e94560"/>
+                <circle cx="224" cy="24" r="2.2" fill="#e94560"/>
+                <circle cx="288" cy="16" r="2.2" fill="#e94560"/>
+                <!-- Peak dot (gold, larger) -->
+                <circle cx="320" cy="10" r="3.6" fill="#f0c040" stroke="#13132a" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Floating scroll-down hint -->
-    <button class="landing-scroll-hint" onclick="document.getElementById('showcaseSection').scrollIntoView({behavior:'smooth'})">
-      <span class="lsh-label">Learn more</span>
-      <span class="lsh-arrow">&#8595;</span>
-    </button>
+  </div>
 
-  </div><!-- /landing-fold -->
+  <!-- Competitor differentiation -->
+  <div class="cro-diff-section">
+    <h3 class="cro-diff-heading">Not another chess engine</h3>
+    <div class="cro-diff-grid">
+      <div class="cro-diff-col">
+        <div class="cro-diff-label">Chess.com Review</div>
+        <p class="cro-diff-text">Tells you the move. We tell you the pattern.</p>
+      </div>
+      <div class="cro-diff-col">
+        <div class="cro-diff-label">Personality quizzes</div>
+        <p class="cro-diff-text">Based on questions. We analyze your actual moves.</p>
+      </div>
+      <div class="cro-diff-col">
+        <div class="cro-diff-label">Lichess analysis</div>
+        <p class="cro-diff-text">Raw engine output. We give you a coaching plan.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- ── Showcase: What You'll Get ── -->
   <div class="showcase-section" id="showcaseSection">
@@ -144,10 +233,6 @@
 
   <!-- ── Social Proof ── -->
   <div class="social-proof-section">
-    <div class="social-proof-counter">
-      <span class="sp-number" id="spCounter">20</span>
-      <span class="sp-label">players discovered their style</span>
-    </div>
     <div class="social-proof-quotes">
       <div class="sp-quote">
         <div class="sp-quote-text">"I always knew I was aggressive but seeing 'The Lion' with specific drills to improve my attacks was eye-opening."</div>
@@ -164,9 +249,59 @@
     </div>
   </div>
 
+  <!-- ── Mobile-only: Personality carousel (2.4 cards visible) ── -->
+  <section class="mobile-pers-carousel mobile-only" aria-label="Chess personalities">
+    <h3 class="mobile-pers-carousel-heading">Which one are you?</h3>
+    <div class="mpc-strip">
+      <div class="mpc-card"><div class="mpc-card-emoji">🦁</div><div class="mpc-card-name">The Lion</div><div class="mpc-card-tag">Attack. Dominate. Conquer.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🐍</div><div class="mpc-card-name">The Anaconda</div><div class="mpc-card-tag">Squeeze. Wait. Win.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🦅</div><div class="mpc-card-name">The Eagle</div><div class="mpc-card-tag">Tactical. Sharp-eyed.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🦊</div><div class="mpc-card-name">The Fox</div><div class="mpc-card-tag">Creative. Cunning.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🦉</div><div class="mpc-card-name">The Owl</div><div class="mpc-card-tag">Methodical. Patient.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🦈</div><div class="mpc-card-name">The Shark</div><div class="mpc-card-tag">Relentless pressure.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🔥</div><div class="mpc-card-name">The Phoenix</div><div class="mpc-card-tag">Rises from any position.</div></div>
+      <div class="mpc-card"><div class="mpc-card-emoji">🐢</div><div class="mpc-card-name">The Turtle</div><div class="mpc-card-tag">Defends. Endures. Wins.</div></div>
+    </div>
+  </section>
+
+  <!-- ── Mobile-only: Testimonials ── -->
+  <section class="mobile-testimonials mobile-only" aria-label="Player testimonials">
+    <h3 class="mobile-testimonials-heading">What players say</h3>
+    <div class="mt-card">
+      <p class="mt-card-text">"I always knew I was aggressive but seeing 'The Lion' with specific drills to improve my attacks was eye-opening."</p>
+      <div class="mt-card-author">— Alex, 1450 Lichess</div>
+    </div>
+    <div class="mt-card">
+      <p class="mt-card-text">"The opening recommendations actually match how I play. No other tool does this."</p>
+      <div class="mt-card-author">— Maria, 1680 Chess.com</div>
+    </div>
+    <div class="mt-card">
+      <p class="mt-card-text">"Turned out I'm an Anaconda. The AI coach told me to study Karpov, which makes total sense now."</p>
+      <div class="mt-card-author">— David, 1320 Lichess</div>
+    </div>
+  </section>
+
+  <!-- ── Mobile-only: Competitor differentiation (stacked) ── -->
+  <section class="mobile-diff mobile-only" aria-label="Why Chessonality">
+    <h3 class="mobile-diff-heading">Not another chess engine</h3>
+    <div class="mdiff-row">
+      <div class="mdiff-label">Chess.com Review</div>
+      <p class="mdiff-text">Tells you the move. We tell you the pattern.</p>
+    </div>
+    <div class="mdiff-row">
+      <div class="mdiff-label">Personality quizzes</div>
+      <p class="mdiff-text">Based on questions. We analyze your actual moves.</p>
+    </div>
+    <div class="mdiff-row">
+      <div class="mdiff-label">Lichess analysis</div>
+      <p class="mdiff-text">Raw engine output. We give you a coaching plan.</p>
+    </div>
+  </section>
+
   <!-- Choice modal: Repertoire vs Game Analysis -->
   <div class="choice-modal-overlay" id="choiceModalOverlay" style="display:none" onclick="if(event.target===this)closeChoiceModal()">
     <div class="choice-modal">
+      <span class="choice-modal-handle" aria-hidden="true"></span>
       <button class="choice-modal-close" onclick="closeChoiceModal()">&times;</button>
       <h2 class="choice-modal-title">What would you like to do?</h2>
       <p class="choice-modal-sub">Choose your path. You can always explore the other one later.</p>
@@ -1867,30 +2002,35 @@ function retryAnalysis() {
   if (typeof runAnalysis === 'function') runAnalysis();
 }
 
-// ── Social-proof signup counter (base 20 + local increments) ──
-const SIGNUP_COUNTER_BASE = 20;
-function renderSignupCounter() {
-  const el = document.getElementById('spCounter');
+// ── Games-analyzed CRO counter (base 1247 + 1 every 4 min, persisted) ──
+const GAMES_BASE = 1247;
+const GAMES_TICK_MS = 4 * 60 * 1000; // 4 minutes per increment
+function getGamesAnalyzedCount() {
+  const startKey = 'cro-games-start';
+  let start = parseInt(localStorage.getItem(startKey) || '0', 10);
+  if (!start || isNaN(start)) {
+    start = Date.now();
+    localStorage.setItem(startKey, String(start));
+  }
+  const elapsed = Math.max(0, Date.now() - start);
+  const ticks = Math.floor(elapsed / GAMES_TICK_MS);
+  return GAMES_BASE + ticks;
+}
+function renderGamesAnalyzedCounter() {
+  const el = document.getElementById('gamesAnalyzedNum');
   if (!el) return;
-  const extra = parseInt(localStorage.getItem('ce-signup-count') || '0', 10) || 0;
-  el.textContent = (SIGNUP_COUNTER_BASE + extra).toLocaleString();
+  el.textContent = getGamesAnalyzedCount().toLocaleString();
 }
-function incrementSignupCounter() {
-  // Only increment once per device - first time the user "signs up" by saving
-  // any chess.com / lichess username for analysis or repertoire.
-  if (localStorage.getItem('ce-signup-counted') === '1') return;
-  localStorage.setItem('ce-signup-counted', '1');
-  const cur = parseInt(localStorage.getItem('ce-signup-count') || '0', 10) || 0;
-  localStorage.setItem('ce-signup-count', String(cur + 1));
-  renderSignupCounter();
-}
+// Legacy stubs - kept so callers in other files don't break.
+function renderSignupCounter() { renderGamesAnalyzedCounter(); }
+function incrementSignupCounter() { /* superseded by time-based counter */ }
 
 // ── Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof updateProfileAvatar === 'function') updateProfileAvatar();
   checkConsent();
   updateFreeBadge();
-  renderSignupCounter();
+  renderGamesAnalyzedCounter();
   if (window._showWelcomeProOnInit) {
     window._showWelcomeProOnInit = false;
     showWelcomePro();
@@ -1937,6 +2077,62 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </div>
+
+<!-- ── Mobile bottom tab bar (visible only at ≤767px via mobile.css) ── -->
+<nav class="mobile-tabbar" aria-label="Primary">
+  <button class="mtab mtab-home" onclick="mobileTabGo('home')" aria-label="Home">
+    <svg class="mtab-icon" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="mtab mtab-analyze" onclick="mobileTabGo('analyze')" aria-label="Analyze">
+    <svg class="mtab-icon" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
+    <span>Analyze</span>
+  </button>
+  <button class="mtab mtab-repertoire" onclick="mobileTabGo('repertoire')" aria-label="Repertoire">
+    <svg class="mtab-icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h16M9 4v16"/></svg>
+    <span>Repertoire</span>
+  </button>
+  <button class="mtab mtab-profile" onclick="mobileTabGo('profile')" aria-label="Profile">
+    <svg class="mtab-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<script>
+// ── Mobile bottom tab bar handlers ─────────────────────────────
+function mobileTabGo(tab) {
+  switch (tab) {
+    case 'home':
+      showPage('landing');
+      break;
+    case 'analyze':
+      // Same entrypoint as the hero CTA — opens the choice modal
+      if (typeof showChoiceModal === 'function') showChoiceModal();
+      break;
+    case 'repertoire':
+      showPage('repertoire');
+      if (typeof renderRepertoire === 'function') renderRepertoire();
+      break;
+    case 'profile':
+      showPage('profile');
+      if (typeof renderFullProfile === 'function') renderFullProfile();
+      break;
+  }
+}
+// Patch showPage to keep body[data-page] in sync (for tab-active CSS)
+(function patchShowPageForMobileTabs(){
+  if (typeof window.showPage !== 'function') return;
+  const orig = window.showPage;
+  window.showPage = function(name) {
+    document.body.dataset.page = name;
+    return orig.apply(this, arguments);
+  };
+  // Set initial state on load
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.body.dataset.page) document.body.dataset.page = 'landing';
+  });
+})();
+</script>
 
 </body>
 </html>

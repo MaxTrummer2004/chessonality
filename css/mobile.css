@@ -1,0 +1,1247 @@
+/* ════════════════════════════════════════════════════════════════════
+   MOBILE.CSS — Mobile-first, purpose-built layout (≤767px only)
+   --------------------------------------------------------------------
+   Loaded LAST in <head> so its rules win specificity battles inside
+   the breakpoint. Desktop styles are NEVER touched: every rule below
+   lives inside @media (max-width: 767px).
+
+   Sections:
+     1. Foundations (typography scale, spacing, taps, scroll)
+     2. Bottom tab bar
+     3. Minimal top bar per page
+     4. Landing
+     5. Choice modal as bottom sheet
+     6. Game select / import
+     7. Analysis page (core)
+     8. Repertoire
+     9. Profile
+    10. Generic modals as bottom sheets
+    11. Skeleton shimmer
+    12. Animations & active states
+   ════════════════════════════════════════════════════════════════════ */
+
+
+/* ── Default (any viewport): hide mobile-only DOM elements ─────────── */
+.mobile-tabbar,
+.mobile-only,
+.mobile-how,
+.mobile-sticky-cta,
+.choice-modal-handle,
+.lt-mobile, .ls-mobile, .cta-mobile {
+  display: none;
+}
+
+
+@media (max-width: 767px) {
+
+  /* ════════════════════════════════════════════════════════════
+     1. FOUNDATIONS
+     ════════════════════════════════════════════════════════════ */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+  body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Inputs: 16px to prevent iOS zoom on focus */
+  input, textarea, select {
+    font-size: 16px !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Touch-momentum scroll on every scroll container */
+  .move-list, .moves-panel, .pers-carousel,
+  .gs-game-list, .prof-history, .prof-collection-grid,
+  .mobile-stat-row, .mobile-stack-scroll,
+  .modal, .choice-modal,
+  [class*="-overlay"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Kill hover-stuck states on touch devices */
+  *:hover {
+    /* Browsers respect @media (hover: none) below — this is just a safety */
+  }
+
+  /* Type scale (mobile) */
+  h1, .brand-logo {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  body, p, button, input, textarea, select {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .text-secondary, .gs-pill, .lf-link, .cro-counter,
+  .apc-label, .gs-tab-icon { font-size: 13px; line-height: 1.5; }
+
+  /* Universal touch target floor — interactive elements ≥44×44 */
+  button, a[role="button"], [role="button"], .lf-link, .nav-btn,
+  .gs-tab, .hero-plat-btn, .prof-tab, .prof-filter-pill {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Page horizontal padding constant: 20px (declared per-page below) */
+
+  /* Page-level overflow safety on every app-page */
+  .app-page { min-height: 0; height: auto; overflow: visible; }
+
+  /* Reserve room at the bottom for the fixed mobile tab bar (56px + safe area) */
+  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+
+
+  /* ════════════════════════════════════════════════════════════
+     2. BOTTOM TAB BAR
+     ════════════════════════════════════════════════════════════ */
+
+  .mobile-tabbar {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg, #0f0f12);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+  }
+  .mtab {
+    appearance: none;
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: color 150ms ease;
+    min-height: 44px;
+  }
+  .mtab-icon {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+  }
+  .mtab[aria-current="page"],
+  body[data-page="landing"]    .mtab-home,
+  body[data-page="profile"]    .mtab-profile,
+  body[data-page="repertoire"] .mtab-repertoire,
+  body[data-page="gameSelect"] .mtab-analyze {
+    color: var(--accent, #e94560);
+    font-weight: 700;
+  }
+  .mtab:active { transform: scale(0.97); transition: transform 100ms ease; }
+
+
+  /* ════════════════════════════════════════════════════════════
+     3. MINIMAL TOP BAR PER PAGE
+     ════════════════════════════════════════════════════════════ */
+
+  /* Hide everything in the existing headers EXCEPT what we want.
+     We keep the brand logo for hub pages and the back button for
+     secondary pages, plus the settings/profile icons collapsed. */
+
+  /* Generic landing/profile header → minimal centered title */
+  .landing-header,
+  #pageMain > header,
+  .ins-header,
+  .coach-page-header {
+    height: 52px;
+    min-height: 52px;
+    padding: 0 20px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg, transparent);
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Hide chrome buttons that aren't essential on mobile (the bottom
+     tab bar replaces navigation). Keep theme toggle hidden too — it's
+     in settings via the gear if needed. */
+  .landing-header .header-actions .icon-btn,
+  .landing-header .header-actions .help-tour-btn,
+  #pageMain > header .header-actions .icon-btn,
+  #pageMain > header .header-actions .help-tour-btn {
+    display: none !important;
+  }
+  /* Keep one settings entry point visible (gear) and the profile button hidden
+     since the bottom tab bar handles navigation. */
+  .landing-header .header-actions .profile-btn,
+  #pageMain > header .header-actions .profile-btn {
+    display: none !important;
+  }
+
+  /* Brand logo: smaller, centered on hub pages */
+  .landing-header .brand-logo,
+  #pageMain > header .brand-logo {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+    margin: 0 auto;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Back-button styling: small arrow only, fixed left */
+  .gs-back, .back-btn, .ins-back-btn, .coach-back-btn {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 12px 0 0 !important;
+    margin: 0 !important;
+    color: var(--text) !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .back-btn { /* "← New game" -> just arrow */
+    font-size: 0 !important;
+  }
+  .back-btn::before {
+    content: "←";
+    font-size: 24px;
+    line-height: 1;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+     4. LANDING
+     ════════════════════════════════════════════════════════════ */
+
+  /* Show mobile copy variants */
+  .lt-desktop, .ls-desktop, .cta-desktop { display: none !important; }
+  .lt-mobile, .ls-mobile { display: inline !important; }
+  .cta-mobile { display: inline !important; }
+
+  /* Above-the-fold: pure vertical stack, no hero illustration */
+  .landing-fold {
+    min-height: calc(100vh - 52px - 56px);
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 0 !important;
+  }
+  .landing-fold-2col { padding: 0 !important; }
+  .landing-hero-2col {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 20px !important;
+    max-width: none !important;
+  }
+  .hero-visual { display: none !important; }
+
+  .landing-hero-text {
+    align-items: stretch !important;
+    width: 100%;
+    padding-top: 12vh; /* push CTA into thumb-zone */
+  }
+  .landing-title-cro {
+    font-size: 28px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+    text-align: center !important;
+    margin: 0 0 12px !important;
+  }
+  .landing-title-cro .lt-mobile {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+  .landing-sub-cro {
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+    text-align: center !important;
+    margin: 0 0 24px !important;
+    max-width: none !important;
+    color: var(--text-dim);
+  }
+
+  /* Primary hero CTA */
+  .btn-cro-primary,
+  #heroCtaBtn {
+    align-self: stretch !important;
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 14px !important;
+    margin-top: 4px !important;
+    padding: 14px 20px !important;
+  }
+
+  /* Counter under CTA */
+  .cro-counter {
+    justify-content: center !important;
+    margin: 16px 0 0 !important;
+    font-size: 13px !important;
+    opacity: 0.7 !important;
+  }
+  .cro-counter-num { font-size: 13px !important; }
+
+  /* Hide desktop-only sections */
+  .ea-banner,
+  .cro-diff-section,
+  .showcase-section,
+  .social-proof-section,
+  .landing-scroll-hint {
+    display: none !important;
+  }
+
+  /* "How it works" — already injected. Refine spacing/typography. */
+  .mobile-how {
+    display: block !important;
+    padding: 32px 20px 20px;
+    max-width: none;
+  }
+  .mhow-heading {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    text-align: center;
+    margin: 0 0 24px;
+    color: var(--text);
+  }
+  .mhow-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .mhow-step {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .mhow-step .mhow-num {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2, #8b5cf6) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+  .mhow-body { flex: 1; min-width: 0; }
+  .mhow-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .mhow-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  /* Mobile personality carousel — injected by HTML below */
+  .mobile-pers-carousel {
+    display: block;
+    padding: 32px 0 12px;
+  }
+  .mobile-pers-carousel-heading {
+    font-size: 22px; font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    padding: 0 20px;
+    text-align: left;
+  }
+  .mpc-strip {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding: 4px 20px 16px;
+    scrollbar-width: none;
+  }
+  .mpc-strip::-webkit-scrollbar { display: none; }
+  .mpc-card {
+    flex: 0 0 calc(41.66% - 6px); /* ~2.4 cards visible */
+    scroll-snap-align: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 14px;
+    display: flex; flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+  .mpc-card-emoji { font-size: 36px; line-height: 1; }
+  .mpc-card-name {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--text);
+  }
+  .mpc-card-tag {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* Mobile testimonials — injected by HTML below */
+  .mobile-testimonials {
+    display: block;
+    padding: 24px 20px 16px;
+  }
+  .mobile-testimonials-heading {
+    font-size: 22px; font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-align: left;
+  }
+  .mt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .mt-card-text {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .mt-card-author {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Mobile competitor diff — injected by HTML below */
+  .mobile-diff {
+    display: block;
+    padding: 24px 20px 32px;
+  }
+  .mobile-diff-heading {
+    font-size: 22px; font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-align: left;
+  }
+  .mdiff-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .mdiff-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .mdiff-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    margin: 0;
+  }
+
+  /* Sticky bottom CTA: sits ABOVE the tab bar */
+  .mobile-sticky-cta {
+    display: block;
+    position: fixed;
+    left: 0; right: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    z-index: 95;
+    padding: 12px 20px;
+    background: var(--bg, #0f0f12);
+    border-top: 1px solid var(--border);
+    transform: translateY(110%);
+    transition: transform 200ms ease-out;
+    pointer-events: none;
+  }
+  .mobile-sticky-cta.visible {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .mobile-sticky-btn {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 14px !important;
+  }
+
+  /* Footer: minimal, single-column, with breathing room */
+  .landing-footer {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    text-align: center !important;
+    padding: 32px 20px 24px !important;
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+  }
+  .landing-footer .lf-links {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+  .landing-footer .lf-sep { display: none !important; }
+  .landing-footer .lf-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+     5. CHOICE MODAL → BOTTOM SHEET
+     ════════════════════════════════════════════════════════════ */
+
+  .choice-modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    background: rgba(0,0,0,0.5);
+    transition: background 280ms ease-out;
+  }
+  .choice-modal {
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: 88vh !important;
+    overflow-y: auto;
+    transform: translateY(0);
+    animation: ce-sheet-in 280ms ease-out;
+  }
+  /* Drag handle indicator */
+  .choice-modal-handle {
+    display: block !important;
+    width: 40px;
+    height: 4px;
+    background: var(--text-dim);
+    opacity: 0.4;
+    border-radius: 2px;
+    margin: 6px auto 14px;
+  }
+  .choice-modal-close {
+    top: 12px !important;
+    right: 12px !important;
+  }
+  .choice-modal-title {
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    text-align: center;
+    margin: 0 0 6px !important;
+  }
+  .choice-modal-sub {
+    font-size: 14px !important;
+    text-align: center;
+    margin: 0 0 20px !important;
+  }
+  .choice-modal-cards {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+  .choice-card {
+    width: 100% !important;
+    min-height: 80px !important;
+    padding: 18px 18px 18px 64px !important;
+    text-align: left !important;
+    position: relative;
+    border-radius: 16px !important;
+  }
+  .choice-card-icon {
+    position: absolute;
+    left: 16px; top: 18px;
+    font-size: 32px !important;
+    width: 36px !important; height: 36px !important;
+    margin: 0 !important;
+  }
+  .choice-card-title {
+    font-size: 16px !important;
+    margin: 0 0 4px !important;
+  }
+  .choice-card-text {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    margin: 0 0 8px !important;
+  }
+  .choice-card-pills {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .choice-card-pills span { font-size: 11px !important; }
+  .choice-card-badge {
+    top: 12px !important; right: 12px !important;
+    font-size: 10px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+     6. GAME SELECT / IMPORT
+     ════════════════════════════════════════════════════════════ */
+
+  #pageGameSelect .hero-input-wrap {
+    padding: 60px 20px 100px !important; /* room for fixed top bar + sticky CTA */
+    max-width: none !important;
+  }
+  /* Convert .gs-back into the minimal top bar */
+  #pageGameSelect .gs-back {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+    padding-left: 12px !important;
+    justify-content: flex-start;
+  }
+  #pageGameSelect .hero-input-card {
+    padding: 24px 0 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  #pageGameSelect .hero-input-glow { display: none !important; }
+  #pageGameSelect .hero-input-icon { display: none !important; }
+  #pageGameSelect .hero-input-title {
+    font-size: 22px !important;
+    font-weight: 500 !important;
+    margin: 0 0 6px !important;
+    text-align: left !important;
+  }
+  #pageGameSelect .hero-input-sub {
+    font-size: 14px !important;
+    margin: 0 0 20px !important;
+    text-align: left !important;
+    color: var(--text-dim);
+  }
+
+  /* Tabs: full-width, larger taps */
+  .gs-tabs {
+    display: flex !important;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .gs-tab {
+    flex: 1;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Platform buttons: stacked, full-width */
+  .hero-input-platforms {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .hero-plat-btn {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+    justify-content: center;
+  }
+
+  /* Username input row: stacked */
+  .hero-input-field {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+  }
+  .hero-input-field .hero-input {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  .hero-input-go {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+  }
+
+  /* "or" divider between methods */
+  .gs-tabs::after {
+    /* visual separator handled by tab styling — kept simple */
+  }
+
+  /* PGN textarea */
+  .hero-pgn-section { display: flex !important; flex-direction: column; gap: 14px; }
+  .hero-color-row {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+    align-items: center;
+  }
+  .hero-color-label {
+    width: 100%;
+    font-size: 13px !important;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .hero-color-row .hero-plat-btn {
+    flex: 1;
+    min-height: 52px !important;
+  }
+  #pgnInput, .hero-textarea {
+    width: 100% !important;
+    min-height: 160px !important;
+    font-size: 15px !important;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .hero-input-go-full {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+  }
+
+  /* Game list rows: bigger tap targets */
+  .gs-game-list .gs-game-row,
+  .hero-game-list > * {
+    min-height: 56px;
+    padding: 14px 16px !important;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+     7. ANALYSIS PAGE (CORE)
+     ════════════════════════════════════════════════════════════ */
+
+  #pageMain .container {
+    padding: 12px 20px 20px !important;
+    max-width: none !important;
+  }
+
+  /* Personality mini-card: visible reveal */
+  .analysis-pers-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 12px !important;
+  }
+  .analysis-pers-card .apc-emoji { font-size: 36px !important; }
+  .analysis-pers-card .apc-name {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+  }
+  .analysis-pers-card .apc-label {
+    font-size: 12px !important;
+    color: var(--text-dim);
+  }
+  /* Reveal animation when shown */
+  .analysis-pers-card[style*="display:none"] { opacity: 0; }
+  .analysis-pers-card:not([style*="display:none"]) {
+    animation: ce-badge-reveal 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Game stats pills: wrap nicely */
+  .game-stats {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .gs-pill {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 36px;
+  }
+
+  /* Main grid: stack vertically */
+  .main-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  /* Board area: full width with eval bar flush */
+  .board-area { width: 100%; }
+  .board-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0;
+    width: 100%;
+  }
+  .eval-bar-wrap {
+    width: 18px !important;
+    flex-shrink: 0;
+    height: auto !important;
+    align-self: stretch;
+    border-radius: 6px 0 0 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .eval-bar-black,
+  .eval-bar-white {
+    transition: height 400ms ease, transform 400ms ease;
+  }
+  .eval-bar-wrap .eval-score {
+    font-size: 9px !important;
+    line-height: 1;
+  }
+  .board-col { flex: 1; min-width: 0; }
+  .board, #board {
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    border-radius: 0 6px 6px 0;
+    /* Container is 100vw minus: 20px page padding × 2 + 18px eval bar = 58px */
+    grid-template-columns: repeat(8, calc((100vw - 58px) / 8)) !important;
+    grid-template-rows:    repeat(8, calc((100vw - 58px) / 8)) !important;
+  }
+  #pageMain .square {
+    width:  calc((100vw - 58px) / 8) !important;
+    height: calc((100vw - 58px) / 8) !important;
+  }
+
+  /* Move nav controls: full row, ≥44px each */
+  .nav-controls {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px !important;
+  }
+  .nav-btn {
+    flex: 1;
+    min-height: 48px !important;
+    font-size: 18px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Right panel: drop into normal flow */
+  .right-panel {
+    width: 100% !important;
+    max-width: none !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Moves/coach split → stack */
+  .moves-panel { padding: 12px !important; border-radius: 16px !important; }
+  .moves-split {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px;
+  }
+  .moves-left, .moves-right { width: 100% !important; }
+  .panel-label {
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px !important;
+  }
+  .move-list {
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 10px;
+    padding: 6px;
+  }
+  .move-cell {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border-radius: 8px;
+    transition: background 150ms ease;
+  }
+  .move-cell.active { transition: background 150ms ease; }
+
+  /* AI coach panel as scrollable card */
+  .ai-coach-panel {
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+  .btn-explain {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+  }
+  .aic-output {
+    font-size: 15px !important;
+    line-height: 1.65 !important;
+    padding: 16px 0 0 !important;
+  }
+  .aic-hint {
+    font-size: 13px !important;
+    color: var(--text-dim);
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* Walkthrough + coach CTAs: full-width tappable cards */
+  .walkthrough-cta,
+  .coach-cta-analysis {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    gap: 12px !important;
+  }
+  .walkthrough-cta-title { font-size: 15px !important; }
+  .walkthrough-cta-sub { font-size: 12px !important; }
+
+
+  /* ════════════════════════════════════════════════════════════
+     8. REPERTOIRE
+     ════════════════════════════════════════════════════════════ */
+
+  #pageRepertoire .ins-container,
+  #pageRepertoire > div:not(header) {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .rep-cards-grid,
+  #repWhiteCards,
+  #repBlackCards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .rep-opening-card,
+  .rep-card {
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 16px !important;
+    border-left: 3px solid var(--accent, #e94560) !important;
+  }
+  .rep-opening-name, .rep-card-name, .rep-card h3 {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin: 0 0 8px !important;
+  }
+  .rep-card-stats, .rep-opening-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .rep-card-why, .rep-card-idea {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    margin-top: 8px;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+     9. PROFILE
+     ════════════════════════════════════════════════════════════ */
+
+  .prof-page {
+    padding: 16px 20px 24px !important;
+    max-width: none !important;
+  }
+  .prof-hub-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  .prof-identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .profile-avatar-large {
+    width: 56px !important; height: 56px !important;
+    flex-shrink: 0;
+  }
+  .profile-name-display { font-size: 18px !important; font-weight: 600 !important; }
+  .prof-games-count { font-size: 13px !important; color: var(--text-dim); }
+  .prof-hub-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .prof-pglos-btn,
+  .prof-analyze-btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+    justify-content: center;
+  }
+
+  /* Tab bar */
+  .prof-tabs {
+    display: flex !important;
+    gap: 8px;
+    margin-bottom: 16px !important;
+  }
+  .prof-tab {
+    flex: 1;
+    min-height: 44px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  /* Top-row grid → stacked */
+  .prof-top-grid,
+  .prof-engage-row,
+  .prof-feature-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Personality primary card */
+  .prof-primary {
+    padding: 24px 20px !important;
+    border-radius: 20px !important;
+  }
+  .prof-primary-emoji { font-size: 64px !important; }
+  .prof-primary-name { font-size: 22px !important; font-weight: 600 !important; }
+  .prof-primary-tagline { font-size: 14px !important; }
+
+  /* Feature CTA cards */
+  .prof-feat-card {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    min-height: 72px;
+  }
+  .prof-feat-title { font-size: 15px !important; font-weight: 600 !important; }
+  .prof-feat-sub { font-size: 12px !important; }
+
+  /* Personality collection grid: 2 cols on mobile (was 4+) */
+  .prof-collection-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* History list rows */
+  .prof-history { display: flex; flex-direction: column; gap: 8px; }
+  .prof-history > * {
+    padding: 14px !important;
+    border-radius: 12px !important;
+    min-height: 64px;
+  }
+  .prof-history-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 12px;
+  }
+  .prof-search-input {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+  }
+  .prof-filter-pills {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .prof-filter-pills::-webkit-scrollbar { display: none; }
+  .prof-filter-pill {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 13px;
+    border-radius: 20px;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+    10. GENERIC MODALS → BOTTOM SHEETS
+     ════════════════════════════════════════════════════════════ */
+
+  /* Apply bottom-sheet treatment to centered modals.
+     Excludes the choice modal (handled above) and full-screen overlays. */
+  #settingsModal,
+  #imprintModal,
+  #privacyModal,
+  #termsModal,
+  #confirmModal,
+  #milestoneOverlay,
+  #paywallModal,
+  #welcomeProModal,
+  #analysisErrorOverlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  #settingsModal > .modal,
+  #imprintModal > .modal,
+  #privacyModal > .modal,
+  #termsModal > .modal,
+  #confirmModal > .modal,
+  #milestoneOverlay > .modal,
+  #paywallModal > .modal,
+  #welcomeProModal > .modal,
+  #analysisErrorOverlay > .modal,
+  #milestoneOverlay > .milestone-card,
+  #paywallModal > .paywall-modal,
+  #analysisErrorOverlay > .aeo-modal {
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: 90vh !important;
+    overflow-y: auto;
+    animation: ce-sheet-in 280ms ease-out;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+    11. SKELETON SHIMMER (loading states)
+     ════════════════════════════════════════════════════════════ */
+
+  .skel,
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface, rgba(255,255,255,0.04));
+    border-radius: 12px;
+    color: transparent !important;
+  }
+  .skel::after,
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.06) 50%,
+      transparent 100%);
+    animation: ce-shimmer 1.5s linear infinite;
+  }
+  @keyframes ce-shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+
+
+  /* ════════════════════════════════════════════════════════════
+    12. ANIMATIONS & ACTIVE STATES
+     ════════════════════════════════════════════════════════════ */
+
+  /* Page entrance fade-up — applied via .page-enter (already exists) */
+  .app-page.page-enter {
+    animation: ce-page-fade 300ms ease-out 40ms both;
+  }
+  @keyframes ce-page-fade {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Bottom-sheet entrance */
+  @keyframes ce-sheet-in {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  /* Personality badge reveal */
+  @keyframes ce-badge-reveal {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* Active states */
+  button:active,
+  [role="button"]:active {
+    transform: scale(0.97);
+    transition: transform 100ms ease;
+  }
+  .choice-card:active,
+  .mpc-card:active,
+  .mhow-step:active,
+  .prof-feat-card:active,
+  .rep-card:active,
+  .rep-opening-card:active,
+  .walkthrough-cta:active,
+  .coach-cta-analysis:active {
+    transform: scale(0.99);
+    transition: transform 80ms ease;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   HOVER-NONE SAFETY: kill sticky :hover effects on touch devices
+   regardless of viewport width. Touch devices fire :hover and don't
+   release it until another tap, causing "stuck" highlight states.
+   ════════════════════════════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  .choice-card:hover,
+  .mpc-card:hover,
+  .prof-feat-card:hover,
+  .walkthrough-cta:hover,
+  .coach-cta-analysis:hover,
+  .rep-card:hover,
+  .rep-opening-card:hover,
+  .hero-plat-btn:hover,
+  .gs-tab:hover,
+  .nav-btn:hover,
+  .move-cell:hover,
+  .btn-explain:hover,
+  .btn-cro-primary:hover,
+  .mtab:hover,
+  .lf-link:hover,
+  button:hover,
+  a:hover {
+    background-color: inherit;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+}
