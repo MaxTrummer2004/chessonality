@@ -1847,10 +1847,11 @@
 @media (max-width: 860px) {
   .landing-scroll-hint {
     display: block !important;
-    position: static !important;
+    position: relative !important;
+    z-index: 5 !important;
     transform: none !important;
     margin: 14px auto 0 !important;
-    padding: 0 !important;
+    padding: 8px 12px !important;
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -1877,6 +1878,34 @@
   }
   .landing-fold { padding-bottom: 120px !important; }
   body.consent-dismissed .landing-fold { padding-bottom: 32px !important; }
+}
+
+/* ─────────────────────────────────────────────
+   5) ANALYSIS PANEL — fix doubled colored border
+   The .ai-coach-panel had:
+     • a 1px border + a borderGlow animation (esports.css)
+     • a ::before 2px colored gradient stripe at the top
+     • PLUS the disabled .btn-explain inside has its own border
+   On phones these stack and look like two concentric colored
+   rectangles. Strip the panel chrome on mobile so only the
+   button itself is visible.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  #pageMain .ai-coach-panel {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    animation: none !important;
+    overflow: visible !important;
+  }
+  #pageMain .ai-coach-panel::before { display: none !important; }
+  #pageMain .ai-coach-panel::after { display: none !important; }
+
+  /* Remove the disabled-state border on the explain button so the
+     "greyed out" state doesn't draw a second rectangle either. */
+  #pageMain .btn-explain:disabled {
+    border: none !important;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
