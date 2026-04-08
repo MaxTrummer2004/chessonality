@@ -75,9 +75,19 @@
           <span class="cro-counter-label">games analyzed</span>
         </div>
 
+        <!-- Mobile-only: "See a sample" button that reveals & scrolls to the
+             sample Lion personality card below. Hidden on desktop. -->
+        <button type="button" class="mobile-see-sample-btn mobile-only"
+                id="mobileSeeSampleBtn"
+                onclick="revealMobileSample()">
+          <span>See a sample personality</span>
+          <span class="mss-arrow" aria-hidden="true">&#8595;</span>
+        </button>
+
         <!-- Mobile-only: sample Lion profile with horizontal trait bars.
-             Shows visitors what they'll get. Hidden on desktop (handled in mobile.css). -->
-        <div class="mobile-lion-sample mobile-only" aria-hidden="true">
+             Shows visitors what they'll get. Hidden on desktop (handled in mobile.css).
+             On mobile it's hidden until the user taps the button above. -->
+        <div class="mobile-lion-sample mobile-only" id="mobileLionSample" aria-hidden="true">
           <div class="mls-head">
             <div class="mls-emoji">🦁</div>
             <div class="mls-meta">
@@ -1887,6 +1897,32 @@ function goBackToLanding() {
     if (h && h.length > 0) { showPage('profile'); renderFullProfile(); }
     else showPage('landing');
   }).catch(() => showPage('landing'));
+}
+
+// ── Mobile: "See a sample personality" reveal + scroll ──
+function revealMobileSample() {
+  const sample = document.getElementById('mobileLionSample');
+  const btn = document.getElementById('mobileSeeSampleBtn');
+  if (!sample) return;
+  sample.classList.add('revealed');
+  sample.setAttribute('aria-hidden', 'false');
+  if (btn) btn.classList.add('is-hidden');
+  // Scroll the sample into view, centered. Uses window.scrollTo with a
+  // computed target so it works reliably on Android Chrome + iOS Safari
+  // (scrollIntoView alone is unreliable from some contexts).
+  const doScroll = () => {
+    const r = sample.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const targetY = r.top + window.scrollY - (vh - r.height) / 2;
+    try {
+      window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    } catch (_) {
+      window.scrollTo(0, Math.max(0, targetY));
+    }
+    try { sample.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+  };
+  requestAnimationFrame(doScroll);
+  setTimeout(doScroll, 200);
 }
 
 // ── Choice modal (Get Started → Repertoire or Analysis) ──

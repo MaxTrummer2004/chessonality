@@ -417,11 +417,55 @@
   /* Sample Lion profile card — pinned to the bottom of the hero text
      area, which is taller than the viewport, so the card peeks ~2/3
      above the fold and the rest is reached via scroll. */
-  .mobile-lion-sample {
-    display: block !important;
+  /* "See a sample personality" button — sits above the hidden sample card */
+  .mobile-see-sample-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-    /* Tightened gap above sample so it sits closer to the headline text. */
+    margin: 18px 0 0 !important;
+    padding: 14px 18px;
+    background: transparent;
+    border: 1px solid rgba(233, 69, 96, 0.35);
+    border-radius: 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+  .mobile-see-sample-btn .mss-arrow {
+    font-size: 16px;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+  }
+  .mobile-see-sample-btn:active {
+    transform: scale(0.98);
+    background: rgba(233, 69, 96, 0.08);
+  }
+  .mobile-see-sample-btn[hidden],
+  .mobile-see-sample-btn.is-hidden {
+    display: none !important;
+  }
+
+  /* Mobile: hide the sample card by default, reveal on button tap */
+  .mobile-lion-sample {
+    display: none !important;
+    width: 100%;
     margin: 14px 0 0 !important;
+  }
+  .mobile-lion-sample.revealed {
+    display: block !important;
+    animation: msSampleFadeIn 0.35s ease both;
+  }
+  @keyframes msSampleFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Original rules below kept for structure — margin stays, other props still apply */
+  .mobile-lion-sample.revealed {
     padding: 18px 18px 16px;
     background:
       radial-gradient(120% 140% at 0% 0%, rgba(233,69,96,0.14) 0%, rgba(233,69,96,0) 60%),
@@ -1132,7 +1176,15 @@
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
+    /* Kill desktop's height:100% + overflow:hidden so the panel sits
+       in normal document flow. This is critical: without it, the
+       output area creates a nested scroll container and window-level
+       scrollTo / scrollIntoView cannot reach it on real mobile. */
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
+  .ai-coach-panel::before { display: none !important; }
   .btn-explain {
     width: 100% !important;
     min-height: 40px !important;
@@ -1149,6 +1201,13 @@
     font-size: 15px !important;
     line-height: 1.65 !important;
     padding: 4px 2px 0 !important;
+    /* Same treatment as the panel: no nested scroll container on
+       mobile so window.scrollTo actually moves the page. */
+    overflow: visible !important;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
   }
   .aic-hint {
     font-size: 12px !important;
