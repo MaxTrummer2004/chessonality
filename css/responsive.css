@@ -1867,6 +1867,54 @@
   }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   ░░░░░░  GUIDED TOUR / ONBOARDING TOOLTIP — APRIL 8 2026  ░░░░░░
+   The JS in tour.js positions .tour-tooltip absolutely next to the
+   highlighted element. On phones the tooltip falls offscreen and
+   becomes untappable. Pin it to the bottom of the viewport with
+   !important so the JS coordinates can never push it offscreen.
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .tour-tooltip {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 16px 18px 14px !important;
+    border-radius: 14px !important;
+    z-index: 9999 !important;
+    transform: none !important;
+  }
+  .tour-tooltip-text {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 12px !important;
+  }
+  .tour-tooltip-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tour-tooltip-actions { gap: 10px !important; }
+  .tour-skip {
+    font-size: 0.82rem !important;
+    padding: 10px 12px !important;
+    min-height: 40px;
+  }
+  .tour-next {
+    padding: 12px 22px !important;
+    font-size: 0.9rem !important;
+    min-height: 44px;
+  }
+  .tour-step-counter { font-size: 0.72rem !important; }
+
+  /* Highlight ring stays on the target but never blocks taps on the tooltip */
+  .tour-highlight { z-index: 9001 !important; }
+}
+
 
 /* ─────────────────────────────────────────────
    5) HIDE MOVES LIST ON MOBILE ANALYSIS

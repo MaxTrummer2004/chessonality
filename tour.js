@@ -225,6 +225,14 @@ function _renderTourStep() {
   const counter = document.getElementById('tourCounter');
   const nextBtn = tt.querySelector('.tour-next');
 
+  // On phones the tooltip is pinned to the bottom by CSS, so make
+  // sure the highlighted target is scrolled into the visible area
+  // before we measure it.
+  if (window.innerWidth <= 860) {
+    try { target.scrollIntoView({ behavior: 'instant', block: 'center' }); }
+    catch (e) { target.scrollIntoView({ block: 'center' }); }
+  }
+
   // Position highlight over target
   const rect = target.getBoundingClientRect();
   const pad = 6;
