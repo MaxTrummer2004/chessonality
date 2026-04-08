@@ -679,6 +679,13 @@
 .coach-task-done .coach-task-done-label {
   color: #d4af37;
 }
+[data-theme="light"] .coach-task-done-label {
+  color: var(--accent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+[data-theme="light"] .coach-task-done .coach-task-done-label {
+  color: var(--accent);
+}
 .coach-plan-progress {
   margin-top: 16px;
   margin-bottom: 12px;

@@ -296,40 +296,37 @@
     display: inline-block;
     letter-spacing: 0.01em;
   }
-  /* The repertoire/coach back buttons embed an inner <span class="ins-back-arrow">←</span>
-     which has its own font-size: 1rem rule in coach.css — that survives the
-     parent's font-size: 0 hide trick and renders a stray arrow on the right
-     of the pill (after the injected "← Back"). Hide it on mobile. */
+  /* The repertoire/coach back buttons embed an inner <span>←</span>
+     which has its own font-size: 1rem rule in coach.css — that survives
+     the parent's font-size: 0 hide trick and renders a stray arrow next
+     to the injected "← Back". Hide both class variants on mobile.
+     (Repertoire uses .ins-back-arrow, Coach uses .coach-back-arrow —
+     the earlier rule only covered ins-back-arrow, which left the coach
+     page showing two arrows.) */
   .ins-back-btn .ins-back-arrow,
-  .coach-back-btn .ins-back-arrow {
+  .ins-back-btn .coach-back-arrow,
+  .coach-back-btn .ins-back-arrow,
+  .coach-back-btn .coach-back-arrow {
     display: none !important;
   }
 
-  /* Repertoire ("Your Ideal Openings") header: the back button + 64px
-     spacer layout pushes the centered title slightly off-axis. Absolutely
-     center the title block so it sits in the true middle of the header
-     regardless of the back button width. */
-  .rep-page-header { position: relative !important; }
-  .rep-page-header .ins-header-center {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    flex: 0 0 auto !important;
-    padding: 0 !important;
-    width: max-content;
-    max-width: calc(100% - 160px);
-    pointer-events: none;
+  /* Repertoire ("Your Ideal Openings") and AI Coach headers: strip the
+     title/subtitle block and the right-side 64px spacer, and center the
+     back button so it sits alone in the middle of the header. */
+  .rep-page-header,
+  .coach-page-header {
+    position: relative !important;
+    justify-content: center !important;
   }
-  .rep-page-header .ins-header-title {
-    text-align: center !important;
-    white-space: nowrap;
+  .rep-page-header .ins-header-center,
+  .coach-page-header .coach-header-center {
+    display: none !important;
   }
-  .rep-page-header .ins-header-sub {
-    text-align: center !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  /* The 64px inline-style spacer that balanced the back button on the
+     right side is no longer needed once the back button is centered. */
+  .rep-page-header > div[style*="width:64px"],
+  .coach-page-header > div[style*="width:64px"] {
+    display: none !important;
   }
 
 
@@ -820,12 +817,14 @@
      6. GAME SELECT / IMPORT
      ════════════════════════════════════════════════════════════ */
 
-  #pageGameSelect .hero-input-wrap {
+  #pageGameSelect .hero-input-wrap,
+  #pageRepInput .hero-input-wrap {
     padding: 60px 20px 100px !important; /* room for fixed top bar + sticky CTA */
     max-width: none !important;
   }
   /* Convert .gs-back into the minimal top bar */
-  #pageGameSelect .gs-back {
+  #pageGameSelect .gs-back,
+  #pageRepInput .gs-back {
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 52px;
@@ -834,22 +833,33 @@
     z-index: 50;
     padding-left: 12px !important;
     justify-content: flex-start;
+    /* responsive.css:1162 (.hero-input-wrap .gs-back) sets
+       font-size: 0.85rem !important with higher specificity than the
+       generic .gs-back font-size:0 rule above, which makes the original
+       "← Back" text reappear alongside the injected ::before pill —
+       producing two visible back buttons. Re-hide it here. */
+    font-size: 0 !important;
   }
-  #pageGameSelect .hero-input-card {
+  #pageGameSelect .hero-input-card,
+  #pageRepInput .hero-input-card {
     padding: 24px 0 0 !important;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
   }
-  #pageGameSelect .hero-input-glow { display: none !important; }
-  #pageGameSelect .hero-input-icon { display: none !important; }
-  #pageGameSelect .hero-input-title {
+  #pageGameSelect .hero-input-glow,
+  #pageRepInput .hero-input-glow { display: none !important; }
+  #pageGameSelect .hero-input-icon,
+  #pageRepInput .hero-input-icon { display: none !important; }
+  #pageGameSelect .hero-input-title,
+  #pageRepInput .hero-input-title {
     font-size: 22px !important;
     font-weight: 500 !important;
     margin: 0 0 6px !important;
     text-align: left !important;
   }
-  #pageGameSelect .hero-input-sub {
+  #pageGameSelect .hero-input-sub,
+  #pageRepInput .hero-input-sub {
     font-size: 14px !important;
     margin: 0 0 20px !important;
     text-align: left !important;
