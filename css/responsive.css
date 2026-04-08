@@ -1641,3 +1641,211 @@
   .choice-card-text { font-size: 0.78rem !important; margin-bottom: 10px !important; }
   .choice-card-pills span { font-size: 0.64rem !important; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   ░░░░░░  USER FEEDBACK ROUND 3 — APRIL 8 2026  ░░░░░░
+   1. Walkthrough overlay: bottom (progress + Next button) cut off
+   2. Pieces of own color invisible — use solid contrasting outline
+   3. Analysis page header bar too cramped on phones
+   4. "Learn more" button on landing not clickable (consent banner
+      sits on top with z-index 300 — promote the hint above it)
+   5. Hide the moves list on mobile analysis (user's request)
+   6. Repertoire ("Your Ideal Openings") page cropped/cramped
+═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   1) WALKTHROUGH — keep nav buttons in view
+───────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .wt-overlay { padding: 0; align-items: stretch; }
+  .wt-layout {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    flex-direction: column;
+  }
+  .wt-board-spotlight {
+    flex: 0 0 auto !important;
+    padding: 10px !important;
+  }
+  .wt-board-clone { width: min(220px, 56vw) !important; }
+  .wt-coach-panel {
+    flex: 1 1 0 !important;
+    min-height: 0;
+    padding: 12px 14px 12px !important;
+    overflow: hidden;
+  }
+  .wt-coach-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* Footer always visible — bottom safe-area for iOS */
+  .wt-coach-footer {
+    flex-shrink: 0;
+    padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    margin-top: 8px !important;
+    background: var(--surface);
+  }
+  .wt-actions { gap: 6px; }
+  .wt-btn-back, .wt-btn-next { padding: 10px 16px; font-size: 0.82rem; }
+  .wt-coach-header { margin-bottom: 8px; }
+  .wt-coach-avatar { width: 38px; height: 38px; font-size: 1.5rem; }
+  .wt-coach-title { font-size: 1rem; }
+  .wt-slide-header { font-size: 1.05rem !important; padding-bottom: 10px; margin-bottom: 12px; }
+  .wt-slide-body { font-size: 0.95rem !important; line-height: 1.6 !important; }
+}
+
+/* ─────────────────────────────────────────────
+   2) OWN-COLOR PIECES VISIBLE
+      Strong solid 1px black outline + crisp halo
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  #pageMain .piece-img {
+    filter:
+      drop-shadow( 1px  0 0 #000)
+      drop-shadow(-1px  0 0 #000)
+      drop-shadow( 0  1px 0 #000)
+      drop-shadow( 0 -1px 0 #000)
+      drop-shadow(0 0 2px rgba(255,255,255,0.85))
+      drop-shadow(0 2px 3px rgba(0,0,0,0.55)) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   3) ANALYSIS HEADER BAR — give it room to breathe
+───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  #pageMain header {
+    flex-wrap: wrap;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+  #pageMain .header-brand {
+    flex: 1 1 100%;
+    gap: 8px !important;
+    justify-content: flex-start;
+  }
+  #pageMain .header-brand h1 {
+    font-size: 0.85rem !important;
+  }
+  #pageMain .back-btn {
+    padding: 6px 10px !important;
+    font-size: 0.72rem !important;
+  }
+  #pageMain .header-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    gap: 6px !important;
+  }
+  #pageMain .header-actions button {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+  }
+  #pageMain .profile-btn-lg { width: 34px !important; height: 34px !important; }
+}
+
+/* ─────────────────────────────────────────────
+   4) "LEARN MORE" CLICKABLE — promote above
+      consent banner (z-index 300) so it can be
+      tapped, and ensure it's not obscured.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .landing-scroll-hint {
+    position: relative !important;
+    z-index: 320 !important;
+    pointer-events: auto !important;
+  }
+  /* Keep extra room at bottom of fold so the consent banner
+     doesn't physically overlap the hint pill */
+  .landing-fold {
+    padding-bottom: 120px !important;
+  }
+  body.consent-dismissed .landing-fold {
+    padding-bottom: 32px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   5) HIDE MOVES LIST ON MOBILE ANALYSIS
+      User wants only the explain panel visible —
+      no big move list eating screen space.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  #pageMain .moves-left {
+    display: none !important;
+  }
+  #pageMain .moves-split {
+    flex-direction: column !important;
+  }
+  #pageMain .moves-right {
+    width: 100% !important;
+  }
+  #pageMain .moves-panel {
+    padding: 10px !important;
+  }
+  #pageMain .panel-label { font-size: 0.7rem; }
+  /* Status pills row stays compact */
+  #pageMain .game-stats { padding: 4px 6px !important; gap: 6px !important; }
+  #pageMain .gs-pill { font-size: 0.7rem !important; padding: 4px 8px !important; }
+  #pageMain #analysisStatus { font-size: 0.7rem !important; }
+}
+
+/* ─────────────────────────────────────────────
+   6) REPERTOIRE PAGE — fit phone width, no crop
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .rep-page-wrap {
+    padding: 18px 12px 60px !important;
+    max-width: 100% !important;
+  }
+  .rep-page-header { padding: 10px 12px !important; }
+  .ins-header-title { font-size: 1rem !important; }
+  .rep-hero {
+    padding: 22px 16px 20px !important;
+    border-radius: 16px !important;
+    margin-bottom: 24px !important;
+  }
+  .rep-hero-emoji { font-size: 2.8rem !important; margin-bottom: 8px !important; }
+  .rep-hero-emoji-text { font-size: 2.6rem !important; }
+  .rep-hero-title { font-size: 1.4rem !important; margin-bottom: 6px !important; }
+  .rep-hero-sub { font-size: 0.88rem !important; }
+
+  .rep-insights-section { margin-bottom: 28px !important; }
+  .rep-insights-grid { gap: 8px !important; }
+  .rep-insight-card {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    padding: 12px 14px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .rep-color-section { margin-bottom: 28px !important; }
+  .rep-color-header {
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+  }
+  .rep-color-piece { font-size: 1.7rem !important; }
+  .rep-color-title { font-size: 0.95rem !important; }
+  .rep-color-sub { font-size: 0.72rem !important; }
+
+  .rep-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .rep-card {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+  }
+  .rep-card-name { font-size: 0.95rem !important; }
+  .rep-card-eco { font-size: 0.7rem !important; }
+  .rep-card-why,
+  .rep-card-idea { font-size: 0.82rem !important; line-height: 1.5 !important; }
+}

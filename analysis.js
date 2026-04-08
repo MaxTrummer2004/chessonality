@@ -130,7 +130,7 @@ async function runAnalysis() {
   const stat = document.getElementById('analysisStatus');
   let note;
   if (uncached > 0)        note = `\u26A0\uFE0F ${uncached} position(s) unavailable`;
-  else                     note = '\u2705 Lichess cloud eval (depth\u00A020+)';
+  else                     note = '';
   if (stat) stat.textContent = note;
 
   // ── Show highlights page (or skip to personality reveal) ──
