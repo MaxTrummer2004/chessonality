@@ -177,6 +177,14 @@ header::before {
   background: linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+.header-brand h1.brand-logo {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  user-select: none;
+  margin: 0;
+}
+.header-brand h1.brand-logo:hover { opacity: 0.8; }
+.header-brand h1.brand-logo:active { opacity: 0.6; }
 .header-brand h1 span {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;

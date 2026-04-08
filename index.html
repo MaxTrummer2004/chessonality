@@ -39,7 +39,7 @@
 
   <header class="landing-header">
     <div class="header-brand">
-      <h1>&#9823; Chess<span>onality</span></h1>
+      <h1 class="brand-logo" onclick="showPage('landing')" title="Home">&#9823; Chess<span>onality</span></h1>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="themeBtnLanding" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
@@ -491,7 +491,7 @@
   <header>
     <div class="header-brand">
       <button class="back-btn" onclick="goBackToLanding()" title="New game">&#8592; New game</button>
-      <h1>&#9823; Chess<span>onality</span></h1>
+      <h1 class="brand-logo" onclick="showPage('profile'); renderFullProfile();" title="Your profile">&#9823; Chess<span>onality</span></h1>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
@@ -659,7 +659,7 @@
   <header>
     <div class="header-brand">
       <button class="back-btn" onclick="goToAnalysis()" title="Back to analysis">&#8592; Back</button>
-      <h1>&#9823; Chess<span>onality</span></h1>
+      <h1 class="brand-logo" onclick="showPage('profile'); renderFullProfile();" title="Your profile">&#9823; Chess<span>onality</span></h1>
     </div>
     <div class="header-actions">
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
@@ -698,7 +698,7 @@
 <div id="pageProfile" class="app-page" style="display:none">
   <header class="landing-header">
     <div class="header-brand">
-      <h1>&#9823; Chess<span>onality</span></h1>
+      <h1 class="brand-logo" onclick="showPage('profile'); renderFullProfile();" title="Your profile">&#9823; Chess<span>onality</span></h1>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="themeBtnProfile" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
