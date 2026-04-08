@@ -501,15 +501,9 @@
   .board-area { align-items: center; width: 100%; }
   .right-panel { width: 100%; }
 
-  /* Moves panel: stack vertically on tablet */
-  .moves-split {
-    flex-direction: column;
-  }
-  .moves-left {
-    width: 100% !important;
-    max-height: 200px;
-    overflow-y: auto;
-  }
+  /* Moves panel: stack vertically on tablet (single rule below at
+     960px sets the heights — duplicate removed) */
+  .moves-split { flex-direction: column; }
   .moves-right { width: 100%; }
 
   /* Engine toggle: hide labels, show icons only */
@@ -643,8 +637,8 @@
   }
   .eval-bar-wrap { width: 22px; }
 
-  /* Nav buttons get bigger touch targets */
-  .nav-btn { width: 46px; height: 42px; font-size: 1.05rem; }
+  /* Nav buttons: 44×44 unified across all phone sizes (HIG min) */
+  .nav-btn { width: 44px; height: 44px; font-size: 1.05rem; }
 
   /* Moves panel: stack and bound height so it doesn't dominate */
   .moves-split { flex-direction: column; }
@@ -1042,7 +1036,8 @@
     height: calc((100vw - 56px) / 8);
   }
   .eval-bar-wrap { width: 18px; }
-  .nav-btn { width: 42px; height: 40px; font-size: 1rem; }
+  /* keep nav-btn at 44×44 even on the smallest phones — accessibility */
+  .nav-btn { width: 44px; height: 44px; font-size: 1rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1257,30 +1252,48 @@
 ───────────────────────────────────────────── */
 @media (max-width: 860px) {
   .prof-page,
-  .prof-page-wrap { padding: 16px 12px 80px !important; }
+  .prof-page-wrap { padding: 12px 12px 60px !important; }
+
+  /* Compress the hub bar so the stats below are visible without
+     scrolling. Keep flex direction as a row, let title shrink, and
+     put both action buttons side-by-side on a single line instead
+     of stacking them vertically. */
   .prof-hub-bar {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 12px !important;
-    padding: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    flex-wrap: wrap;
+  }
+  .prof-hub-bar .prof-hub-title,
+  .prof-hub-bar .prof-hub-name {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
   }
   .prof-hub-actions {
-    flex-direction: column !important;
+    display: flex !important;
+    flex-direction: row !important;
     width: 100%;
-    gap: 8px;
+    gap: 6px !important;
   }
   .prof-analyze-btn,
   .prof-pglos-btn {
-    width: 100%;
+    flex: 1 1 0 !important;
+    width: auto !important;
     justify-content: center;
+    padding: 10px 8px !important;
+    font-size: 0.78rem !important;
+    min-height: 40px;
   }
   .prof-feature-row,
   .prof-top-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
   .prof-feat-card,
-  .prof-card { padding: 16px 14px !important; }
+  .prof-card { padding: 14px 12px !important; }
   .prof-tabs { flex-wrap: wrap; gap: 4px; }
   .prof-tab { flex: 1 1 auto; font-size: 0.8rem; padding: 9px 10px; }
 }
@@ -1757,61 +1770,73 @@
 }
 
 /* ─────────────────────────────────────────────
-   3) ANALYSIS HEADER BAR — single row, compact
+   3) APP HEADER BAR — single row, compact, accessible
+   Applies to every app-page header (analysis,
+   breakdown, profile, etc.) so the touch targets
+   are consistent and meet a 36px minimum (we trade
+   the 44px HIG for a denser layout the user wants,
+   but never go below 36px).
 ───────────────────────────────────────────── */
 @media (max-width: 700px) {
-  #pageMain header {
+  .app-page > header {
     flex-wrap: nowrap !important;
-    gap: 4px !important;
-    padding: 6px 8px !important;
-    min-height: auto !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+    min-height: 48px !important;
     height: auto !important;
     align-items: center !important;
   }
-  #pageMain .header-brand {
+  .app-page > header .header-brand {
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    gap: 4px !important;
+    gap: 6px !important;
     justify-content: flex-start;
     align-items: center;
     overflow: hidden;
   }
-  #pageMain .header-brand h1 {
-    font-size: 0.72rem !important;
+  .app-page > header .header-brand h1 {
+    font-size: 0.85rem !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0 !important;
   }
-  #pageMain .back-btn {
-    padding: 4px 7px !important;
-    font-size: 0.62rem !important;
+  .app-page > header .back-btn {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
     white-space: nowrap;
     flex-shrink: 0;
+    min-height: 36px;
   }
-  #pageMain .header-actions {
+  .app-page > header .header-actions {
     flex: 0 0 auto !important;
     justify-content: flex-end;
-    gap: 3px !important;
+    gap: 4px !important;
     flex-wrap: nowrap !important;
   }
-  #pageMain .header-actions button,
-  #pageMain .header-actions .icon-btn,
-  #pageMain .header-actions .profile-btn,
-  #pageMain .header-actions .profile-btn-lg {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    min-height: 28px !important;
+  .app-page > header .header-actions button,
+  .app-page > header .header-actions .icon-btn,
+  .app-page > header .header-actions .profile-btn,
+  .app-page > header .header-actions .profile-btn-lg {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
     padding: 0 !important;
-    font-size: 0.78rem !important;
+    font-size: 0.95rem !important;
     flex-shrink: 0;
   }
-  #pageMain .header-actions svg {
-    width: 14px !important;
-    height: 14px !important;
+  .app-page > header .header-actions svg {
+    width: 18px !important;
+    height: 18px !important;
   }
-  #pageMain .help-tour-icon { font-size: 0.7rem !important; }
+  .help-tour-icon { font-size: 0.85rem !important; }
+}
+
+/* On the very narrowest phones, drop one optional button (the
+   help/tour) so the rest stay at 36px instead of shrinking. */
+@media (max-width: 380px) {
+  .app-page > header .help-tour-btn { display: none !important; }
 }
 
 /* ─────────────────────────────────────────────
@@ -2164,6 +2189,106 @@
   #pageMain .game-stats { padding: 4px 6px !important; gap: 6px !important; }
   #pageMain .gs-pill { font-size: 0.7rem !important; padding: 4px 8px !important; }
   #pageMain #analysisStatus { font-size: 0.7rem !important; }
+}
+
+/* ─────────────────────────────────────────────
+   FINAL VERTICAL COMPRESSION PASS (≤860px)
+   Goal: bring the EXPLAIN button as close to
+   above-the-fold as possible. Strip every bit
+   of dead vertical space between header and
+   the coach panel without hiding content.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  /* Page container: no top padding, minimal bottom */
+  #pageMain .container {
+    padding: 4px 6px 24px !important;
+    gap: 6px !important;
+  }
+
+  /* Main grid: tight gap between board area and right panel */
+  #pageMain .main-grid {
+    gap: 8px !important;
+  }
+  #pageMain .board-area { gap: 6px !important; }
+
+  /* "You played as ..." card: ultra-compact single row */
+  #pageMain .analysis-pers-card {
+    padding: 6px 10px !important;
+    margin: 0 4px 4px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden;
+  }
+  #pageMain .apc-emoji { font-size: 1.3rem !important; }
+  #pageMain .apc-name  { font-size: 0.85rem !important; }
+  #pageMain .apc-traits { display: none !important; }
+
+  /* Nav row directly below board: tighter padding */
+  #pageMain .nav-row {
+    padding: 4px 0 !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+
+  /* Game stats pill row: minimal */
+  #pageMain .game-stats {
+    padding: 3px 6px !important;
+    gap: 4px !important;
+    margin: 0 !important;
+  }
+
+  /* Coach panel container: zero outer margin so the button hugs the board */
+  #pageMain .ai-coach-panel {
+    margin: 4px 0 0 !important;
+    padding: 0 !important;
+  }
+  #pageMain .ai-coach-panel .ai-coach-body,
+  #pageMain .ai-coach-panel .ai-coach-inner {
+    padding: 0 !important;
+  }
+
+  /* EXPLAIN button: full width, prominent, generous tap target */
+  #pageMain .btn-explain {
+    width: 100% !important;
+    min-height: 52px !important;
+    font-size: 1rem !important;
+    padding: 14px 16px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  /* Right panel: no extra padding above */
+  #pageMain .right-panel {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   LANDING — restore 2 compact feature bullets
+   Previously hid all 4 to save space. Showing
+   2 in a tight row gives social proof without
+   pushing CTA off-screen.
+───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .landing-features-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px 14px !important;
+    margin: 0 auto 18px !important;
+    max-width: 340px !important;
+    padding: 0 12px !important;
+  }
+  .landing-features-row > *:nth-child(n+3) {
+    display: none !important;
+  }
+  .landing-features-row > * {
+    font-size: 0.78rem !important;
+    padding: 4px 0 !important;
+  }
 }
 
 /* ─────────────────────────────────────────────
