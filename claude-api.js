@@ -579,11 +579,26 @@ function perspectiveHeader(d) {
   const studentName = colorName(d.color);
   const oppName     = colorName(d.mover === 'w' ? 'b' : 'w');
   const isOwn       = d.mover === d.color;
+  // Did the played move match the engine's #1?
+  const stripAnnot  = s => (s || '').replace(/[+#!?]/g, '').trim();
+  const wasBest     = d.best && d.best !== '?' &&
+                      stripAnnot(d.san) === stripAnnot(d.best);
+
   if (isOwn) {
+    if (wasBest) {
+      return `Student plays as: ${studentName}. This is the STUDENT'S OWN move and it IS the engine's #1 choice.
+PRONOUNS: "you/your" = ${studentName} (the student). "your opponent" = ${oppName}.
+The Best Move section MUST celebrate that you found the top engine move. Use phrasing like "this is the engine's top pick — well spotted" or "you played the engine's #1 choice here". Do NOT suggest a different move and do NOT say "you could have played X instead" (there is nothing better to play).`;
+    }
     return `Student plays as: ${studentName}. This is the STUDENT'S OWN move.
 PRONOUNS: "you/your" = ${studentName} (the student). "your opponent" = ${oppName}.
 When discussing the engine's better alternative: say "you could have played [move] instead".`;
   } else {
+    if (wasBest) {
+      return `Student plays as: ${studentName}. This is the OPPONENT'S move (${moverName} moved) and it IS the engine's #1 choice for them.
+PRONOUNS: "you/your" = ${studentName} (the student). "your opponent" = ${oppName} = the one who made this move.
+The Best Move section MUST acknowledge that your opponent found the engine's top move. Use phrasing like "your opponent found the engine's top choice here" or "this was the engine's #1 reply — your opponent chose well". Do NOT suggest a different move and do NOT say "your opponent could have played X instead" (there is nothing better for them to play).`;
+    }
     return `Student plays as: ${studentName}. This is the OPPONENT'S move (${moverName} moved).
 PRONOUNS: "you/your" = ${studentName} (the student). "your opponent" = ${oppName} = the one who made this move.
 When discussing the engine's better alternative for the opponent: say "your opponent could have played [move] instead" (NOT "you"). Do NOT say "you had [move] available" because the student did NOT move here.`;
