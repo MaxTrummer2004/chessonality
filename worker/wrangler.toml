@@ -4,9 +4,17 @@ compatibility_date = "2024-01-01"
 
 # Uncomment and fill in to enable KV-based usage tracking:
 # [[kv_namespaces]]
-# binding = "USAGE_KV"
-# id = "YOUR_KV_NAMESPACE_ID_HERE"
+# binding = "SYNC_KV"
+# id = "18930f96a15a4d37a0134f4d1dbcba45"
 
-# Secrets (set via: wrangler secret put ANTHROPIC_API_KEY)
-# ANTHROPIC_API_KEY
-# LICENSE_SECRET
+# Cross-device sync (/api/sync/*)
+[[kv_namespaces]]
+binding = "SYNC_KV"
+id = "18930f96a15a4d37a0134f4d1dbcba45"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# ANTHROPIC_API_KEY  — Claude API key
+# LICENSE_SECRET     — random string, also used to sign sync tokens
+# RESEND_API_KEY     — (optional) Resend.com key for sending sync codes.
+#                      Without this, codes are logged to `wrangler tail` instead of emailed.
+# SYNC_FROM_EMAIL    — (optional) verified from-address, e.g. "Chessonality <no-reply@chessonality.

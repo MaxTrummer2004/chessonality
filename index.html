@@ -5,6 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chessonality — Chess analysis from your actual games</title>
 <meta name="description" content="Discover your chess playing style through AI analysis of your real games. Not a quiz — import from Chess.com or Lichess and get your chess personality instantly.">
+<meta name="keywords" content="chess analysis, chess personality, chess AI, lichess analysis, chess.com analysis, chess coach, chess improvement, chess openings, chess style">
+<meta name="author" content="Chessonality">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chessonality.com/">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<!-- Open Graph / Facebook / WhatsApp / LinkedIn / Slack -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Chessonality">
+<meta property="og:title" content="Chessonality — Discover your chess personality">
+<meta property="og:description" content="AI analysis of your real chess games. Import from Lichess or Chess.com and find out which of 8 chess personalities you play like.">
+<meta property="og:url" content="https://chessonality.com/">
+<meta property="og:image" content="https://chessonality.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Chessonality — Chess personality analysis from your real games">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chessonality — Discover your chess personality">
+<meta name="twitter:description" content="AI analysis of your real chess games. Import from Lichess or Chess.com and find out which of 8 chess personalities you play like.">
+<meta name="twitter:image" content="https://chessonality.com/og-image.png">
+<meta name="twitter:image:alt" content="Chessonality — Chess personality analysis from your real games">
+
+<!-- Structured data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Chessonality",
+  "url": "https://chessonality.com/",
+  "description": "AI-powered chess personality analysis. Import your real games from Lichess or Chess.com and discover your unique playing style.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web",
+  "offers": [
+    {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "Free analyses to try the app"
+    },
+    {
+      "@type": "Offer",
+      "price": "4.99",
+      "priceCurrency": "EUR",
+      "description": "Chessonality Pro — unlimited analyses, monthly subscription"
+    }
+  ],
+  "creator": {
+    "@type": "Person",
+    "name": "Max Trummer"
+  }
+}
+</script>
+
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/panels.css">
@@ -348,7 +411,7 @@
       <span class="lf-sep">&middot;</span>
       <button class="lf-link" onclick="showLegal('terms')">Terms of Service</button>
       <span class="lf-sep">&middot;</span>
-      <a class="lf-link" href="mailto:maxtrummer16@gmail.com">Contact</a>
+      <a class="lf-link" href="mailto:support@chessonality.com">Contact</a>
     </div>
   </footer>
 </div>
@@ -915,6 +978,27 @@
       </div>
     </div>
 
+    <!-- ── Cross-device sync offer (dismissible) ── -->
+    <div class="prof-sync-banner" id="profSyncBanner" style="display:none">
+      <div class="psb-icon" aria-hidden="true">&#128242;</div>
+      <div class="psb-body">
+        <div class="psb-title" id="psbTitle">Access your games on any device</div>
+        <div class="psb-sub" id="psbSub">Save your profile, history and personality to an email. No password, just a magic link.</div>
+      </div>
+      <div class="psb-actions">
+        <button class="psb-btn psb-btn-primary" onclick="openSyncModal('save')">Save to email</button>
+        <button class="psb-btn psb-btn-ghost" onclick="openSyncModal('load')">I have a code</button>
+      </div>
+    </div>
+
+    <!-- Synced state (shown when user already linked an email) -->
+    <div class="prof-sync-status" id="profSyncStatus" style="display:none">
+      <span class="pss-dot"></span>
+      <span class="pss-text">Synced to <strong id="pssEmail"></strong></span>
+      <button class="pss-btn" onclick="syncPushNow()" title="Push latest data">Sync now</button>
+      <button class="pss-btn pss-btn-ghost" onclick="syncUnlink()" title="Stop syncing on this device">Unlink</button>
+    </div>
+
     <!-- ── Tab bar ── -->
     <div class="prof-tabs">
       <button class="prof-tab active" id="profTabOverview" onclick="switchProfTab('overview')">Overview</button>
@@ -1410,7 +1494,7 @@
 
     <h3>Contact</h3>
     <p>
-      Email: <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>
+      Email: <a href="mailto:legal@chessonality.com" class="legal-link">legal@chessonality.com</a>
     </p>
 
     <h3>Purpose of the website</h3>
@@ -1447,7 +1531,7 @@
     <p>
       Max Trummer<br>
       Mellacher Stra&szlig;e 63, 8072 Fernitz&ndash;Mellach, Austria<br>
-      Email: <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>
+      Email: <a href="mailto:legal@chessonality.com" class="legal-link">legal@chessonality.com</a>
     </p>
 
     <h3>2. Local-first storage</h3>
@@ -1485,7 +1569,7 @@
     <p>We do not retain any personal data on our servers. Locally stored data on your device persists until you delete it yourself. Server log files of the hosting provider are typically deleted after a few days.</p>
 
     <h3>11. Contact</h3>
-    <p>Questions about data protection? Email <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>.</p>
+    <p>Questions about data protection? Email <a href="mailto:support@chessonality.com" class="legal-link">support@chessonality.com</a>.</p>
   </div>
 </div>
 
@@ -1496,28 +1580,48 @@
     <button class="modal-close-btn" onclick="closeAllModals()" title="Close">&times;</button>
   </div>
   <div class="modal-legal-body">
-    <p class="legal-date">Last updated: January 2025</p>
+    <p class="legal-date">Last updated: April 2026</p>
 
-    <h3>Use of the service</h3>
-    <p>Chessonality is a free tool for personal chess improvement. You may use it for personal, non-commercial purposes. You agree not to misuse the service, attempt to reverse-engineer it, or use it to violate any laws.</p>
+    <h3>1. Use of the service</h3>
+    <p>Chessonality is a personal chess analysis tool offered as a free tier and an optional paid subscription ("Chessonality Pro"). You may use it for personal, non-commercial purposes. You agree not to misuse the service, attempt to reverse-engineer it, scrape it in an automated way, or use it to violate any laws.</p>
 
-    <h3>AI-generated content</h3>
-    <p>Analysis and coaching tips are generated by AI and are provided for informational and entertainment purposes only. They do not constitute professional advice. Results may occasionally be inaccurate.</p>
+    <h3>2. Free tier and Pro subscription</h3>
+    <p>The free tier allows a limited number of analyses per device, as indicated in the app. Chessonality Pro removes these limits and costs <strong>&euro;4.99 per month</strong>, billed in advance via our payment processor Stripe Payments Europe, Ltd. Prices include any applicable VAT for consumers in the EU.</p>
+    <p>Your subscription renews automatically every month until you cancel it. You may cancel at any time from the receipt email sent by Stripe or by contacting us at <a href="mailto:support@chessonality.com" class="legal-link">support@chessonality.com</a>. Cancellation takes effect at the end of the current billing period; you keep Pro access until then.</p>
 
-    <h3>Third-party services</h3>
-    <p>This app relies on Anthropic's Claude API, the Lichess API, and optionally the Chess.com API. Use of these services is subject to their respective terms. We are not affiliated with, endorsed by, or sponsored by Lichess, Chess.com, or Anthropic.</p>
+    <h3>3. Right of withdrawal (EU consumers)</h3>
+    <p>As a consumer in the EU, you normally have a 14-day right of withdrawal for digital services under Directive 2011/83/EU and the Austrian Fern- und Auswärtsgesch&auml;fte-Gesetz (FAGG). By starting to use Chessonality Pro immediately after purchase, you expressly consent to the immediate performance of the service and acknowledge that you lose your right of withdrawal once the service has been fully provided for the current billing period. You can still cancel future renewals at any time.</p>
 
-    <h3>No warranties</h3>
-    <p>This service is provided "as is" without warranties of any kind. We do not guarantee uninterrupted availability, accuracy of analysis, or fitness for any particular purpose.</p>
+    <h3>4. Refunds</h3>
+    <p>Because Chessonality Pro is a monthly digital service, we do not offer pro-rata refunds for the current month. If you believe you were charged in error, contact <a href="mailto:support@chessonality.com" class="legal-link">support@chessonality.com</a> within 14 days of the charge and we will review it in good faith. Statutory warranty rights under Austrian and EU law remain unaffected.</p>
 
-    <h3>Limitation of liability</h3>
-    <p>To the maximum extent permitted by law, Chessonality and its creators are not liable for any damages arising from your use of this service.</p>
+    <h3>5. Price changes</h3>
+    <p>We may change the price of Chessonality Pro for future billing periods. We will notify active subscribers by email at least 30 days before a price change takes effect. If you do not accept the new price, you can cancel before it takes effect.</p>
 
-    <h3>Changes to these terms</h3>
-    <p>We may update these terms occasionally. Continued use of the service constitutes acceptance of any changes.</p>
+    <h3>6. AI-generated content</h3>
+    <p>Analysis, explanations and coaching tips are generated by AI (Anthropic's Claude) and are provided for informational and entertainment purposes only. They do not constitute professional advice. Results may occasionally be inaccurate or incomplete and should not be used as the sole basis for competitive decisions.</p>
 
-    <h3>Contact</h3>
-    <p>Questions about these terms? Email <a href="mailto:maxtrummer16@gmail.com" class="legal-link">maxtrummer16@gmail.com</a>.</p>
+    <h3>7. Third-party services</h3>
+    <p>Chessonality relies on Anthropic's Claude API (AI analysis), the Lichess API (games and engine), optionally the Chess.com API (game import), Cloudflare (hosting and proxy), Stripe (payments) and Resend (transactional email for device sync). Use of these services is subject to their respective terms. We are not affiliated with, endorsed by or sponsored by Lichess, Chess.com or Anthropic.</p>
+
+    <h3>8. No warranties</h3>
+    <p>The service is provided "as is" and "as available" without warranties of any kind, express or implied. We do not guarantee uninterrupted availability, accuracy of analysis, or fitness for any particular purpose. Your statutory consumer rights remain unaffected.</p>
+
+    <h3>9. Limitation of liability</h3>
+    <p>To the maximum extent permitted by Austrian and EU law, Chessonality and its creator are liable only for damages caused by intent or gross negligence. Liability for slight negligence, indirect damages, lost profits or loss of data is excluded, except where mandatory law requires otherwise (e.g. personal injury, product liability, fraudulent concealment of defects).</p>
+
+    <h3>10. Account and data</h3>
+    <p>You can use the free tier without creating an account. The optional device-sync feature stores your data associated with an email address you provide. You can unlink or delete your synced data at any time from your profile page or by emailing us.</p>
+
+    <h3>11. Changes to these terms</h3>
+    <p>We may update these terms occasionally. Material changes will be announced in-app at least 14 days before they take effect. Continued use after that time constitutes acceptance of the updated terms.</p>
+
+    <h3>12. Governing law and jurisdiction</h3>
+    <p>These terms are governed by the laws of the Republic of Austria, excluding its conflict-of-laws rules and the UN Convention on Contracts for the International Sale of Goods. For consumers, mandatory consumer protection provisions of your country of residence remain unaffected. Place of jurisdiction is Graz, Austria, unless mandatory law requires otherwise.</p>
+    <p>The European Commission provides an online dispute resolution platform available at <a href="https://ec.europa.eu/consumers/odr" class="legal-link" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>. We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board.</p>
+
+    <h3>13. Contact</h3>
+    <p>Questions about these terms? Email <a href="mailto:legal@chessonality.com" class="legal-link">legal@chessonality.com</a>. General support: <a href="mailto:support@chessonality.com" class="legal-link">support@chessonality.com</a>.</p>
   </div>
 </div>
 
@@ -1713,6 +1817,7 @@
 </div>
 
 <!-- Scripts -->
+<script src="error-handler.js"></script>
 <script src="config.js"></script>
 <script src="db.js"></script>
 <script src="engine.js"></script>
@@ -1735,6 +1840,7 @@
 <script src="repertoire.js"></script>
 <script src="tour.js"></script>
 <script src="streaks.js"></script>
+<script src="sync.js"></script>
 
 <script>
 // ── Theme ──────────────────────────────────────────────────
@@ -2104,6 +2210,73 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
+<!-- ── Cross-device Sync Modal ── -->
+<div class="sync-modal-overlay" id="syncModalOverlay" style="display:none"
+     onclick="if(event.target===this)closeSyncModal()">
+  <div class="sync-modal" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle">
+    <button class="sync-modal-close" onclick="closeSyncModal()" aria-label="Close">&times;</button>
+
+    <!-- Step 1: Enter email / code -->
+    <div class="sync-step" id="syncStepEnter">
+      <div class="sync-modal-icon">&#128274;</div>
+      <h2 class="sync-modal-title" id="syncModalTitle">Access on any device</h2>
+      <p class="sync-modal-sub" id="syncModalSub">
+        Enter your email and we'll send a 6-digit code. No password, no account creation.
+        Just a way to move your profile between devices.
+      </p>
+
+      <div class="sync-tab-row">
+        <button class="sync-tab active" id="syncTabSave"
+                onclick="switchSyncTab('save')">Save to email</button>
+        <button class="sync-tab" id="syncTabLoad"
+                onclick="switchSyncTab('load')">Load from code</button>
+      </div>
+
+      <div class="sync-field">
+        <label class="sync-label" for="syncEmailInput">Email</label>
+        <input type="email" id="syncEmailInput" class="sync-input"
+               placeholder="you@example.com" autocomplete="email" />
+      </div>
+
+      <button class="sync-primary-btn" id="syncPrimaryBtn" onclick="handleSyncPrimary()">
+        Send code
+      </button>
+      <div class="sync-error" id="syncError" style="display:none"></div>
+      <div class="sync-legal">
+        Your email is only used to identify your data. We never send marketing.
+      </div>
+    </div>
+
+    <!-- Step 2: Enter code -->
+    <div class="sync-step" id="syncStepCode" style="display:none">
+      <div class="sync-modal-icon">&#9993;</div>
+      <h2 class="sync-modal-title">Check your inbox</h2>
+      <p class="sync-modal-sub">
+        We sent a 6-digit code to <strong id="syncSentTo"></strong>.
+        Enter it below to continue.
+      </p>
+      <div class="sync-field">
+        <label class="sync-label" for="syncCodeInput">6-digit code</label>
+        <input type="text" id="syncCodeInput" class="sync-input sync-code-input"
+               maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="123456" />
+      </div>
+      <button class="sync-primary-btn" id="syncCodeBtn" onclick="handleSyncCode()">
+        Confirm
+      </button>
+      <button class="sync-secondary-btn" onclick="syncBackToEnter()">Back</button>
+      <div class="sync-error" id="syncCodeError" style="display:none"></div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="sync-step" id="syncStepDone" style="display:none">
+      <div class="sync-modal-icon sync-icon-success">&#10003;</div>
+      <h2 class="sync-modal-title" id="syncDoneTitle">All set</h2>
+      <p class="sync-modal-sub" id="syncDoneSub"></p>
+      <button class="sync-primary-btn" onclick="closeSyncModal()">Done</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Personalities Glossary Modal ── -->
 <div class="pglos-overlay" id="pglosOverlay">
