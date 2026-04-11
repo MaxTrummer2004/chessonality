@@ -14,7 +14,7 @@
   }
   function getPersColor() {
     const v = getComputedStyle(document.documentElement).getPropertyValue('--pers-color').trim();
-    return v || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e94560';
+    return v || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d4a24c';
   }
 
   // How many px away from any UI element the streak must stay

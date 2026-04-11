@@ -389,13 +389,13 @@
   color: #fff; text-decoration: none;
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-size: 1rem; font-weight: 700;
-  box-shadow: 0 4px 20px rgba(233,69,96,0.35);
+  box-shadow: 0 4px 20px rgba(212, 162, 76,0.35);
   transition: all var(--transition);
   margin-bottom: 20px;
 }
 .paywall-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(233,69,96,0.45);
+  box-shadow: 0 8px 28px rgba(212, 162, 76,0.45);
 }
 .paywall-key-section {
   width: 100%; padding-top: 16px;
@@ -504,7 +504,7 @@
   /* Moves panel: stack vertically on tablet (single rule below at
      960px sets the heights — duplicate removed) */
   .moves-split { flex-direction: column; }
-  .moves-right { width: 100%; }
+  .moves-right-desktop { width: 100%; }
 
   /* Engine toggle: hide labels, show icons only */
   .engine-toggle .toggle-btn { padding: 5px 10px; font-size: 0.78rem; }
@@ -653,7 +653,7 @@
   /* Moves panel: stack and bound height so it doesn't dominate */
   .moves-split { flex-direction: column; }
   .moves-left  { width: 100% !important; max-height: 220px; overflow-y: auto; }
-  .moves-right { width: 100%; }
+  .moves-right-desktop { width: 100%; }
 }
 
 @media (max-width: 600px) {
@@ -2269,8 +2269,29 @@
   #pageMain .moves-split {
     flex-direction: column !important;
   }
-  #pageMain .moves-right {
-    width: 100% !important;
+  #pageMain .moves-right-desktop {
+    display: none !important;
+  }
+  /* Whole moves panel hidden on narrow screens — analysis runs in the
+     walkthrough overlay, so the inline move list is redundant here. */
+  #pageMain .panel-box.moves-panel {
+    display: none !important;
+  }
+  /* Strip the .tab-page container's card styling on mobile so it doesn't
+     render as an empty pill once all its in-flow children are hidden.
+     We can't display:none it because #mobileExplainBar (position:fixed)
+     lives inside it. */
+  #pageMain #pageAnalysis.tab-page {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  #pageMain #pageAnalysis.tab-page::before,
+  #pageMain #pageAnalysis.tab-page::after {
+    display: none !important;
+    content: none !important;
   }
   #pageMain .moves-panel {
     padding: 10px !important;
@@ -2327,10 +2348,9 @@
     display: none !important;
   }
 
-  /* Hide explain-button hint text on mobile (e.g. "Analysis ready. Navigate…") */
-  #pageMain #aicHint,
-  body[data-page="main"] .aic-btn-group .aic-hint,
-  body[data-page="main"] #aicHint {
+  /* Hide explain-button hint text on mobile (e.g. "Select a move…") */
+  #mobileExplainBar .aic-hint,
+  #pageMain #aicHint {
     display: none !important;
   }
 

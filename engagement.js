@@ -46,7 +46,7 @@ function renderPersonalityCollection(history) {
   grid.innerHTML = PERSONALITY_LIST.map(p => {
     const unlocked = discovered.has(p.id);
     const pct = bestPct[p.id];
-    return `<div class="prof-collect-card ${unlocked ? 'unlocked' : 'locked'}" style="--pers-card-color:${p.color}">
+    return `<div class="prof-collect-card ${unlocked ? 'unlocked' : 'locked'}" data-pers="${p.id}" style="--pers-card-color:${p.color}">
       <div class="prof-collect-emoji">${p.emoji}</div>
       <div class="prof-collect-name">${p.name.replace('The ', '')}</div>
       ${unlocked && pct ? `<div class="prof-collect-pct">${pct}%</div>` : ''}
@@ -110,15 +110,26 @@ function renderStreakSystem(history) {
 // ── 3. SPARKLINE ──────────────────────────────────────────────
 
 function renderProfileSparkline(history) {
+  // The "Style Consistency" sparkline card has been replaced by the
+  // compact Personality Collection in the same dashboard slot. This
+  // function is intentionally a no-op so legacy callers don't crash.
+  return;
+  // eslint-disable-next-line no-unreachable
   const card = document.getElementById('profSparklineCard');
   const canvas = document.getElementById('profSparkline');
   const sub = document.getElementById('profSparklineSub');
+  const helper = document.getElementById('profSparklineHelper');
   if (!canvas || !card) return;
 
-  const withPers = history.filter(e => e.personality && e.personalityScores);
+  // Filter out repertoire-batch entries — they're not part of the
+  // user's analyzed-games history and shouldn't show up on the trend.
+  const withPers = history
+    .filter(e => e && e.source !== 'repertoire-batch')
+    .filter(e => e.personality && e.personalityScores);
   if (withPers.length < 2) {
     card.style.display = withPers.length === 0 ? 'none' : 'flex';
-    if (sub) sub.textContent = withPers.length === 0 ? '' : 'Analyze more games to see trend';
+    if (sub) sub.textContent = withPers.length === 0 ? '' : 'Analyze more games to see your trend';
+    if (helper) helper.textContent = 'How strongly each game matched your dominant personality';
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     return;
@@ -126,12 +137,22 @@ function renderProfileSparkline(history) {
 
   card.style.display = 'flex';
 
-  // Extract primary personality score per game (oldest → newest)
-  const items = withPers.slice().reverse().slice(-10); // last 10 games
+  // Determine the user's CURRENT dominant personality (most recent
+  // game's primary), and plot every game's score for THAT personality.
+  // This way the line directly answers: "how Lion-like was each game?"
+  // for whatever the user's dominant style currently is.
+  const items = withPers.slice().reverse().slice(-10); // oldest → newest
+  const dominantId = items[items.length - 1].personality;
+  const dominantPers = (typeof PERSONALITIES !== 'undefined' && PERSONALITIES[dominantId]) || null;
+  const dominantName = dominantPers ? dominantPers.name.replace(/^The /, '') : 'your';
   const scores = items.map(e => {
-    const top = e.personalityScores.find(s => s.id === e.personality);
-    return top ? top.pct : 0;
+    const match = e.personalityScores.find(s => s.id === dominantId);
+    return match ? match.pct : 0;
   });
+
+  if (helper) {
+    helper.textContent = `How strongly each game matched your ${dominantName} style (0–100%)`;
+  }
 
   // Draw sparkline
   const rect = canvas.getBoundingClientRect();
@@ -159,8 +180,8 @@ function renderProfileSparkline(history) {
 
   // Gradient fill
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, 'rgba(233,69,96,0.22)');
-  grad.addColorStop(1, 'rgba(233,69,96,0.0)');
+  grad.addColorStop(0, 'rgba(212, 162, 76,0.22)');
+  grad.addColorStop(1, 'rgba(212, 162, 76,0.0)');
 
   ctx.beginPath();
   ctx.moveTo(toX(0), H);
@@ -171,7 +192,7 @@ function renderProfileSparkline(history) {
   ctx.fill();
 
   // Line
-  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e94560';
+  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d4a24c';
   ctx.beginPath();
   scores.forEach((v, i) => i === 0 ? ctx.moveTo(toX(0), toY(v)) : ctx.lineTo(toX(i), toY(v)));
   ctx.strokeStyle = accentColor;
@@ -186,13 +207,16 @@ function renderProfileSparkline(history) {
   ctx.fillStyle = accentColor;
   ctx.fill();
 
-  // Trend text
+  // Trend text — describe what the line actually shows
   if (sub) {
     const first = scores[0];
-    const diff = last - first;
-    if (diff > 2) sub.textContent = `↗ Trending up (+${diff}%)`;
-    else if (diff < -2) sub.textContent = `↘ Trending down (${diff}%)`;
-    else sub.textContent = '→ Stable';
+    const diff = Math.round(last - first);
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    let trendBit;
+    if (diff > 2) trendBit = `getting stronger (+${diff}%)`;
+    else if (diff < -2) trendBit = `weakening (${diff}%)`;
+    else trendBit = `holding steady`;
+    sub.textContent = `Avg ${avg}% match — your ${dominantName} side is ${trendBit}`;
   }
 }
 
@@ -200,12 +224,12 @@ function renderProfileSparkline(history) {
 // ── 4. MILESTONE CELEBRATIONS ─────────────────────────────────
 
 const MILESTONES = [
-  { count: 1,  emoji: '\u2658', title: 'First Analysis!', sub: 'You just analyzed your first game. Your chess personality journey begins now!' },
-  { count: 3,  emoji: '\u2656', title: 'Getting Warmed Up!', sub: 'Three games analyzed. Your personality profile is taking shape!' },
-  { count: 5,  emoji: '\u2655', title: '5 Games Strong!', sub: 'Your chess DNA is becoming clearer with every game you analyze.' },
-  { count: 10, emoji: '\u2657', title: 'Double Digits!', sub: '10 games analyzed! Your personality data is now rich enough for deep insights.' },
-  { count: 20, emoji: '\u2655', title: 'Dedicated Player!', sub: '20 analyses! You have a comprehensive chess personality profile.' },
-  { count: 50, emoji: '\u2654', title: 'Chess Scholar!', sub: '50 games analyzed. You truly understand your chess identity.' },
+  { count: 1,  emoji: '\u2658', title: 'First analysis', sub: 'Your first game is in. One game tells us a little; more games tell us everything.' },
+  { count: 3,  emoji: '\u2656', title: 'Three games in', sub: 'Your personality profile is starting to take shape.' },
+  { count: 5,  emoji: '\u2655', title: 'Five games', sub: 'Enough data to see your strongest and weakest traits clearly.' },
+  { count: 10, emoji: '\u2657', title: 'Ten games', sub: 'Your profile is now robust enough for focused practice plans.' },
+  { count: 20, emoji: '\u2655', title: 'Twenty games', sub: 'You have a full picture of how you play.' },
+  { count: 50, emoji: '\u2654', title: 'Fifty games', sub: 'A deep record of your game. Use it to track long-term progress.' },
 ];
 
 function checkMilestone(gameCount) {
@@ -239,7 +263,7 @@ function showMilestone(ms) {
 
   // Generate confetti pieces
   if (confetti) {
-    const colors = ['#e94560','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#06b6d4','#ff6b6b'];
+    const colors = ['#d4a24c','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#06b6d4','#e8b864'];
     confetti.innerHTML = Array.from({length: 30}, () => {
       const c = colors[Math.floor(Math.random() * colors.length)];
       const left = Math.random() * 100;
@@ -265,12 +289,14 @@ function renderCoachPreviewText(history, agg) {
   const textEl = document.getElementById('profCoachPreviewText');
   if (!textEl) return;
 
-  // Show the card only if user has personality data
+  // Always keep the card visible/clickable so users can open the
+  // coach page and generate a plan from there. Only the teaser
+  // subtitle text changes based on whether we have personality data.
+  if (el) el.style.display = '';
   if (!agg || history.length < 1) {
-    if (el) el.style.display = 'none';
+    textEl.textContent = 'Personalized training plan for your style';
     return;
   }
-  if (el) el.style.display = '';
 
   // Generate a quick teaser as subtitle
   const p = agg.primary;

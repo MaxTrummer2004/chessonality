@@ -117,9 +117,9 @@
 }
 .move-cell:hover  { background: var(--surface3); }
 .move-cell.active {
-  background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(255,107,107,0.1));
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.15), rgba(232, 184, 100,0.1));
   color: var(--text);
-  outline: 1px solid rgba(233,69,96,0.3);
+  outline: 1px solid rgba(212, 162, 76,0.3);
 }
 
 /* Move quality – left border accent */
@@ -240,7 +240,7 @@
 #explanation li            { margin-bottom: 0.3em; }
 #explanation code {
   font-family: 'Courier New', monospace; font-size: 0.85em;
-  background: var(--surface3); padding: 1px 5px; border-radius: 3px;
+  background: var(--surface3); padding: 2px 6px; border-radius: 4px;
   color: var(--accent-2);
 }
 

@@ -18,26 +18,27 @@ function switchProfTab(tab) {
 }
 
 // ── Insights tab switching ──
-let _activeInsTab = 'strengths';
+let _activeInsTab = 'moments';
 function switchInsTab(tab) {
   if (tab === 'coach') { openCoachPage(); return; }
   _activeInsTab = tab;
-  ['strengths','evolution'].forEach(t => {
+  ['moments', 'openings'].forEach(t => {
     const panel = document.getElementById('insTabPanel' + t[0].toUpperCase() + t.slice(1));
-    const btn   = document.getElementById('insTab'   + t[0].toUpperCase() + t.slice(1));
+    const btn   = document.getElementById('insTab'      + t[0].toUpperCase() + t.slice(1));
     if (panel) panel.style.display = t === tab ? '' : 'none';
     if (btn)   btn.classList.toggle('active', t === tab);
   });
-  if (tab === 'evolution') requestAnimationFrame(() => drawEvolutionLineChart(_insHistory));
-  else if (tab === 'strengths') requestAnimationFrame(() => { drawRadarChart(_insHistory); renderStrengthBars(_insHistory); });
+  if (tab === 'moments')       requestAnimationFrame(() => giRenderMomentsPanel());
+  else if (tab === 'openings') requestAnimationFrame(() => giRenderOpeningsPanel());
 }
 
 let _insHistory = [];
+let _gi = { history: [], moments: [], openings: [], momentsIdx: 0, expandedOpening: null };
 
 function openInsights() {
   showPage('insights');
-  _activeInsTab = 'strengths';
-  switchInsTab('strengths');
+  _activeInsTab = 'moments';
+  switchInsTab('moments');
   renderInsightsPage();
 }
 
@@ -67,7 +68,21 @@ async function renderCoachPage() {
   if (_coachCache.html) {
     _coachTasks = _coachCache.tasks || [];
     _cpoLastHtml = _coachCache.html;
-    if (content) content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
+    // IMPORTANT: _buildCoachResultHtml reads _coachPageMode at build time
+    // to decide which reset function the embedded "New plan" button calls
+    // (resetCoachPagePlan vs resetCoachPlan). When restoring from cache on
+    // page open, _coachPageMode is still false, so the button would wire
+    // to resetCoachPlan() — which targets the insights-page elements that
+    // don't exist here, and the click silently does nothing. Force the
+    // flag for the duration of the build so the button gets the right
+    // handler.
+    const _wasPageMode = _coachPageMode;
+    _coachPageMode = true;
+    try {
+      if (content) content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
+    } finally {
+      _coachPageMode = _wasPageMode;
+    }
     if (btn) btn.style.display = 'none'; // hide bottom CTA - "New plan" is already inside the result
   } else {
     if (btn) { btn.disabled = false; btn.innerHTML = '<span class="coach-page-cta-icon">&#9889;</span> Generate Practice Plan'; btn.onclick = function(){ generateCoachPageAdvice(); }; }
@@ -94,7 +109,7 @@ async function generateCoachPageAdvice() {
   const btn = document.getElementById('coachPageBtn');
   // Show loading immediately
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="coach-page-cta-icon">&#9889;</span> Generating...'; }
-  if (content) content.innerHTML = '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Analyzing your chess DNA...</div></div>';
+  if (content) content.innerHTML = '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Analyzing your games...</div></div>';
   _coachPageMode = true;
   try {
     await _generateCoachAdviceShared(content, btn);
@@ -106,34 +121,249 @@ async function generateCoachPageAdvice() {
 async function renderInsightsPage() {
   let history = [];
   try { history = await dbGetHistory(); } catch {}
+  // Filter out repertoire-batch entries (same convention as profile history list)
+  _gi.history = history.filter(e => e && e.source !== 'repertoire-batch');
+  // Reset cached aggregations on every page entry
+  _gi.moments = [];
+  _gi.openings = [];
+  _gi.momentsIdx = 0;
+  _gi.expandedOpening = null;
+  // Keep _insHistory populated for other consumers (renderCoachPage etc.)
   _insHistory = history.filter(e => e.personality && PERSONALITIES[e.personality]).slice(0, 20);
 
-  // Header subtitle: show top personality
-  const agg = await getAggregatePersonality();
+  // Header subtitle
   const subEl = document.getElementById('insHeaderSub');
-  if (subEl && agg) {
-    const p = agg.primary;
-    subEl.textContent = `Primarily ${p.emoji} ${p.name} across ${agg.totalGames} game${agg.totalGames !== 1 ? 's' : ''}`;
+  if (subEl) {
+    const n = _gi.history.length;
+    subEl.textContent = n > 0
+      ? `Lessons drawn from ${n} analyzed game${n !== 1 ? 's' : ''}`
+      : 'Analyze a game to unlock your insights';
   }
 
-  // Stat chips on evolution panel
-  renderEvoStats(_insHistory, agg);
+  // Render whichever tab is currently active
+  requestAnimationFrame(() => {
+    if (_activeInsTab === 'openings') giRenderOpeningsPanel();
+    else giRenderMomentsPanel();
+  });
+}
 
-  // Draw the default tab (strengths = radar + bars)
-  requestAnimationFrame(() => { drawRadarChart(_insHistory); renderStrengthBars(_insHistory); });
+// ── Game Insights: Critical Moments panel ──
+function giRenderMomentsPanel() {
+  const el = document.getElementById('insMomentsContent');
+  if (!el) return;
+  const hist = _gi.history || [];
 
-  // Auto-show cached coach plan (no button click needed)
-  const coachBtn = document.getElementById('insCoachBtn');
-  const coachContent = document.getElementById('insCoachContent');
-  if (_coachCache.html) {
-    _coachTasks = _coachCache.tasks || [];
-    _cpoLastHtml = _coachCache.html;
-    if (coachContent) coachContent.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
-    if (coachBtn) { coachBtn.innerHTML = '<span class="ins-coach-cta-icon">&#8635;</span> Generate New Plan'; coachBtn.disabled = false; coachBtn.onclick = function(){ resetCoachPlan(); }; }
-  } else {
-    if (coachBtn) { coachBtn.disabled = false; coachBtn.innerHTML = '<span class="ins-coach-cta-icon">&#9889;</span> Get Personalised Advice'; coachBtn.onclick = function(){ generateInsightsAdvice(); }; }
-    if (coachContent) coachContent.innerHTML = '<div class="ins-coach-empty"><div class="ins-coach-empty-icon">&#127942;</div><div class="ins-coach-empty-text">Your personalised coaching plan is one click away.</div></div>';
+  if (!hist.length) {
+    el.innerHTML = `
+      <section class="ins-empty">
+        <div class="ins-empty-kicker">Critical Moments</div>
+        <h3 class="ins-empty-title">No games yet</h3>
+        <p class="ins-empty-text">Analyze a game from your profile to see the turning points that shaped your result.</p>
+      </section>`;
+    return;
   }
+
+  const withIssues = hist.filter(e => (e.blunders || 0) + (e.mistakes || 0) > 0);
+  if (!withIssues.length) {
+    el.innerHTML = `
+      <section class="ins-empty">
+        <div class="ins-empty-kicker">Critical Moments</div>
+        <h3 class="ins-empty-title">Nothing to flag — yet</h3>
+        <p class="ins-empty-text">None of your analyzed games contain blunders or mistakes. Play a few more and we'll find your turning points.</p>
+      </section>`;
+    return;
+  }
+
+  // Sort by blunders desc, then mistakes desc
+  const sorted = withIssues.slice().sort((a, b) =>
+    ((b.blunders || 0) * 3 + (b.mistakes || 0)) - ((a.blunders || 0) * 3 + (a.mistakes || 0))
+  );
+
+  const totalBlunders = sorted.reduce((s, e) => s + (e.blunders || 0), 0);
+  const totalMistakes = sorted.reduce((s, e) => s + (e.mistakes || 0), 0);
+
+  const cards = sorted.map((e, i) => {
+    const pc = e.playerColor || 'w';
+    const opp = pc === 'w' ? (e.black || 'Black') : (e.white || 'White');
+    const you = pc === 'w' ? (e.white || 'White') : (e.black || 'Black');
+    let outcome = 'Draw';
+    if (e.result === '1-0') outcome = pc === 'w' ? 'Win' : 'Loss';
+    else if (e.result === '0-1') outcome = pc === 'b' ? 'Win' : 'Loss';
+    else if (e.result === '1/2-1/2') outcome = 'Draw';
+    const outcomeCls = outcome === 'Win' ? 'win' : outcome === 'Loss' ? 'loss' : 'draw';
+    const dateStr = e.date ? new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    const blunders = e.blunders || 0;
+    const mistakes = e.mistakes || 0;
+    const rankNum = String(i + 1).padStart(2, '0');
+    const sideLabel = pc === 'w' ? 'Played White' : 'Played Black';
+    return `
+      <div class="ins-mg-card" onclick="loadFromHistory(${e.id})">
+        <div class="ins-mg-top">
+          <span class="ins-mg-rank">${rankNum}</span>
+          <span class="ins-mg-outcome ${outcomeCls}">${outcome}</span>
+        </div>
+        <div class="ins-mg-matchup">
+          <span class="ins-mg-you">${_escapeHtml(you)}</span>
+          <span class="ins-mg-vs">vs</span>
+          <span class="ins-mg-opp">${_escapeHtml(opp)}</span>
+        </div>
+        <div class="ins-mg-side">${sideLabel}${dateStr ? ` &middot; ${dateStr}` : ''}</div>
+        <div class="ins-mg-stats">
+          ${blunders > 0 ? `<span class="ins-mg-stat ins-mg-blunder"><strong>${blunders}</strong> ${blunders === 1 ? 'blunder' : 'blunders'}</span>` : ''}
+          ${mistakes > 0 ? `<span class="ins-mg-stat ins-mg-mistake"><strong>${mistakes}</strong> ${mistakes === 1 ? 'mistake' : 'mistakes'}</span>` : ''}
+        </div>
+        <div class="ins-mg-foot">
+          <span class="ins-mg-cta">Review this game &rarr;</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const gameWord = sorted.length === 1 ? 'game' : 'games';
+  const intro = `
+    <div class="ins-section-head">
+      <div class="ins-section-kicker">Critical Moments</div>
+      <h2 class="ins-section-title">The games that turned on a single move</h2>
+      <p class="ins-section-sub">
+        <strong>${sorted.length}</strong> ${gameWord} with room to grow &middot;
+        <strong>${totalBlunders}</strong> blunder${totalBlunders === 1 ? '' : 's'} &middot;
+        <strong>${totalMistakes}</strong> mistake${totalMistakes === 1 ? '' : 's'} flagged.
+      </p>
+    </div>`;
+
+  el.innerHTML = intro + `<div class="ins-mg-list">${cards}</div>`;
+}
+
+// ── Game Insights: Openings panel ──
+function giRenderOpeningsPanel() {
+  const el = document.getElementById('insOpeningsContent');
+  if (!el) return;
+  const hist = _gi.history || [];
+
+  if (!hist.length) {
+    el.innerHTML = `
+      <section class="ins-empty">
+        <div class="ins-empty-kicker">Openings</div>
+        <h3 class="ins-empty-title">No games yet</h3>
+        <p class="ins-empty-text">Analyze a game from your profile to start tracking how your openings perform.</p>
+      </section>`;
+    return;
+  }
+
+  // Aggregate by opening signature (parsed from PGN)
+  const byOpening = {};
+  for (const e of hist) {
+    const sig = _giOpeningSignature(e.pgn);
+    if (!sig) continue;
+    const key = sig.name;
+    if (!byOpening[key]) byOpening[key] = { name: sig.name, moves: sig.moves, games: 0, wins: 0, losses: 0, draws: 0, asWhite: 0, asBlack: 0, ids: [] };
+    const rec = byOpening[key];
+    rec.games++;
+    rec.ids.push(e.id);
+    if (e.playerColor === 'w') rec.asWhite++; else rec.asBlack++;
+    const pc = e.playerColor || 'w';
+    if (e.result === '1-0') { if (pc === 'w') rec.wins++; else rec.losses++; }
+    else if (e.result === '0-1') { if (pc === 'b') rec.wins++; else rec.losses++; }
+    else if (e.result === '1/2-1/2') rec.draws++;
+  }
+
+  const list = Object.values(byOpening).sort((a, b) => b.games - a.games);
+
+  if (!list.length) {
+    el.innerHTML = `
+      <section class="ins-empty">
+        <div class="ins-empty-kicker">Openings</div>
+        <h3 class="ins-empty-title">Openings could not be identified</h3>
+        <p class="ins-empty-text">Your saved games don't have opening tags we can aggregate. Try importing from Lichess or Chess.com.</p>
+      </section>`;
+    return;
+  }
+
+  const totalGames = list.reduce((s, o) => s + o.games, 0);
+  const totalWins  = list.reduce((s, o) => s + o.wins, 0);
+  const overallWR  = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
+
+  const cards = list.map(o => {
+    const winRate = o.games > 0 ? Math.round((o.wins / o.games) * 100) : 0;
+    const winPct  = o.games > 0 ? (o.wins  / o.games) * 100 : 0;
+    const drawPct = o.games > 0 ? (o.draws / o.games) * 100 : 0;
+    const lossPct = o.games > 0 ? (o.losses/ o.games) * 100 : 0;
+    const colorSide = o.asWhite >= o.asBlack ? 'Mostly White' : 'Mostly Black';
+    const wrClass = winRate >= 60 ? 'hot' : (winRate <= 35 ? 'cold' : '');
+    return `
+      <div class="ins-og-card">
+        <div class="ins-og-top">
+          <div class="ins-og-titlebox">
+            <div class="ins-og-kicker">Opening</div>
+            <h3 class="ins-og-name">${_escapeHtml(o.name)}</h3>
+            ${o.moves ? `<div class="ins-og-moves">${_escapeHtml(o.moves)}</div>` : ''}
+          </div>
+          <div class="ins-og-winratebox ${wrClass}">
+            <div class="ins-og-winrate">${winRate}<span class="ins-og-pct">%</span></div>
+            <div class="ins-og-winrate-label">Win rate</div>
+          </div>
+        </div>
+        <div class="ins-og-bar" aria-hidden="true">
+          <div class="ins-og-bar-seg ins-og-bar-win"  style="width:${winPct}%"></div>
+          <div class="ins-og-bar-seg ins-og-bar-draw" style="width:${drawPct}%"></div>
+          <div class="ins-og-bar-seg ins-og-bar-loss" style="width:${lossPct}%"></div>
+        </div>
+        <div class="ins-og-foot">
+          <span class="ins-og-count">${o.games} game${o.games === 1 ? '' : 's'}</span>
+          <span class="ins-og-wl"><strong>${o.wins}</strong>W &middot; <strong>${o.draws}</strong>D &middot; <strong>${o.losses}</strong>L</span>
+          <span class="ins-og-side">${colorSide}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const intro = `
+    <div class="ins-section-head">
+      <div class="ins-section-kicker">Openings</div>
+      <h2 class="ins-section-title">How your repertoire is actually performing</h2>
+      <p class="ins-section-sub">
+        <strong>${list.length}</strong> opening${list.length === 1 ? '' : 's'} across
+        <strong>${totalGames}</strong> game${totalGames === 1 ? '' : 's'} &middot;
+        <strong>${overallWR}%</strong> overall win rate.
+      </p>
+    </div>`;
+
+  el.innerHTML = intro + `<div class="ins-og-list">${cards}</div>`;
+}
+
+function _giOpeningSignature(pgn) {
+  if (!pgn) return null;
+  // Prefer the PGN Opening header when present
+  const openingTag = /\[Opening\s+"([^"]+)"\]/i.exec(pgn);
+  const ecoTag     = /\[ECO\s+"([^"]+)"\]/i.exec(pgn);
+  let movePreview = '';
+  try {
+    const g = new Chess();
+    if (g.load_pgn(pgn) || g.load_pgn(pgn, { sloppy: true })) {
+      const moves = g.history().slice(0, 6);
+      if (moves.length) {
+        const parts = [];
+        for (let i = 0; i < moves.length; i += 2) {
+          const mn = (i / 2) + 1;
+          parts.push(`${mn}.${moves[i]}${moves[i + 1] ? ' ' + moves[i + 1] : ''}`);
+        }
+        movePreview = parts.join(' ');
+      }
+    }
+  } catch {}
+  if (openingTag) {
+    return { name: openingTag[1] + (ecoTag ? ` (${ecoTag[1]})` : ''), moves: movePreview };
+  }
+  if (movePreview) {
+    return { name: movePreview, moves: '' };
+  }
+  return null;
+}
+
+function _escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function renderEvoStats(withPers, agg) {
@@ -197,23 +427,43 @@ function renderStrengthBars(withPers) {
     p, val: count > 0 ? Math.round(totals[p.id] / count) : 0
   })).sort((a, b) => b.val - a.val);
 
-  el.innerHTML = avgs.map(({p, val}) => `
+  // Header row + bars (bars start at width:0 then animate to target on next frame)
+  el.innerHTML = `
+    <div class="ins-bars-summary">
+      <span class="ins-bars-summary-num">${count}</span>
+      <span class="ins-bars-summary-text">${count === 1 ? 'game analyzed' : 'games analyzed'}</span>
+    </div>
+  ` + avgs.map(({p, val}) => `
     <div class="ins-sbar-row">
       <div class="ins-sbar-top">
         <span class="ins-sbar-name">${p.emoji} ${p.name.replace('The ','')}</span>
         <span class="ins-sbar-pct">${val}%</span>
       </div>
       <div class="ins-sbar-track">
-        <div class="ins-sbar-fill" style="width:${val}%;background:${p.color}"></div>
+        <div class="ins-sbar-fill" data-target="${val}" style="width:0%;background:${p.color};color:${p.color}"></div>
       </div>
     </div>
   `).join('');
+
+  // Stagger fills in over 750ms with sequential delays for a dynamic entrance
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.ins-sbar-fill').forEach((fill, i) => {
+      const target = parseFloat(fill.dataset.target) || 0;
+      fill.style.transitionDelay = (0.10 + i * 0.07) + 's';
+      fill.style.width = target + '%';
+    });
+  });
 }
 
 // ── Line Chart: Personality Evolution (reference-style) ──
-function drawEvolutionLineChart(withPers) {
+// opts: { progress: 0..1, hoverIdx: number|null, showAvg: bool }
+function drawEvolutionLineChart(withPers, opts = {}) {
   const canvas = document.getElementById('insLineChart');
   if (!canvas) return;
+
+  const progress = typeof opts.progress === 'number' ? Math.max(0, Math.min(1, opts.progress)) : 1;
+  const hoverIdx = (opts.hoverIdx == null) ? -1 : opts.hoverIdx;
+  const showAvg  = opts.showAvg !== false;
 
   const rect  = canvas.getBoundingClientRect();
   const dpr   = window.devicePixelRatio || 1;
@@ -227,11 +477,17 @@ function drawEvolutionLineChart(withPers) {
   ctx.clearRect(0, 0, W, H);
 
   const isDarkMode = document.documentElement.getAttribute('data-theme') !== 'light';
+  const surfaceCol = isDarkMode ? '#13132a' : '#ffffff';
+  const gridStrong = isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(20,20,60,0.10)';
+  const gridWeak   = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(20,20,60,0.06)';
+  const labelCol   = isDarkMode ? 'rgba(255,255,255,0.40)' : 'rgba(20,20,60,0.55)';
+  const titleCol   = isDarkMode ? 'rgba(255,255,255,0.30)' : 'rgba(20,20,60,0.45)';
 
   if (withPers.length < 2) {
-    ctx.fillStyle = isDarkMode ? 'rgba(255,255,255,0.25)' : 'rgba(30,30,60,0.35)';
+    ctx.fillStyle = isDarkMode ? 'rgba(255,255,255,0.30)' : 'rgba(30,30,60,0.40)';
     ctx.font = '15px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('Analyze at least 2 games to see your evolution', W / 2, H / 2);
+    canvas._dnaGeom = null;
     return;
   }
 
@@ -270,7 +526,41 @@ function drawEvolutionLineChart(withPers) {
   const primaryId = items[items.length - 1]?.personality;
   const lineColor = PERSONALITIES[primaryId]?.color || '#8b5cf6';
 
-  // ── Background fill under main line ──
+  // ── Grid (always full width — labels don't animate) ──
+  const gridSteps = 5;
+  for (let i = 0; i <= gridSteps; i++) {
+    const val = yMin + (yRange / gridSteps) * i;
+    const y   = toY(val);
+    ctx.strokeStyle = gridStrong;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
+    ctx.fillStyle = titleCol;
+    ctx.font = '600 11px system-ui'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(val) + '%', PAD_L - 10, y);
+  }
+  items.forEach((_, i) => {
+    const x = toX(i);
+    ctx.strokeStyle = gridWeak;
+    ctx.lineWidth = 1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x, PAD_T); ctx.lineTo(x, PAD_T + plotH); ctx.stroke();
+  });
+  ctx.fillStyle = labelCol;
+  ctx.font = '600 11px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  items.forEach((e, i) => {
+    if (N > 10 && i % 2 !== 0 && i !== N - 1) return;
+    const d = new Date(e.date);
+    const label = isNaN(d) ? `G${i + 1}` : d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    ctx.fillText(label, toX(i), PAD_T + plotH + 10);
+  });
+
+  // ── Animated reveal: clip a left-to-right rect and draw line/area/dots inside ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(PAD_L - 4, PAD_T - 8, plotW * progress + 8, plotH + 16);
+  ctx.clip();
+
+  // Background fill under main line
   ctx.beginPath();
   scores.forEach((v, i) => {
     const x = toX(i), y = toY(v);
@@ -280,64 +570,35 @@ function drawEvolutionLineChart(withPers) {
   ctx.lineTo(toX(0), toY(yMin));
   ctx.closePath();
   const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
-  grad.addColorStop(0, `rgba(${_hexToRgb(lineColor)},0.28)`);
+  grad.addColorStop(0,   `rgba(${_hexToRgb(lineColor)},0.32)`);
   grad.addColorStop(0.6, `rgba(${_hexToRgb(lineColor)},0.10)`);
-  grad.addColorStop(1, `rgba(${_hexToRgb(lineColor)},0)`);
+  grad.addColorStop(1,   `rgba(${_hexToRgb(lineColor)},0)`);
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // ── Grid lines ──
-  const gridSteps = 5;
-  for (let i = 0; i <= gridSteps; i++) {
-    const val = yMin + (yRange / gridSteps) * i;
-    const y   = toY(val);
-    ctx.strokeStyle = isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(30,30,60,0.10)';
-    ctx.lineWidth = 1;
+  // Running average (dashed)
+  if (showAvg) {
+    ctx.strokeStyle = lineColor;
+    ctx.globalAlpha = 0.50;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 5]);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    runAvg.forEach((v, i) => {
+      const x = toX(i), y = toY(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
     ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
-    // Y label
-    ctx.fillStyle = isDarkMode ? 'rgba(255,255,255,0.30)' : 'rgba(30,30,60,0.45)';
-    ctx.font = '11px system-ui'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(val) + '%', PAD_L - 10, y);
+    ctx.globalAlpha = 1;
   }
 
-  // Vertical grid lines
-  items.forEach((_, i) => {
-    const x = toX(i);
-    ctx.strokeStyle = isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(30,30,60,0.07)';
-    ctx.lineWidth = 1; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(x, PAD_T); ctx.lineTo(x, PAD_T + plotH); ctx.stroke();
-  });
-
-  // ── X labels ──
-  ctx.fillStyle = isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(30,30,60,0.50)';
-  ctx.font = '11px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  items.forEach((e, i) => {
-    // Only show every nth label to avoid overlap
-    if (N > 10 && i % 2 !== 0 && i !== N - 1) return;
-    const d = new Date(e.date);
-    const label = isNaN(d) ? `G${i + 1}` : d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
-    ctx.fillText(label, toX(i), PAD_T + plotH + 10);
-  });
-
-  // ── Running average (dashed) ──
+  // Main line — soft shadow for depth
+  ctx.shadowColor = `rgba(${_hexToRgb(lineColor)},0.45)`;
+  ctx.shadowBlur  = 14;
+  ctx.shadowOffsetY = 3;
   ctx.strokeStyle = lineColor;
-  ctx.globalAlpha = 0.45;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 5]);
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.beginPath();
-  runAvg.forEach((v, i) => {
-    const x = toX(i), y = toY(v);
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.globalAlpha = 1;
-
-  // ── Main line ──
-  ctx.strokeStyle = lineColor;
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 3;
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.beginPath();
   scores.forEach((v, i) => {
@@ -345,23 +606,46 @@ function drawEvolutionLineChart(withPers) {
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   ctx.stroke();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur  = 0;
+  ctx.shadowOffsetY = 0;
 
   // Find peak and valley
-  const peakIdx  = scores.indexOf(Math.max(...scores));
+  const peakIdx   = scores.indexOf(Math.max(...scores));
   const valleyIdx = scores.indexOf(Math.min(...scores));
 
-  // ── Dots ──
+  // Dots
   scores.forEach((v, i) => {
     const x = toX(i), y = toY(v);
     const isPeak   = i === peakIdx;
     const isValley = i === valleyIdx && scores[i] !== scores[peakIdx];
-    const r = isPeak || isValley ? 8 : 5;
-    const dotColor = isPeak ? '#f0c040' : (isValley && scores.length > 3 ? '#f87171' : lineColor);
+    const isHover  = i === hoverIdx;
+    const r = isHover ? 8 : (isPeak || isValley ? 7 : 5);
+    const dotColor = isPeak ? '#f0c040'
+                  : (isValley && scores.length > 3 ? '#f87171' : lineColor);
 
+    if (isPeak) {
+      ctx.beginPath(); ctx.arc(x, y, r + 5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(240, 192, 64, 0.18)';
+      ctx.fill();
+    }
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = dotColor; ctx.fill();
-    ctx.strokeStyle = isDarkMode ? '#13132a' : '#e8e8f4'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.strokeStyle = surfaceCol; ctx.lineWidth = 2.5; ctx.stroke();
   });
+  ctx.restore();
+
+  // Store geometry for hover handler (in CSS pixels, relative to canvas)
+  canvas._dnaGeom = {
+    points: scores.map((v, i) => ({ x: toX(i), y: toY(v) })),
+    data: scores.map((v, i) => {
+      const d = new Date(items[i].date);
+      const label = isNaN(d) ? `Game ${i + 1}` : d.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' });
+      return { label, score: v, avg: runAvg[i] };
+    }),
+    plot: { left: PAD_L, top: PAD_T, width: plotW, height: plotH },
+    lineColor
+  };
 
   // Update chart header badges
   const badgesEl = document.getElementById('insChartBadges');
@@ -369,7 +653,7 @@ function drawEvolutionLineChart(withPers) {
     const p = PERSONALITIES[primaryId];
     const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
     badgesEl.innerHTML = `
-      <span class="ins-badge-pill" style="background:rgba(${_hexToRgb(lineColor)},0.18);color:${lineColor};">${p.emoji} ${p.name.replace('The ','')}</span>
+      <span class="ins-badge-pill" style="background:rgba(${_hexToRgb(lineColor)},0.18);color:${lineColor};border-color:rgba(${_hexToRgb(lineColor)},0.30);">${p.emoji} ${p.name.replace('The ','')}</span>
       <span class="ins-badge-pill ins-badge-avg">Avg ${avg}%</span>
     `;
   }
@@ -381,14 +665,212 @@ function _hexToRgb(hex) {
   return `${r},${g},${b}`;
 }
 
+// ══════════════════════════════════════════════════════════════
+// CHESS DNA — Animation, hover & theme-sync helpers
+// ══════════════════════════════════════════════════════════════
+
+// Generic rAF easing runner: drives a draw fn with progress 0..1
+function _dnaRunAnim(durationMs, drawFn) {
+  const start = performance.now();
+  const tick = (now) => {
+    const t = Math.min(1, (now - start) / durationMs);
+    // ease-out-cubic
+    const eased = 1 - Math.pow(1 - t, 3);
+    drawFn(eased);
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// Wrapper: draw the radar with an entrance animation
+function _dnaRenderRadarAnimated(history) {
+  drawRadarChart(history, { progress: 0 });
+  _dnaRunAnim(720, (p) => drawRadarChart(history, { progress: p }));
+  _dnaSetupRadarHover();
+}
+
+// Wrapper: draw the line chart with an entrance animation
+function _dnaRenderLineAnimated(history) {
+  drawEvolutionLineChart(history, { progress: 0 });
+  _dnaRunAnim(820, (p) => drawEvolutionLineChart(history, { progress: p }));
+  _dnaSetupLineHover();
+}
+
+// ── Tooltip / overlay element creation ─────────────────────────
+function _dnaEnsureOverlay(host, className) {
+  let el = host.querySelector('.' + className);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = className;
+    host.appendChild(el);
+  }
+  return el;
+}
+
+// ── Radar hover ─────────────────────────────────────────────────
+function _dnaSetupRadarHover() {
+  const canvas = document.getElementById('insRadarChart');
+  if (!canvas) return;
+  const host = canvas.closest('.ins-card-radar');
+  if (!host) return;
+  const tooltip = _dnaEnsureOverlay(host, 'ins-canvas-tooltip');
+  const marker  = _dnaEnsureOverlay(host, 'ins-radar-marker');
+
+  if (canvas._dnaHoverAttached) return;
+  canvas._dnaHoverAttached = true;
+
+  const onMove = (e) => {
+    const geom = canvas._dnaGeom;
+    if (!geom || !geom.points) return;
+    const cRect = canvas.getBoundingClientRect();
+    const hRect = host.getBoundingClientRect();
+    const mx = e.clientX - cRect.left;
+    const my = e.clientY - cRect.top;
+
+    let bestIdx = -1, bestDist = Infinity;
+    geom.points.forEach((pt, i) => {
+      const dx = pt.x - mx, dy = pt.y - my;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+
+    if (bestIdx >= 0 && bestDist < 42) {
+      const pt = geom.points[bestIdx];
+      const data = geom.data[bestIdx];
+      const offsetLeft = (cRect.left - hRect.left) + pt.x;
+      const offsetTop  = (cRect.top  - hRect.top)  + pt.y;
+
+      tooltip.innerHTML = `${data.emoji} <strong>${data.name}</strong> · ${data.val}%`;
+      tooltip.style.left = offsetLeft + 'px';
+      tooltip.style.top  = offsetTop  + 'px';
+      tooltip.classList.add('show');
+
+      marker.style.left = offsetLeft + 'px';
+      marker.style.top  = offsetTop  + 'px';
+      marker.style.borderColor = geom.topColor || '#8b5cf6';
+      marker.style.boxShadow =
+        `0 0 0 5px ${_rgbaFromHex(geom.topColor || '#8b5cf6', 0.22)},` +
+        `0 6px 18px ${_rgbaFromHex(geom.topColor || '#8b5cf6', 0.4)}`;
+      marker.classList.add('show');
+    } else {
+      tooltip.classList.remove('show');
+      marker.classList.remove('show');
+    }
+  };
+
+  const onLeave = () => {
+    tooltip.classList.remove('show');
+    marker.classList.remove('show');
+  };
+
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseleave', onLeave);
+}
+
+// ── Line hover (vertical cursor + marker + tooltip) ─────────────
+function _dnaSetupLineHover() {
+  const canvas = document.getElementById('insLineChart');
+  if (!canvas) return;
+  const host = canvas.closest('.ins-card-chart');
+  if (!host) return;
+  const tooltip = _dnaEnsureOverlay(host, 'ins-canvas-tooltip');
+  const cursor  = _dnaEnsureOverlay(host, 'ins-line-cursor');
+  const marker  = _dnaEnsureOverlay(host, 'ins-line-marker');
+
+  if (canvas._dnaHoverAttached) return;
+  canvas._dnaHoverAttached = true;
+
+  const onMove = (e) => {
+    const geom = canvas._dnaGeom;
+    if (!geom || !geom.points || geom.points.length === 0) return;
+    const cRect = canvas.getBoundingClientRect();
+    const hRect = host.getBoundingClientRect();
+    const mx = e.clientX - cRect.left;
+
+    let bestIdx = 0, bestDist = Infinity;
+    geom.points.forEach((pt, i) => {
+      const d = Math.abs(pt.x - mx);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+
+    if (bestDist < 60) {
+      const pt = geom.points[bestIdx];
+      const data = geom.data[bestIdx];
+      const offsetLeft = (cRect.left - hRect.left) + pt.x;
+      const offsetTop  = (cRect.top  - hRect.top)  + pt.y;
+      const plotTop    = (cRect.top  - hRect.top)  + geom.plot.top;
+
+      tooltip.innerHTML =
+        `<strong>${data.label}</strong> · ${data.score}% ` +
+        `<span class="tt-sub">avg ${data.avg}%</span>`;
+      tooltip.style.left = offsetLeft + 'px';
+      tooltip.style.top  = offsetTop  + 'px';
+      tooltip.classList.add('show');
+
+      marker.style.left = offsetLeft + 'px';
+      marker.style.top  = offsetTop  + 'px';
+      marker.style.borderColor = geom.lineColor || '#8b5cf6';
+      marker.style.boxShadow =
+        `0 0 0 5px ${_rgbaFromHex(geom.lineColor || '#8b5cf6', 0.22)},` +
+        `0 6px 18px ${_rgbaFromHex(geom.lineColor || '#8b5cf6', 0.4)}`;
+      marker.classList.add('show');
+
+      cursor.style.left   = offsetLeft + 'px';
+      cursor.style.top    = plotTop + 'px';
+      cursor.style.height = geom.plot.height + 'px';
+      cursor.classList.add('show');
+    } else {
+      tooltip.classList.remove('show');
+      marker.classList.remove('show');
+      cursor.classList.remove('show');
+    }
+  };
+
+  const onLeave = () => {
+    tooltip.classList.remove('show');
+    marker.classList.remove('show');
+    cursor.classList.remove('show');
+  };
+
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseleave', onLeave);
+}
+
+function _rgbaFromHex(hex, alpha) {
+  return `rgba(${_hexToRgb(hex)},${alpha})`;
+}
+
+// ── Theme observer: redraw charts (no animation) when theme toggles ──
+let _dnaThemeObserver = null;
+function _dnaSetupThemeObserver() {
+  if (_dnaThemeObserver) return;
+  _dnaThemeObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.attributeName === 'data-theme') {
+        // Re-render whichever panel is currently visible (no entrance anim)
+        const strengthsVisible = document.getElementById('insTabPanelStrengths')?.style.display !== 'none';
+        const evolutionVisible = document.getElementById('insTabPanelEvolution')?.style.display !== 'none';
+        if (strengthsVisible) drawRadarChart(_insHistory);
+        if (evolutionVisible) drawEvolutionLineChart(_insHistory);
+        return;
+      }
+    }
+  });
+  _dnaThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+}
+
 // ── Radar Chart: 8 Personality Strengths (Nen-style) ──
-function drawRadarChart(withPers) {
+// opts: { progress: 0..1, hoverIdx: number|null }
+function drawRadarChart(withPers, opts = {}) {
   const canvas = document.getElementById('insRadarChart');
   if (!canvas) return;
 
-  // Use full container width, up to 520px
+  const progress = typeof opts.progress === 'number' ? Math.max(0, Math.min(1, opts.progress)) : 1;
+  const hoverIdx = (opts.hoverIdx == null) ? -1 : opts.hoverIdx;
+
+  // Use full container width, up to 580px
   const container = canvas.parentElement;
-  const rawSize   = Math.min((container?.clientWidth || 480), 520);
+  const rawSize   = Math.min((container?.clientWidth || 480), 580);
   const size      = Math.max(rawSize, 300);
   const dpr       = window.devicePixelRatio || 1;
   canvas.width    = size * dpr;
@@ -407,6 +889,14 @@ function drawRadarChart(withPers) {
   const LABEL_PAD = Math.round(size * 0.14);
   const R         = Math.min(W, H) / 2 - LABEL_PAD;
   const N         = PERSONALITY_LIST.length; // 8
+
+  // Theme palette
+  const ringStrong = isRadarDark ? 'rgba(255,255,255,0.55)' : 'rgba(20,20,60,0.45)';
+  const ringWeak   = isRadarDark ? 'rgba(255,255,255,0.10)' : 'rgba(20,20,60,0.10)';
+  const axisCol    = isRadarDark ? 'rgba(255,255,255,0.13)' : 'rgba(20,20,60,0.14)';
+  const dotFill    = isRadarDark ? 'rgba(255,255,255,0.85)' : 'rgba(20,20,60,0.78)';
+  const dotStroke  = isRadarDark ? 'rgba(255,255,255,0.20)' : 'rgba(20,20,60,0.20)';
+  const nameCol    = isRadarDark ? 'rgba(255,255,255,0.80)' : 'rgba(20,20,60,0.80)';
 
   // Compute average scores
   const totals = {};
@@ -436,10 +926,7 @@ function drawRadarChart(withPers) {
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    // Outermost ring bolder; inner rings subtle - theme-aware
-    ctx.strokeStyle = isRadarDark
-      ? (ring === 5 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.12)')
-      : (ring === 5 ? 'rgba(30,30,60,0.55)'    : 'rgba(30,30,60,0.12)');
+    ctx.strokeStyle = ring === 5 ? ringStrong : ringWeak;
     ctx.lineWidth   = ring === 5 ? 1.5 : 0.8;
     ctx.stroke();
   }
@@ -450,68 +937,104 @@ function drawRadarChart(withPers) {
     ctx.beginPath();
     ctx.moveTo(CX, CY);
     ctx.lineTo(CX + Math.cos(a) * R, CY + Math.sin(a) * R);
-    ctx.strokeStyle = isRadarDark ? 'rgba(255,255,255,0.15)' : 'rgba(30,30,60,0.15)';
+    ctx.strokeStyle = axisCol;
     ctx.lineWidth = 0.8; ctx.setLineDash([]);
     ctx.stroke();
   }
 
-  // ── Data polygon (gradient fill using top personality color) ──
+  // ── Data polygon (animated radial expansion) ──
   const topId    = Object.entries(avg).sort((a, b) => b[1] - a[1])[0]?.[0];
   const topColor = PERSONALITIES[topId]?.color || '#8b5cf6';
   const topRgb   = _hexToRgb(topColor);
+  // ease-out-cubic easing on progress for a more "snappy" entrance
+  const ease = 1 - Math.pow(1 - progress, 3);
+
+  // Pre-compute vertex positions for both drawing AND hover storage
+  const verts = PERSONALITY_LIST.map((p, i) => {
+    const val = (avg[p.id] / maxVal) * 0.88 * ease;
+    const r   = val * R;
+    const a   = angle(i);
+    return {
+      x: CX + Math.cos(a) * r,
+      y: CY + Math.sin(a) * r,
+      val: avg[p.id],
+      pct: Math.round(avg[p.id]),
+      id: p.id,
+      name: p.name,
+      emoji: p.emoji,
+      color: p.color
+    };
+  });
 
   ctx.beginPath();
-  PERSONALITY_LIST.forEach((p, i) => {
-    const val = (avg[p.id] / maxVal) * 0.88;
-    const r   = val * R, a = angle(i);
-    const x   = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  verts.forEach((v, i) => {
+    if (i === 0) ctx.moveTo(v.x, v.y); else ctx.lineTo(v.x, v.y);
   });
   ctx.closePath();
 
   const polyGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, R);
-  polyGrad.addColorStop(0,   `rgba(${topRgb},0.50)`);
-  polyGrad.addColorStop(0.6, `rgba(${topRgb},0.22)`);
-  polyGrad.addColorStop(1,   `rgba(99,102,241,0.08)`);
+  polyGrad.addColorStop(0,   `rgba(${topRgb},${0.55 * progress})`);
+  polyGrad.addColorStop(0.6, `rgba(${topRgb},${0.22 * progress})`);
+  polyGrad.addColorStop(1,   `rgba(99,102,241,${0.08 * progress})`);
   ctx.fillStyle = polyGrad;
   ctx.fill();
-  ctx.strokeStyle = `rgba(${topRgb},0.9)`;
-  ctx.lineWidth = 2.5;
+
+  // Soft outer glow on the polygon stroke
+  ctx.shadowColor = `rgba(${topRgb},0.55)`;
+  ctx.shadowBlur  = 16 * progress;
+  ctx.strokeStyle = `rgba(${topRgb},${Math.max(0.4, 0.92 * progress)})`;
+  ctx.lineWidth   = 2.5;
+  ctx.lineJoin    = 'round';
   ctx.stroke();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur  = 0;
 
   // ── Vertex dots + labels ──
   const emojiSize  = Math.round(size * 0.065); // ~32px at 480
   const nameSize   = Math.round(size * 0.026); // ~12px
   const labelDist  = R + LABEL_PAD * 0.58;
 
-  PERSONALITY_LIST.forEach((p, i) => {
-    const val = (avg[p.id] / maxVal) * 0.88;
-    const r   = val * R, a = angle(i);
-    const x   = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r;
+  verts.forEach((v, i) => {
+    const isHover = i === hoverIdx;
+    const isTop   = v.id === topId;
 
-    // Vertex dot - white in dark mode, dark in light mode
-    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle   = isRadarDark ? 'rgba(255,255,255,0.80)' : 'rgba(30,30,60,0.65)';
+    // Vertex dot — bigger + accented for top personality / hover
+    const dotR = isHover ? 5.5 : (isTop ? 4 : 3);
+    if (isTop && progress > 0.85) {
+      ctx.beginPath(); ctx.arc(v.x, v.y, dotR + 3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${topRgb},0.25)`;
+      ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(v.x, v.y, dotR, 0, Math.PI * 2);
+    ctx.fillStyle   = isTop ? topColor : (isHover ? topColor : dotFill);
     ctx.fill();
-    ctx.strokeStyle = isRadarDark ? 'rgba(255,255,255,0.20)' : 'rgba(30,30,60,0.18)';
-    ctx.lineWidth   = 1; ctx.stroke();
+    ctx.strokeStyle = isTop ? `rgba(${topRgb},0.5)` : dotStroke;
+    ctx.lineWidth   = isTop ? 1.5 : 1;
+    ctx.stroke();
 
-    // Outer label - emoji (full opacity)
+    // Outer label — emoji + name (always full opacity, regardless of theme)
+    const a  = angle(i);
     const lx = CX + Math.cos(a) * labelDist;
     const ly = CY + Math.sin(a) * labelDist;
 
-    ctx.fillStyle = 'rgba(0,0,0,1)';  // reset so emoji renders at full colour
+    ctx.fillStyle = 'rgba(0,0,0,1)';  // emoji renders in its own colors
     ctx.font = `${emojiSize}px system-ui`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(p.emoji, lx, ly - nameSize * 0.9);
+    ctx.fillText(v.emoji, lx, ly - nameSize * 0.9);
 
     // Name below emoji
-    ctx.fillStyle = isRadarDark ? 'rgba(255,255,255,0.75)' : 'rgba(30,30,60,0.75)';
-    ctx.font = `600 ${nameSize}px system-ui`;
-    ctx.fillText(p.name.replace('The ', ''), lx, ly + emojiSize * 0.55);
-
-    // (percentage labels intentionally hidden)
+    ctx.fillStyle = isTop || isHover ? topColor : nameCol;
+    ctx.font = `${isTop || isHover ? '700' : '600'} ${nameSize}px system-ui`;
+    ctx.fillText(v.name.replace('The ', ''), lx, ly + emojiSize * 0.55);
   });
+
+  // Stash geometry for the hover handler
+  canvas._dnaGeom = {
+    points: verts.map(v => ({ x: v.x, y: v.y })),
+    data:   verts.map(v => ({ name: v.name.replace('The ', ''), emoji: v.emoji, val: v.pct })),
+    topId,
+    topColor
+  };
 }
 
 // ── Markdown → HTML (minimal, safe) ──
@@ -623,8 +1146,8 @@ async function _generateCoachAdviceShared(content, btn) {
 
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="ins-coach-cta-icon">&#9889;</span> Analyzing...'; }
   content.innerHTML = _coachPageMode
-    ? '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Analyzing your chess DNA...</div></div>'
-    : '<div class="ins-coach-empty"><div class="ins-coach-empty-icon">&#128300;</div><div class="ins-coach-empty-text">Analyzing your chess DNA…</div></div>';
+    ? '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Analyzing your games...</div></div>'
+    : '<div class="ins-coach-empty"><div class="ins-coach-empty-text">Analyzing your games\u2026</div></div>';
 
   let history = [];
   try { history = await dbGetHistory(); } catch {}
@@ -702,7 +1225,7 @@ RULES: Only use data above. No em-dashes. No bullets. Always "you/your". Every s
 
 Write these sections with EXACTLY these ## headers:
 
-## Your Chess DNA
+## Your Profile
 One punchy identity line, then name strongest/weakest trait. Max 2 sentences.
 
 ## Task 1: Solve Tactical Puzzles
@@ -815,7 +1338,7 @@ function resetCoachPlan() {
   const btn = document.getElementById('insCoachBtn');
   const content = document.getElementById('insCoachContent');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="ins-coach-cta-icon">&#9889;</span> Generating...'; }
-  if (content) content.innerHTML = '<div class="ins-coach-empty"><div class="ins-coach-empty-icon">&#128300;</div><div class="ins-coach-empty-text">Creating your new practice plan\u2026</div></div>';
+  if (content) content.innerHTML = '<div class="ins-coach-empty"><div class="ins-coach-empty-text">Creating your new practice plan\u2026</div></div>';
   generateInsightsAdvice();
 }
 
@@ -850,7 +1373,7 @@ function _buildCoachResultHtml(renderedHtml, tasks) {
     <div class="coach-story-wrap" id="coachStoryWrap">
       <div class="coach-story-hero">
         <h2 class="coach-story-hero-title">Your Monthly Practice Plan</h2>
-        <p class="coach-story-hero-sub">A personalised roadmap to sharpen your chess, based on your unique playing style.</p>
+        <p class="coach-story-hero-sub">Four focused tasks to sharpen the gaps in your play.</p>
       </div>`;
 
   // Helper: strip emoji characters from HTML strings
@@ -872,10 +1395,10 @@ function _buildCoachResultHtml(renderedHtml, tasks) {
     if (i > 0) {
       const narratives = [
         '',
-        { text: "Now let's put this into action", sub: 'Four targeted tasks to level up your game.' },
-        { text: 'Deepen your understanding', sub: 'Guided study to fill the gaps.' },
-        { text: 'Apply it at the board', sub: 'Deliberate practice with focused intention.' },
-        { text: 'Learn from the greatest', sub: 'Master games hand-picked for your development.' },
+        { text: 'Train the pattern', sub: 'Puzzles that target your weakest area.' },
+        { text: 'Study the concept', sub: 'A single resource to fill the gap.' },
+        { text: 'Practice with intention', sub: 'Play deliberate games with pre-move questions.' },
+        { text: 'Learn from the masters', sub: 'Games that illustrate the idea in action.' },
       ];
       const nar = narratives[i] || { text: 'Next up', sub: '' };
       if (typeof nar === 'object') {

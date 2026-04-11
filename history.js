@@ -198,6 +198,7 @@ async function renderFullProfile() {
   if (agg) {
     const p = agg.primary;
     document.getElementById('profPrimary').style.background = p.gradient;
+    document.getElementById('profPrimary').setAttribute('data-pers', p.id);
     document.getElementById('profPrimaryEmoji').textContent = p.emoji;
     document.getElementById('profPrimaryName').textContent = p.name;
     document.getElementById('profPrimaryTagline').textContent = p.tagline;
@@ -205,6 +206,7 @@ async function renderFullProfile() {
     document.documentElement.style.setProperty('--pers-color', p.color);
   } else {
     document.getElementById('profPrimary').style.background = 'var(--surface2)';
+    document.getElementById('profPrimary').removeAttribute('data-pers');
     document.getElementById('profPrimaryEmoji').textContent = '?';
     document.getElementById('profPrimaryName').textContent = 'Analyze games to discover';
     document.getElementById('profPrimaryTagline').textContent = 'your chess personality';

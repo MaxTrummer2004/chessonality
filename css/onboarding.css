@@ -1,13 +1,32 @@
 /* ══════════════════════════════════════════════
-   ONBOARDING WALKTHROUGH
+   ONBOARDING WALKTHROUGH — editorial amber/black
+   ----------------------------------------------
+   Welcome wizard for first-time visitors. Four
+   scenes: welcome → what-you-get → personality
+   self-guess → theme picker. Matches the gold +
+   Fraunces serif design used elsewhere on the
+   site, and collapses to a bottom-sheet layout
+   on narrow phones.
 ══════════════════════════════════════════════ */
 /* ── Onboarding Overlay (fullscreen) ── */
 .onboarding-overlay {
   position: fixed; inset: 0;
   z-index: 400;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(10px);
-  animation: fadeIn 0.3s ease;
+  background:
+    radial-gradient(1100px 700px at 75% -10%, rgba(212, 162, 76, 0.10), transparent 60%),
+    radial-gradient(800px 560px at 5% 110%, rgba(212, 162, 76, 0.06), transparent 60%),
+    rgba(10, 8, 4, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: fadeIn 0.34s ease;
+  font-family: var(--font-body);
+  color: var(--text);
+}
+[data-theme="light"] .onboarding-overlay {
+  background:
+    radial-gradient(1100px 700px at 75% -10%, rgba(212, 162, 76, 0.22), transparent 60%),
+    radial-gradient(800px 560px at 5% 110%, rgba(166, 122, 42, 0.10), transparent 60%),
+    rgba(247, 243, 232, 0.96);
 }
 
 /* ── Scenes ── */
@@ -15,16 +34,17 @@
   position: absolute; inset: 0;
   display: flex;
   align-items: center;
+  padding: 24px;
 }
 .ob-scene.ob-animate-in .ob-spotlight,
 .ob-scene.ob-animate-in .ob-full-grid,
 .ob-scene.ob-animate-in .ob-full-cta,
 .ob-scene.ob-animate-in .ob-theme-card {
-  animation: obReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: obReveal 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes obReveal {
-  from { opacity: 0; transform: translateY(24px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Step 1: LEFT spotlight (centered) */
@@ -39,302 +59,419 @@
   gap: 28px;
 }
 
-/* Spotlight cards (step 1 & 2) */
+/* Spotlight cards (step 1 & 2) — editorial panel */
 .ob-spotlight {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 24px;
-  padding: 48px 40px 36px;
-  width: 400px;
-  max-width: 88vw;
-  text-align: center;
-  box-shadow: 0 0 80px rgba(139, 92, 246, 0.15), 0 0 200px rgba(0,0,0,0.4);
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  padding: 44px 44px 32px;
+  width: 480px;
+  max-width: 92vw;
+  text-align: left;
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(212, 162, 76, 0.08) inset;
+  position: relative;
+  overflow: hidden;
 }
-.ob-animal {
-  font-size: 4.5rem;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
-  animation: obBounce 2s ease-in-out infinite;
+.ob-spotlight::before {
+  content: "";
+  position: absolute;
+  left: 24px; right: 24px; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.8;
 }
-@keyframes obBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-.ob-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.5rem; font-weight: 700;
-  color: #fff;
-  margin-bottom: 10px;
-}
-.ob-text {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.65;
-  margin-bottom: 0;
-}
-.ob-scene-actions {
-  display: flex; justify-content: space-between;
-  align-items: center; margin-top: 32px;
-}
-.ob-skip {
-  background: none; border: none;
-  color: rgba(255,255,255,0.35);
-  font-size: 0.88rem; cursor: pointer;
-  padding: 8px 4px;
-  transition: color 0.2s;
-}
-.ob-skip:hover { color: rgba(255,255,255,0.7); }
-.ob-next {
-  padding: 12px 32px;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  color: #fff; border: none;
-  border-radius: 12px;
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-size: 1rem; font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(139,92,246,0.35);
-  transition: all 0.2s;
-}
-.ob-next:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(139,92,246,0.45);
+[data-theme="light"] .ob-spotlight {
+  box-shadow:
+    0 36px 80px rgba(50, 35, 10, 0.22),
+    0 0 0 1px rgba(166, 122, 42, 0.10) inset;
 }
 
-/* Step 3: Full grid of all animals */
+/* Editorial kicker above the title (replaces the bouncy emoji). */
+.ob-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+[data-theme="light"] .ob-eyebrow { color: var(--accent-deep); }
+
+/* Hide the old bouncy animal element if any scene still renders it. */
+.ob-animal { display: none; }
+
+.ob-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2.4vw, 1.95rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 14px;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+}
+.ob-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+[data-theme="light"] .ob-title em { color: var(--accent-deep); }
+
+.ob-text {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 44ch;
+}
+
+.ob-scene-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.ob-skip {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), border-color var(--transition);
+}
+.ob-skip:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+.ob-next {
+  padding: 12px 28px;
+  background: var(--accent);
+  color: #1c1812;
+  border: 1px solid var(--accent-deep);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.24) inset,
+    0 8px 22px rgba(212, 162, 76, 0.24);
+  transition: background var(--transition),
+              box-shadow var(--transition),
+              transform var(--transition);
+}
+.ob-next:hover {
+  background: var(--accent-2);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28) inset,
+    0 12px 30px rgba(212, 162, 76, 0.32);
+}
+.ob-next:active { transform: translateY(0); }
+
+/* Step 3: Full grid of all archetypes */
 .ob-full-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  max-width: 560px;
-  width: 90vw;
+  gap: 14px;
+  max-width: 640px;
+  width: 92vw;
 }
 .ob-full-animal {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 6px;
-  padding: 20px 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  transition: transform 0.2s, background 0.2s;
+  padding: 20px 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition),
+              background var(--transition),
+              border-color var(--transition);
+  cursor: pointer;
 }
 .ob-full-animal:hover {
-  transform: scale(1.06);
-  background: rgba(139,92,246,0.12);
+  transform: translateY(-2px);
+  background: var(--surface2);
+  border-color: var(--border-hi);
 }
 .ob-full-animal span:first-child {
-  font-size: 2.6rem;
+  font-size: 2.4rem;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
 }
 .ob-full-name {
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.02em;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-top: 4px;
 }
 .ob-full-cta {
   text-align: center;
   margin-top: 4px;
+  max-width: 560px;
+  padding: 0 20px;
 }
-.ob-full-cta .ob-title { font-size: 1.7rem; }
-.ob-full-cta .ob-text { margin-bottom: 20px; }
+.ob-full-cta .ob-title { font-size: clamp(1.55rem, 3vw, 2rem); }
+.ob-full-cta .ob-text {
+  margin: 0 auto 6px;
+  max-width: 52ch;
+  text-align: center;
+}
+.ob-full-cta .ob-eyebrow { text-align: center; }
 .ob-next-big {
-  padding: 16px 52px;
-  font-size: 1.1rem;
+  padding: 14px 42px;
+  font-size: 1rem;
 }
 
-/* Progress dots (fixed bottom) */
+/* Progress dots (fixed bottom) — editorial rule style */
 .ob-dots {
   position: fixed;
-  bottom: 32px;
+  bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 6px;
   z-index: 401;
 }
 .ob-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  transition: all 0.3s ease;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: background var(--transition),
+              border-color var(--transition),
+              width var(--transition);
 }
 .ob-dot.active {
-  background: #8b5cf6;
-  width: 28px; border-radius: 4px;
+  background: var(--accent);
+  border-color: var(--accent-2);
+  box-shadow: 0 0 12px rgba(212, 162, 76, 0.45);
 }
 
-/* ── Step 4: Theme picker ── */
+/* ── Step 4: Theme picker — editorial ── */
 .ob-scene-theme { background: transparent; }
 .ob-theme-card {
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 0 24px;
-  max-width: 520px;
-  width: 90vw;
+  gap: 18px;
+  padding: 0 20px;
+  max-width: 560px;
+  width: 92vw;
 }
-.ob-theme-moon {
-  font-size: 4rem;
-  animation: obBounce 2.5s ease-in-out infinite;
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.35));
+.ob-theme-card .ob-title { font-size: clamp(1.55rem, 3vw, 2rem); }
+.ob-theme-card .ob-text  {
+  max-width: 48ch;
+  text-align: center;
+  margin: 0 auto;
 }
 .ob-theme-choices {
   display: flex;
   gap: 16px;
   width: 100%;
+  margin-top: 6px;
 }
 .ob-theme-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 24px 16px 20px;
-  border-radius: 18px;
-  border: 2px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.05);
+  align-items: stretch;
+  gap: 0;
+  padding: 22px 20px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(4px);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition),
+              border-color var(--transition),
+              background var(--transition),
+              box-shadow var(--transition);
 }
 .ob-theme-btn:hover {
-  transform: translateY(-4px) scale(1.03);
-  border-color: rgba(255,255,255,0.28);
-  background: rgba(255,255,255,0.10);
+  transform: translateY(-2px);
+  border-color: var(--border-hi);
+  background: var(--surface2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
 }
-.ob-theme-btn:active { transform: scale(0.97); }
+.ob-theme-btn:active { transform: translateY(0); }
+
+/* Recommended (dark) — highlighted with the amber border treatment */
 .ob-theme-dark {
-  border-color: rgba(139,92,246,0.40);
-  background: rgba(139,92,246,0.08);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(212, 162, 76, 0.40) inset,
+    0 14px 36px rgba(212, 162, 76, 0.14);
 }
 .ob-theme-dark:hover {
-  border-color: rgba(139,92,246,0.65);
-  background: rgba(139,92,246,0.15);
-  box-shadow: 0 8px 32px rgba(139,92,246,0.25);
+  border-color: var(--accent-2);
+  box-shadow:
+    0 0 0 1px rgba(212, 162, 76, 0.55) inset,
+    0 18px 46px rgba(212, 162, 76, 0.22);
 }
-.ob-theme-light {
-  border-color: rgba(255,200,60,0.30);
-  background: rgba(255,200,60,0.05);
+.ob-theme-btn-recommended {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #1c1812;
+  background: var(--accent);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
 }
-.ob-theme-light:hover {
-  border-color: rgba(255,200,60,0.55);
-  background: rgba(255,200,60,0.10);
-  box-shadow: 0 8px 32px rgba(255,200,60,0.18);
+.ob-theme-light .ob-theme-btn-recommended { display: none; }
+
+.ob-theme-btn-swatch {
+  display: block;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  overflow: hidden;
+  position: relative;
 }
-.ob-theme-btn-icon { font-size: 2.4rem; line-height: 1; }
+.ob-swatch-dark,
+.ob-swatch-light {
+  position: absolute;
+  inset: 0;
+}
+.ob-swatch-dark {
+  background:
+    radial-gradient(120% 100% at 20% 0%, rgba(212, 162, 76, 0.18), transparent 60%),
+    linear-gradient(180deg, #1c1a16 0%, #131210 100%);
+}
+.ob-swatch-dark::after {
+  content: "";
+  position: absolute;
+  left: 12px; right: 40%; top: 20px;
+  height: 8px;
+  background: rgba(243, 238, 218, 0.86);
+  border-radius: 4px;
+}
+.ob-swatch-dark::before {
+  content: "";
+  position: absolute;
+  left: 12px; right: 55%; top: 36px;
+  height: 5px;
+  background: rgba(212, 162, 76, 0.85);
+  border-radius: 3px;
+}
+.ob-swatch-light {
+  background:
+    radial-gradient(120% 100% at 20% 0%, rgba(212, 162, 76, 0.32), transparent 60%),
+    linear-gradient(180deg, #fdfaf0 0%, #f1ecda 100%);
+}
+.ob-swatch-light::after {
+  content: "";
+  position: absolute;
+  left: 12px; right: 40%; top: 20px;
+  height: 8px;
+  background: #1c1812;
+  border-radius: 4px;
+}
+.ob-swatch-light::before {
+  content: "";
+  position: absolute;
+  left: 12px; right: 55%; top: 36px;
+  height: 5px;
+  background: #a67a2a;
+  border-radius: 3px;
+}
+
+.ob-theme-btn-icon { display: none; }
 .ob-theme-btn-label {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.05rem; font-weight: 700;
-  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  font-variation-settings: "opsz" 144, "SOFT" 30;
 }
 .ob-theme-btn-sub {
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.50);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-top: 2px;
 }
 .ob-theme-skip {
-  margin-top: 4px;
-  font-size: 0.9rem;
-  opacity: 0.55;
-}
-.ob-theme-skip:hover { opacity: 1; }
-
-/* ── Feature spotlight scenes (steps 4-6) ── */
-.ob-spot-feature {
-  padding: 44px 36px 32px;
-}
-.ob-spot-rep {
-  border-color: rgba(233,69,96,0.35);
-  box-shadow: 0 0 80px rgba(233,69,96,0.15), 0 0 200px rgba(0,0,0,0.4);
-}
-.ob-spot-dna {
-  border-color: rgba(139,92,246,0.35);
-  box-shadow: 0 0 80px rgba(139,92,246,0.15), 0 0 200px rgba(0,0,0,0.4);
-}
-.ob-spot-coach {
-  border-color: rgba(6,182,212,0.35);
-  box-shadow: 0 0 80px rgba(6,182,212,0.15), 0 0 200px rgba(0,0,0,0.4);
-}
-.ob-feat-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 18px;
-  margin-bottom: 6px;
-}
-.ob-feat-pill {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 20px;
-  padding: 5px 14px;
-  letter-spacing: 0.02em;
-}
-.ob-spot-rep .ob-feat-pill {
-  border-color: rgba(233,69,96,0.25);
-  background: rgba(233,69,96,0.10);
-}
-.ob-spot-dna .ob-feat-pill {
-  border-color: rgba(139,92,246,0.25);
-  background: rgba(139,92,246,0.10);
-}
-.ob-spot-coach .ob-feat-pill {
-  border-color: rgba(6,182,212,0.25);
-  background: rgba(6,182,212,0.10);
+  margin-top: 8px;
+  font-size: 0.86rem;
+  padding: 10px 18px;
 }
 
 /* ── Onboarding personality quiz ── */
-.ob-quiz-grid {
-  cursor: pointer;
-}
+.ob-quiz-grid { cursor: pointer; }
 .ob-quiz-animal {
   cursor: pointer;
   position: relative;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ob-quiz-hint {
-  font-size: 0.62rem;
-  color: rgba(255,255,255,0.35);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  color: var(--text-muted);
   font-weight: 500;
   margin-top: 2px;
+  letter-spacing: 0.01em;
 }
 .ob-quiz-animal:hover {
-  transform: scale(1.08);
-  background: rgba(139,92,246,0.18);
-  border-color: rgba(139,92,246,0.4);
+  transform: translateY(-2px);
+  background: var(--surface2);
+  border-color: var(--border-hi);
 }
 .ob-quiz-animal.ob-quiz-selected {
-  transform: scale(1.10);
-  background: rgba(139,92,246,0.22);
-  border-color: rgba(139,92,246,0.65);
-  box-shadow: 0 0 24px rgba(139,92,246,0.3);
+  transform: translateY(-2px);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(212, 162, 76, 0.35) inset,
+    0 14px 36px rgba(212, 162, 76, 0.22);
 }
 .ob-quiz-animal.ob-quiz-selected::after {
-  content: '\\2713';
+  content: '\2713';
   position: absolute;
-  top: 6px; right: 8px;
-  font-size: 0.7rem;
-  color: #8b5cf6;
-  font-weight: 700;
+  top: 8px; right: 10px;
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 800;
 }
 .ob-quiz-result {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 14px;
   animation: obReveal 0.4s ease both;
 }
 .ob-quiz-result-text {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.75);
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  color: var(--text-dim);
   margin-bottom: 16px;
+  max-width: 40ch;
+  margin-inline: auto;
 }
 .ob-quiz-skip {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 /* ── Scene 1: move-quality & section preview chips ── */
@@ -366,16 +503,78 @@
 .ob-chip-structure  { color: #4ade80; background: rgba(34,197,94,0.11);  border-color: rgba(34,197,94,0.26); }
 .ob-chip-cont       { color: #a78bfa; background: rgba(167,139,250,0.11);border-color: rgba(167,139,250,0.28); }
 
-/* Mobile onboarding */
+/* ── Mobile onboarding ──────────────────────────
+   On narrow phones the wizard becomes a full-width
+   card centered on screen, with a fatter CTA, a
+   stacked theme picker, and a 2x4 personality grid. */
 @media (max-width: 600px) {
+  .ob-scene { padding: 18px; align-items: center; }
   .ob-scene-left,
-  .ob-scene-right { padding: 0 5vw; }
-  .ob-spotlight { padding: 32px 24px 28px; width: 340px; }
-  .ob-animal { font-size: 3.5rem; }
-  .ob-title { font-size: 1.25rem; }
-  .ob-full-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .ob-full-animal { padding: 12px 4px; }
+  .ob-scene-right { padding: 0 14px; }
+  .ob-spotlight {
+    padding: 26px 22px 22px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 22px;
+  }
+  .ob-eyebrow { font-size: 0.66rem; margin-bottom: 10px; }
+  .ob-title {
+    font-size: 1.55rem;
+    line-height: 1.14;
+  }
+  .ob-text { font-size: 0.94rem; }
+  .ob-scene-actions {
+    margin-top: 20px;
+    padding-top: 14px;
+  }
+  .ob-skip { padding: 10px 14px; }
+  .ob-next {
+    padding: 12px 22px;
+    font-size: 0.94rem;
+    min-height: 44px;
+  }
+
+  /* Personality grid: 2x4 on phones so names stay readable. */
+  .ob-scene-full { gap: 18px; padding: 14px 14px 90px; }
+  .ob-full-cta .ob-title { font-size: 1.45rem; }
+  .ob-full-cta .ob-text  { font-size: 0.9rem; }
+  .ob-full-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .ob-full-animal {
+    padding: 16px 10px 14px;
+    flex-direction: row;
+    gap: 12px;
+    text-align: left;
+    align-items: center;
+  }
   .ob-full-animal span:first-child { font-size: 2rem; }
-  .ob-full-cta .ob-title { font-size: 1.3rem; }
+  .ob-full-animal .ob-full-name { margin-top: 0; font-size: 0.9rem; }
+  .ob-full-animal .ob-quiz-hint  { display: none; }
+  .ob-next-big { padding: 13px 30px; font-size: 0.96rem; min-height: 46px; }
+
+  /* Theme picker: stack vertically with the recommended card on top. */
+  .ob-theme-card { gap: 14px; width: 100%; padding: 0 12px; }
+  .ob-theme-choices { flex-direction: column; gap: 12px; }
+  .ob-theme-btn { padding: 18px 18px 16px; }
+  .ob-theme-btn-swatch { height: 56px; margin-bottom: 12px; }
+
+  /* Progress dots: pin higher so they don't clash with the consent banner. */
+  .ob-dots { bottom: 14px; }
+  .ob-dot { width: 20px; }
+}
+
+/* Extra-narrow phones: drop internal padding so nothing clips. */
+@media (max-width: 380px) {
+  .ob-spotlight { padding: 22px 18px 18px; }
+  .ob-title { font-size: 1.38rem; }
+  .ob-full-grid { gap: 8px; }
+  .ob-full-animal { padding: 12px 8px; gap: 10px; }
+  .ob-full-animal span:first-child { font-size: 1.7rem; }
+  .ob-scene-actions { flex-wrap: wrap; gap: 10px; }
+  .ob-next { flex: 1 1 auto; }
 }
 

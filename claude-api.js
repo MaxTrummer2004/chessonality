@@ -1089,7 +1089,7 @@ async function _callProxy(endpoint, prompt) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: isLong ? 950 : 300,
+        max_tokens: isLong ? 1000 : 300,
         messages: [{ role: 'user', content: prompt }]
       })
     });

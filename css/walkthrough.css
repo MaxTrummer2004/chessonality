@@ -1,86 +1,261 @@
 /* ══════════════════════════════════════════════
-   GUIDED TOUR OVERLAY
+   GUIDED TOUR OVERLAY — editorial amber + black
+   ----------------------------------------------
+   Full-screen dim with a cut-out highlight around
+   the focused element, and an editorial tooltip
+   (eyebrow / serif title / body / progress / CTAs).
+   On narrow screens (≤760px) the tooltip becomes a
+   bottom sheet with large tap targets.
 ══════════════════════════════════════════════ */
 .tour-overlay {
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(2px);
-  transition: opacity 0.3s ease;
+  background: rgba(8, 7, 5, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
 }
+.tour-overlay[style*="display: none"] { pointer-events: none; }
+.tour-overlay.tour-visible { opacity: 1; }
+[data-theme="light"] .tour-overlay {
+  background: rgba(32, 25, 10, 0.55);
+}
+
+/* Cut-out highlight — soft amber ring + inner hollow shadow that
+   dims everything outside the rect. */
 .tour-highlight {
   position: absolute;
-  border-radius: 12px;
-  box-shadow: 0 0 0 4000px rgba(0,0,0,0.72), 0 0 0 3px rgba(139,92,246,0.7), 0 0 30px rgba(139,92,246,0.3);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 4000px rgba(8, 7, 5, 0.72),
+    0 0 0 2px rgba(212, 162, 76, 0.85),
+    0 0 0 6px rgba(212, 162, 76, 0.22),
+    0 0 40px rgba(212, 162, 76, 0.32);
+  transition: all 0.42s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
   z-index: 9001;
 }
+[data-theme="light"] .tour-highlight {
+  box-shadow:
+    0 0 0 4000px rgba(32, 25, 10, 0.55),
+    0 0 0 2px rgba(166, 122, 42, 0.95),
+    0 0 0 6px rgba(212, 162, 76, 0.30),
+    0 0 36px rgba(166, 122, 42, 0.38);
+}
+
 .tour-tooltip {
   position: absolute;
-  background: linear-gradient(145deg, rgba(30,27,46,0.97), rgba(22,20,36,0.98));
-  border: 1px solid rgba(139,92,246,0.35);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
   padding: 22px 26px 18px;
-  max-width: 340px;
-  min-width: 240px;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 24px rgba(139,92,246,0.15);
+  max-width: 380px;
+  min-width: 260px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    0 2px 0 0 rgba(212, 162, 76, 0.10) inset;
   z-index: 9002;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: tourTooltipIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              top  0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: tourTooltipIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  font-family: var(--font-body);
+}
+[data-theme="light"] .tour-tooltip {
+  background: var(--surface);
+  box-shadow:
+    0 24px 60px rgba(50, 35, 10, 0.22),
+    0 2px 0 0 rgba(166, 122, 42, 0.14) inset;
+}
+/* Subtle amber rule along the top edge, mirroring the how-tab
+   accent pattern used elsewhere in the editorial refresh. */
+.tour-tooltip::before {
+  content: "";
+  position: absolute;
+  left: 16px; right: 16px; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.65;
 }
 @keyframes tourTooltipIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
-.tour-tooltip-text {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.88);
+
+.tour-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+[data-theme="light"] .tour-eyebrow { color: var(--accent-deep); }
+
+.tour-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 0 0 8px;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+}
+
+.tour-body {
+  font-family: var(--font-body);
+  font-size: 0.94rem;
   line-height: 1.6;
+  color: var(--text-dim);
+  margin: 0 0 18px;
+}
+
+/* Progress: row of segment pills that fill as you advance. */
+.tour-progress {
+  display: flex;
+  gap: 6px;
   margin-bottom: 16px;
 }
+.tour-dot {
+  flex: 1 1 auto;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.tour-dot.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  opacity: 0.55;
+}
+.tour-dot.active {
+  background: var(--accent);
+  border-color: var(--accent-2);
+  box-shadow: 0 0 12px rgba(212, 162, 76, 0.45);
+}
+
 .tour-tooltip-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 .tour-step-counter {
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.35);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 .tour-tooltip-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
 }
 .tour-skip {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.35);
-  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  padding: 6px 4px;
-  transition: color 0.2s;
+  transition: color var(--transition), border-color var(--transition);
 }
-.tour-skip:hover { color: rgba(255,255,255,0.7); }
+.tour-skip:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
 .tour-next {
-  padding: 9px 22px;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-size: 0.9rem;
+  padding: 10px 22px;
+  background: var(--accent);
+  color: #1c1812;
+  border: 1px solid var(--accent-deep);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 3px 14px rgba(139,92,246,0.35);
-  transition: all 0.2s;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 6px 18px rgba(212, 162, 76, 0.25);
+  transition: background var(--transition),
+              box-shadow var(--transition),
+              transform var(--transition);
 }
 .tour-next:hover {
+  background: var(--accent-2);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139,92,246,0.45);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.26) inset,
+    0 10px 26px rgba(212, 162, 76, 0.34);
+}
+.tour-next:active { transform: translateY(0); }
+
+/* ── Mobile: bottom-sheet tooltip ────────────────────────────
+   On narrow viewports the tooltip is pinned to the bottom of
+   the screen as a wide, tap-friendly sheet. The highlight stays
+   above it, and the JS auto-scrolls the focused element into
+   the visible area so the two never collide. */
+@media (max-width: 760px) {
+  .tour-tooltip {
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    min-width: 0;
+    padding: 20px 22px 18px;
+    border-radius: 20px;
+    box-shadow:
+      0 -18px 46px rgba(0, 0, 0, 0.45),
+      0 2px 0 0 rgba(212, 162, 76, 0.10) inset;
+    animation: tourTooltipInMobile 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  [data-theme="light"] .tour-tooltip {
+    box-shadow:
+      0 -18px 46px rgba(50, 35, 10, 0.22),
+      0 2px 0 0 rgba(166, 122, 42, 0.14) inset;
+  }
+  @keyframes tourTooltipInMobile {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tour-title { font-size: 1.2rem; }
+  .tour-body  { font-size: 0.9rem; margin-bottom: 14px; }
+  .tour-progress { margin-bottom: 14px; }
+  .tour-tooltip-footer { padding-top: 12px; }
+  .tour-skip { padding: 10px 14px; font-size: 0.86rem; }
+  .tour-next {
+    padding: 12px 22px;
+    font-size: 0.92rem;
+    min-height: 44px;
+  }
+  .tour-highlight { border-radius: 12px; }
+}
+
+/* Extra-narrow phones: stack counter + buttons so nothing clips. */
+@media (max-width: 380px) {
+  .tour-tooltip-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .tour-step-counter { text-align: center; }
+  .tour-tooltip-actions { justify-content: space-between; width: 100%; }
+  .tour-next { flex: 1 1 auto; }
 }
 
 /* ==============================================================
@@ -133,6 +308,46 @@
   background: var(--bg);
   border-right: 1px solid var(--border);
   position: relative;
+}
+.wt-board-top {
+  width: min(420px, 100%);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+}
+.wt-board-top:empty {
+  display: none;
+}
+.wt-board-top .cont-btn-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.wt-board-top .cont-btn,
+.wt-board-top .cont-btn-again {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent, #ffd27a) 45%, rgba(255,255,255,0.12));
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent, #ffd27a) 22%, transparent),
+    color-mix(in srgb, var(--accent, #ffd27a) 8%, transparent));
+  color: var(--accent, #ffd27a);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.3);
+}
+.wt-board-top .cont-btn:hover,
+.wt-board-top .cont-btn-again:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent, #ffd27a) 32%, transparent),
+    color-mix(in srgb, var(--accent, #ffd27a) 14%, transparent));
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--accent, #ffd27a) 32%, transparent);
 }
 .wt-board-clone {
   width: min(420px, 100%);
@@ -189,29 +404,40 @@
 .wt-coach-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   flex-shrink: 0;
 }
+/* Hide the avatar — the title alone is cleaner and more elegant. */
 .wt-coach-avatar {
-  font-size: 2rem;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  flex-shrink: 0;
+  display: none !important;
 }
 .wt-coach-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.25rem;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 1.85rem;
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   flex: 1;
+  background: linear-gradient(135deg,
+    var(--text) 0%,
+    color-mix(in srgb, var(--accent, #ffd27a) 85%, var(--text)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--text); /* fallback */
+  text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+}
+@media (max-width: 860px) {
+  .wt-coach-title {
+    font-size: 1.45rem;
+  }
+  .wt-coach-header {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
 }
 .wt-close {
   width: 32px;
@@ -655,7 +881,7 @@
 .wt-slide-body .aic-move-chip {
   display: inline-flex;
   align-items: center;
-  padding: 1px 7px;
+  padding: 2px 8px;
   background: color-mix(in srgb, var(--pers-color, var(--accent)) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 40%, transparent);
   border-radius: 5px;

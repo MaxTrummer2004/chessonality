@@ -3,7 +3,7 @@
 ══════════════════════════════════════════════ */
 .gameplan-panel {
   border-left: 3px solid var(--accent);
-  background: linear-gradient(135deg, var(--surface2) 0%, rgba(233,69,96,0.04) 100%);
+  background: linear-gradient(135deg, var(--surface2) 0%, rgba(212, 162, 76,0.04) 100%);
 }
 #improveContent { font-size: 0.92rem; line-height: 1.72; color: var(--text); }
 #improveContent.dim { color: var(--text-dim); font-style: italic; }

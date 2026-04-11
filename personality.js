@@ -50,9 +50,9 @@ const PERSONALITIES = {
     id: 'lion',
     name: 'The Lion',
     emoji: '🦁',
-    color: '#e94560',
+    color: '#d64530',
     colorDark: '#7f1d1d',
-    gradient: 'linear-gradient(135deg, #3b0a0a 0%, #7f1d1d 40%, #e94560 100%)',
+    gradient: 'linear-gradient(135deg, #3b0a0a 0%, #7f1d1d 40%, #d64530 100%)',
     tagline: 'Attack. Dominate. Conquer.',
     description: 'You play for the king from move one. Material is fuel for your attack. You sacrifice without hesitation when checkmate is in the air. Defence is for other people.',
     traits: ['Aggressive', 'Fearless', 'Dominant'],
@@ -89,9 +89,9 @@ const PERSONALITIES = {
     id: 'phoenix',
     name: 'The Phoenix',
     emoji: '🔥',
-    color: '#ff6b6b',
+    color: '#e87640',
     colorDark: '#9a3412',
-    gradient: 'linear-gradient(135deg, #2d0a00 0%, #9a3412 40%, #ff6b6b 100%)',
+    gradient: 'linear-gradient(135deg, #2d0a00 0%, #9a3412 40%, #e87640 100%)',
     tagline: 'From the ashes. Reborn.',
     description: 'You never give up. When others would resign, you find the one chance: the swindle, the trap, the miracle save. Your opponents learn to fear even their winning positions against you.',
     traits: ['Resilient', 'Tenacious', 'Clutch'],
@@ -401,6 +401,13 @@ async function savePersonalityToHistory(personalityResult) {
 async function getAggregatePersonality() {
   let history = [];
   try { history = await dbGetHistory(); } catch {}
+
+  // Repertoire-batch entries are uploaded purely to generate an opening
+  // repertoire and must NOT influence the user's personality aggregate.
+  // (The repertoire flow now stores its own data in localStorage, but
+  // we still filter here to clean up legacy entries from older versions
+  // that may already exist in the user's IndexedDB.)
+  history = history.filter(e => e && e.source !== 'repertoire-batch');
 
   const totals = {};
   PERSONALITY_LIST.forEach(p => totals[p.id] = 0);

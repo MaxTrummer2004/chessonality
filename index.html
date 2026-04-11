@@ -7,7 +7,8 @@
 <meta name="description" content="Discover your chess playing style through AI analysis of your real games. Not a quiz — import from Chess.com or Lichess and get your chess personality instantly.">
 <meta name="keywords" content="chess analysis, chess personality, chess AI, lichess analysis, chess.com analysis, chess coach, chess improvement, chess openings, chess style">
 <meta name="author" content="Chessonality">
-<meta name="theme-color" content="#1d4ed8">
+<meta name="theme-color" content="#131210" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://chessonality.com/">
 
@@ -87,11 +88,185 @@
 <link rel="stylesheet" href="css/paywall.css">
 <link rel="stylesheet" href="css/walkthrough.css">
 <link rel="stylesheet" href="css/esports.css">
+<link rel="stylesheet" href="css/refresh.css">
 <link rel="stylesheet" href="css/mobile.css">
+<link rel="stylesheet" href="css/interactive.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════════════
+     Brand duotone SVG filters for personality animal emojis.
+     Each filter collapses an emoji to exactly two colors:
+       shadows    → the animal's own signature color
+       highlights → brand gold (#e8b864 = accent-2)
+
+     The grayscale matrix + strong linear stretch are identical
+     across all 8 — only the final LUT table stops differ.
+     Applied via CSS (refresh.css section 12) based on a
+     `data-pers` attribute on the element's ancestor.
+
+     Fallback `#brand-duotone` keeps dark gold → normal gold for
+     places that don't know the personality (e.g. the ? placeholder).
+═══════════════════════════════════════════════════════ -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Every filter follows the same recipe:
+         1. Luminance-weighted grayscale
+         2. Aggressive pre-contrast stretch (slope 5, intercept -0.1)
+            so only ink-black pixels land at t=0 and the rest quickly
+            climb into the gold half of the LUT.
+         3. Five-stop LUT: [animal midGold normGold lightGold lightGold]
+            where positions are 0, 0.25, 0.5, 0.75, 1.0.
+
+         Result: near-black pixels (eyes, pupils, dark line work) show
+         the animal's signature color; everything brighter dissolves
+         into a gradient across the three brand golds — dark gold
+         (#a67a2a), normal gold (#d4a24c), and bright gold (#e8b864).
+
+         Gold stop channels used below:
+           mid  (accent-deep)  #a67a2a → 0.651 0.478 0.165
+           norm (accent)       #d4a24c → 0.831 0.635 0.298
+           lite (accent-2)     #e8b864 → 0.910 0.722 0.392 -->
+
+    <!-- FALLBACK: all-gold gradient (no animal color at all). -->
+    <filter id="brand-duotone" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.651 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.478 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.165 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- anaconda: eyes → #10b981 emerald -->
+    <filter id="duo-anaconda" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.063 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.725 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.506 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- eagle: eyes → #2563eb blue -->
+    <filter id="duo-eagle" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.145 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.388 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.922 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- fox: eyes → #ea580c vivid orange -->
+    <filter id="duo-fox" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.918 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.345 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.047 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- lion: eyes → #d64530 red -->
+    <filter id="duo-lion" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.839 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.271 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.188 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- owl: eyes → #7c3aed violet -->
+    <filter id="duo-owl" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.486 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.227 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.929 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- shark: eyes → #0891b2 deeper cyan -->
+    <filter id="duo-shark" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.031 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.569 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.698 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- phoenix: 🔥 emoji is almost entirely bright so needs a MUCH stronger
+         downshift + the dark flame shade (#9a3412) to read as orange-red -->
+    <filter id="duo-phoenix" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.45"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.45"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.45"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.937 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.267 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.267 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- turtle: eyes → #0d9488 teal (no grey) -->
+    <filter id="duo-turtle" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.3" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.3" intercept="-0.2"/>
+      </feComponentTransfer>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.051 0.651 0.831 0.831 0.910"/>
+        <feFuncG type="table" tableValues="0.580 0.478 0.635 0.635 0.722"/>
+        <feFuncB type="table" tableValues="0.533 0.165 0.298 0.298 0.392"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+</svg>
 
 <!-- Streak decoration layer - sits behind all page content -->
 <div id="streak-canvas" aria-hidden="true"></div>
@@ -119,23 +294,28 @@
 
     <div class="landing-hero landing-hero-2col">
       <div class="landing-hero-text">
+        <div class="founder-badge" aria-label="Built by a titled player">
+          <span class="fb-dot"></span>
+          <span class="fb-text">Built by a 2400 Chess.com player</span>
+        </div>
+
         <h2 class="landing-title landing-title-cro">
-          <span class="lt-desktop">Discover what your chess moves say about you.</span>
-          <span class="lt-mobile">What kind of player were you just now?</span>
+          <span class="lt-desktop">Know your chess.<br>Know what to practice.</span>
+          <span class="lt-mobile">Know your chess.<br>Know what to practice.</span>
         </h2>
         <p class="landing-sub landing-sub-cro">
-          <span class="ls-desktop">Every game reveals a different side of you. Import one and find your chess identity in minutes.</span>
-          <span class="ls-mobile">Import your last game. Get your chess personality in 30 seconds.</span>
+          <span class="ls-desktop">Import one game. Get your playing style, move-by-move coaching, and a practice plan in under a minute.</span>
+          <span class="ls-mobile">Import one game. Get your style and a plan in under a minute.</span>
         </p>
 
         <button class="btn-analyze btn-get-started btn-cro-primary" id="heroCtaBtn" onclick="showChoiceModal()">
-          <span class="cta-desktop">Import my last game</span>
+          <span class="cta-desktop">Analyze my last game</span>
           <span class="cta-mobile">Analyze my last game</span>
         </button>
 
         <div class="cro-counter" id="croCounter">
           <span class="cro-counter-num" id="gamesAnalyzedNum">1,247</span>
-          <span class="cro-counter-label">games analyzed</span>
+          <span class="cro-counter-label">games analyzed so far</span>
         </div>
 
         <!-- Mobile-only: "See a sample" button that reveals & scrolls to the
@@ -218,60 +398,38 @@
               </div>
             </div>
 
-            <!-- Personality score trajectory line chart -->
-            <div class="hv-chart-card">
-              <div class="hv-chart-head">
-                <span class="hv-chart-label">Personality score trajectory</span>
-                <span class="hv-chart-delta">Avg 78%</span>
-              </div>
-              <svg class="hv-chart-svg" viewBox="0 0 320 90" preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="hvChartFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%"  stop-color="#e94560" stop-opacity="0.32"/>
-                    <stop offset="60%" stop-color="#e94560" stop-opacity="0.10"/>
-                    <stop offset="100%" stop-color="#e94560" stop-opacity="0"/>
-                  </linearGradient>
-                </defs>
-                <!-- Horizontal grid lines -->
-                <line x1="0" y1="18" x2="320" y2="18" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line x1="0" y1="42" x2="320" y2="42" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line x1="0" y1="66" x2="320" y2="66" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <!-- Area fill under main line -->
-                <path d="M0,64 L32,58 L64,66 L96,46 L128,52 L160,36 L192,42 L224,24 L256,30 L288,16 L320,10 L320,90 L0,90 Z" fill="url(#hvChartFill)"/>
-                <!-- Running average (dashed) -->
-                <path d="M0,70 L32,64 L64,60 L96,54 L128,48 L160,42 L192,38 L224,32 L256,26 L288,20 L320,16" fill="none" stroke="#e94560" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="5 5" stroke-linecap="round"/>
-                <!-- Main line -->
-                <path d="M0,64 L32,58 L64,66 L96,46 L128,52 L160,36 L192,42 L224,24 L256,30 L288,16 L320,10" fill="none" stroke="#e94560" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Dots along the line -->
-                <circle cx="32"  cy="58" r="2.2" fill="#e94560"/>
-                <circle cx="96"  cy="46" r="2.2" fill="#e94560"/>
-                <circle cx="160" cy="36" r="2.2" fill="#e94560"/>
-                <circle cx="224" cy="24" r="2.2" fill="#e94560"/>
-                <circle cx="288" cy="16" r="2.2" fill="#e94560"/>
-                <!-- Peak dot (gold, larger) -->
-                <circle cx="320" cy="10" r="3.6" fill="#f0c040" stroke="#13132a" stroke-width="1.5"/>
-              </svg>
-            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Bottom-centered scroll hint that jumps to how-it-works section -->
+    <div class="hero-see-more-wrap desktop-only">
+      <button type="button" class="hero-see-more" onclick="scrollToHowItWorks()" aria-label="See how it works">
+        <span class="hsm-text">See how it works</span>
+        <span class="hsm-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+
   </div>
 
   <!-- Competitor differentiation -->
-  <div class="cro-diff-section">
+  <div class="cro-diff-section" data-reveal>
     <h3 class="cro-diff-heading">Not another chess engine</h3>
-    <div class="cro-diff-grid">
-      <div class="cro-diff-col">
+    <div class="cro-diff-grid" data-reveal-stagger="90" data-reveal-base="80">
+      <div class="cro-diff-col" data-reveal>
         <div class="cro-diff-label">Chess.com Review</div>
         <p class="cro-diff-text">Tells you the move. We tell you the pattern.</p>
       </div>
-      <div class="cro-diff-col">
+      <div class="cro-diff-col" data-reveal>
         <div class="cro-diff-label">Personality quizzes</div>
         <p class="cro-diff-text">Multiple-choice guesses. We read your real games.</p>
       </div>
-      <div class="cro-diff-col">
+      <div class="cro-diff-col" data-reveal>
         <div class="cro-diff-label">Lichess analysis</div>
         <p class="cro-diff-text">Raw engine output. We give you a coaching plan.</p>
       </div>
@@ -280,9 +438,9 @@
 
   <!-- ── Showcase: What You'll Get ── -->
   <div class="showcase-section" id="showcaseSection">
-    <h3 class="showcase-heading">Here's what a single game reveals</h3>
-    <div class="showcase-grid">
-      <div class="showcase-card showcase-card-personality">
+    <h3 class="showcase-heading" data-reveal>Here's what a single game reveals</h3>
+    <div class="showcase-grid" data-reveal-stagger="90" data-reveal-base="100">
+      <div class="showcase-card showcase-card-personality" data-reveal>
         <div class="showcase-card-glow"></div>
         <div class="showcase-card-icon">🦁</div>
         <div class="showcase-card-label">Your Personality</div>
@@ -292,7 +450,7 @@
           <span>Aggressive</span><span>Fearless</span><span>Dominant</span>
         </div>
       </div>
-      <div class="showcase-card showcase-card-analysis">
+      <div class="showcase-card showcase-card-analysis" data-reveal>
         <div class="showcase-card-glow"></div>
         <div class="showcase-card-icon showcase-icon-text">&#9816;</div>
         <div class="showcase-card-label">Move-by-Move AI</div>
@@ -307,7 +465,7 @@
           </div>
         </div>
       </div>
-      <div class="showcase-card showcase-card-coach">
+      <div class="showcase-card showcase-card-coach" data-reveal>
         <div class="showcase-card-glow"></div>
         <div class="showcase-card-icon showcase-icon-text">&#9812;</div>
         <div class="showcase-card-label">AI Coach Plan</div>
@@ -317,7 +475,7 @@
           <div class="showcase-coach-item"><span class="showcase-check">&#10003;</span> Train tactical combinations</div>
         </div>
       </div>
-      <div class="showcase-card showcase-card-repertoire">
+      <div class="showcase-card showcase-card-repertoire" data-reveal>
         <div class="showcase-card-glow"></div>
         <div class="showcase-card-icon showcase-icon-text">&#9823;</div>
         <div class="showcase-card-label">Your Ideal Openings</div>
@@ -335,20 +493,259 @@
     </div>
   </div>
 
-  <!-- ── Social Proof ── -->
-  <div class="social-proof-section">
-    <div class="social-proof-quotes">
-      <div class="sp-quote">
-        <div class="sp-quote-text">"I always knew I was aggressive but seeing 'The Lion' with specific drills to improve my attacks was eye-opening."</div>
-        <div class="sp-quote-author">- Alex, 1450 Lichess</div>
+  <!-- ── Interactive: How It Works (3-step animated walkthrough) ── -->
+  <div class="how-section" id="howSection">
+    <div class="how-header" data-reveal>
+      <div class="how-kicker">How it works</div>
+      <h3 class="how-heading">From one game to a real plan. In thirty seconds.</h3>
+    </div>
+
+    <div class="how-stage" id="howStage">
+      <!-- Step tabs -->
+      <div class="how-tabs" role="tablist">
+        <button class="how-tab active" data-step="1" onclick="setHowStep(1)" role="tab">
+          <span class="how-tab-num">01</span>
+          <span class="how-tab-label">Import</span>
+        </button>
+        <button class="how-tab" data-step="2" onclick="setHowStep(2)" role="tab">
+          <span class="how-tab-num">02</span>
+          <span class="how-tab-label">Analyze</span>
+        </button>
+        <button class="how-tab" data-step="3" onclick="setHowStep(3)" role="tab">
+          <span class="how-tab-num">03</span>
+          <span class="how-tab-label">Reveal</span>
+        </button>
       </div>
-      <div class="sp-quote">
-        <div class="sp-quote-text">"The opening recommendations actually match how I play. No other tool does this."</div>
-        <div class="sp-quote-author">- Maria, 1680 Chess.com</div>
+
+      <!-- Step 1: Import -->
+      <div class="how-panel active" data-step="1">
+        <div class="how-panel-left">
+          <div class="how-step-num">Step 01</div>
+          <h4 class="how-panel-title">Paste your username.<br>That is the entire setup.</h4>
+          <p class="how-panel-text">No account. No password. No upload. Chessonality pulls your most recent 15 games straight from Chess.com or Lichess and lets you pick the one you want to understand.</p>
+          <ul class="how-checklist">
+            <li><span class="hc-tick">&#10003;</span> Works with any rating from 600 to 2800</li>
+            <li><span class="hc-tick">&#10003;</span> Or paste a PGN directly if you prefer</li>
+            <li><span class="hc-tick">&#10003;</span> Nothing is saved unless you choose to sync</li>
+          </ul>
+        </div>
+        <div class="how-panel-right">
+          <div class="how-mock how-mock-import">
+            <div class="hmi-glow"></div>
+            <div class="hmi-icon">&#9816;</div>
+            <div class="hmi-title">Analyze a Game</div>
+            <div class="hmi-sub">Import from your chess platform or paste a PGN to get AI-powered analysis.</div>
+
+            <div class="hmi-seg">
+              <span class="hmi-seg-item active">&#9816; Platform</span>
+              <span class="hmi-seg-item">&#9814; PGN</span>
+            </div>
+
+            <div class="hmi-plats">
+              <span class="hmi-plat"><span class="hmi-plat-ico">&#9822;</span> Lichess</span>
+              <span class="hmi-plat active"><span class="hmi-plat-ico">&#9816;</span> Chess.com</span>
+            </div>
+
+            <div class="hmi-row-input">
+              <div class="hmi-input-box">
+                <span class="hmi-input-text" id="hmiUser">MrAnkle</span>
+                <span class="hmi-caret">|</span>
+              </div>
+              <div class="hmi-go-btn">Load Games</div>
+            </div>
+
+            <div class="hmi-divider"></div>
+
+            <div class="hmi-list">
+              <div class="hmi-row"><span class="hmi-row-op">vs DefiantKnight</span><span class="hmi-pill hmi-won">Won</span></div>
+              <div class="hmi-row hmi-row-pick"><span class="hmi-row-op">vs SilentBishop</span><span class="hmi-pill hmi-lost">Lost</span></div>
+              <div class="hmi-row"><span class="hmi-row-op">vs RookRider</span><span class="hmi-pill hmi-draw">Draw</span></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="sp-quote">
-        <div class="sp-quote-text">"Turned out I'm an Anaconda. The AI coach told me to study Karpov, which makes total sense now."</div>
-        <div class="sp-quote-author">- David, 1320 Lichess</div>
+
+      <!-- Step 2: Analyze -->
+      <div class="how-panel" data-step="2">
+        <div class="how-panel-left">
+          <div class="how-step-num">Step 02</div>
+          <h4 class="how-panel-title">Every move explained<br>in the context of how you think.</h4>
+          <p class="how-panel-text">Stockfish runs in your browser, then an AI coach compares what the engine wanted against what you played. Not "you blundered." Instead: the exact pattern you fell into and why you fell into it.</p>
+          <ul class="how-checklist">
+            <li><span class="hc-tick">&#10003;</span> Engine verdict with a coaching sentence</li>
+            <li><span class="hc-tick">&#10003;</span> Written in your personality's voice</li>
+            <li><span class="hc-tick">&#10003;</span> Clear verdict: Brilliant, Good, Mistake, Blunder</li>
+          </ul>
+        </div>
+        <div class="how-panel-right">
+          <div class="how-mock how-mock-analyze">
+            <div class="hma-top">
+              <!-- Real 8x8 mini-board. Position after 9...e3?? (Fox game, blunder). -->
+              <div class="hma-board" aria-hidden="true">
+                <!-- rank 8 -->
+                <div class="sq L"><span class="p b">&#9820;</span></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p b">&#9821;</span></div>
+                <div class="sq D"><span class="p b">&#9819;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D"><span class="p b">&#9820;</span></div>
+                <div class="sq L"><span class="p b">&#9818;</span></div>
+                <div class="sq D"></div>
+                <!-- rank 7 -->
+                <div class="sq D"><span class="p b">&#9823;</span></div>
+                <div class="sq L"><span class="p b">&#9823;</span></div>
+                <div class="sq D"><span class="p b">&#9823;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p b">&#9823;</span></div>
+                <div class="sq D"><span class="p b">&#9821;</span></div>
+                <div class="sq L"><span class="p b">&#9823;</span></div>
+                <!-- rank 6 -->
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p b">&#9822;</span></div>
+                <div class="sq D"><span class="p b">&#9823;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D"><span class="p b">&#9822;</span></div>
+                <div class="sq L"><span class="p b">&#9823;</span></div>
+                <div class="sq D"></div>
+                <!-- rank 5 -->
+                <div class="sq D"></div>
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"></div>
+                <div class="sq D"><span class="p w">&#9822;</span></div>
+                <div class="sq L"></div>
+                <!-- rank 4 -->
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"></div>
+                <div class="sq D"><span class="p w">&#9823;</span></div>
+                <div class="sq L hma-blunder-from"></div>
+                <div class="sq D"></div>
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <!-- rank 3 -->
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p w">&#9823;</span></div>
+                <div class="sq D"><span class="p w">&#9822;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D hma-blunder-to"><span class="p b">&#9823;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D"><span class="p w">&#9823;</span></div>
+                <div class="sq L"></div>
+                <!-- rank 2 -->
+                <div class="sq L"><span class="p w">&#9823;</span></div>
+                <div class="sq D"><span class="p w">&#9821;</span></div>
+                <div class="sq L"><span class="p w">&#9823;</span></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p w">&#9823;</span></div>
+                <div class="sq D"><span class="p w">&#9823;</span></div>
+                <div class="sq L"><span class="p w">&#9821;</span></div>
+                <div class="sq D"><span class="p w">&#9823;</span></div>
+                <!-- rank 1 -->
+                <div class="sq D"><span class="p w">&#9820;</span></div>
+                <div class="sq L"></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p w">&#9819;</span></div>
+                <div class="sq D"></div>
+                <div class="sq L"><span class="p w">&#9820;</span></div>
+                <div class="sq D"><span class="p w">&#9818;</span></div>
+                <div class="sq L"></div>
+              </div>
+              <div class="hma-stats">
+                <div class="hma-stat hma-stat-bad">
+                  <span class="hma-stat-val">63%</span>
+                  <span class="hma-stat-lbl">accuracy</span>
+                </div>
+                <div class="hma-stat">
+                  <span class="hma-stat-val">28</span>
+                  <span class="hma-stat-lbl">moves</span>
+                </div>
+                <div class="hma-stat">
+                  <span class="hma-stat-val">8</span>
+                  <span class="hma-stat-lbl">book moves</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="hma-move-row">
+              <div class="hma-move-info">
+                <span class="hma-move-num">9...</span>
+                <span class="hma-san">e3</span>
+              </div>
+              <span class="hma-badge hma-blunder">Blunder</span>
+            </div>
+
+            <div class="hma-eval-row">
+              <span class="hma-eval-label">Eval</span>
+              <div class="hma-eval-bar"><div class="hma-eval-fill"></div></div>
+              <span class="hma-eval-val">
+                <span class="hev-before">&minus;1.9</span>
+                <span class="hev-arrow">&rarr;</span>
+                <span class="hev-after">0.0</span>
+              </span>
+            </div>
+
+            <div class="hma-coach">
+              <div class="hma-coach-head">
+                <span class="hma-coach-icon">&#9822;</span>
+                <span class="hma-coach-who">Your AI coach</span>
+              </div>
+              <p class="hma-coach-text">Your opponent pushed the pawn to <b>e3</b>, but the engine preferred <b>d5</b> instead. Advancing the pawn into your position looks aggressive, yet it weakens Black's control of the center and allows your knight on g5 to find better squares, turning the tables in your favor within the next few moves.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Reveal -->
+      <div class="how-panel" data-step="3">
+        <div class="how-panel-left">
+          <div class="how-step-num">Step 03</div>
+          <h4 class="how-panel-title">Your personality.<br>Your plan for the next month.</h4>
+          <p class="how-panel-text">One of eight archetypes based on how you actually moved the pieces. Then four concrete tasks built around your weaknesses: a puzzle type to drill, one concept to study, a number of games to play at a specific time control, and two master games chosen because they teach what you keep missing.</p>
+          <ul class="how-checklist">
+            <li><span class="hc-tick">&#10003;</span> Personality matched to your real games</li>
+            <li><span class="hc-tick">&#10003;</span> Monthly practice plan, four concrete tasks</li>
+            <li><span class="hc-tick">&#10003;</span> Opening repertoire that fits your style</li>
+          </ul>
+        </div>
+        <div class="how-panel-right">
+          <div class="how-mock how-mock-reveal">
+            <div class="hmr-stage">
+              <div class="hmr-rays" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="hmr-content">
+                <div class="hmr-label">Chess personality detected</div>
+                <div class="hmr-emoji">&#129409;</div>
+                <div class="hmr-name">The Lion</div>
+                <div class="hmr-tag">Attack. Dominate. Conquer.</div>
+                <div class="hmr-traits">
+                  <span>Aggressive</span><span>Fearless</span><span>Dominant</span>
+                </div>
+                <div class="hmr-famous">Think: Mikhail Tal</div>
+              </div>
+            </div>
+            <div class="hmr-plan">
+              <div class="hmr-plan-head">
+                <span class="hmr-plan-dot"></span>
+                Your month of practice
+              </div>
+              <div class="hmr-plan-item"><span class="hmr-plan-num">1</span><span>Solve defensive tactics: stop walking into counter-attacks.</span></div>
+              <div class="hmr-plan-item"><span class="hmr-plan-num">2</span><span>Study prophylaxis before you sacrifice.</span></div>
+              <div class="hmr-plan-item"><span class="hmr-plan-num">3</span><span>Play 5 games at 15+10 with three pre-move questions.</span></div>
+              <div class="hmr-plan-item"><span class="hmr-plan-num">4</span><span>Learn: Tal vs Larsen, 1965. Spassky vs Petrosian, 1966.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress indicator -->
+      <div class="how-progress" aria-hidden="true">
+        <div class="how-progress-fill" id="howProgressFill"></div>
       </div>
     </div>
   </div>
@@ -368,24 +765,7 @@
     </div>
   </section>
 
-  <!-- ── Mobile-only: Testimonials ── -->
-  <section class="mobile-testimonials mobile-only" aria-label="Player testimonials">
-    <h3 class="mobile-testimonials-heading">What players say</h3>
-    <div class="mt-card">
-      <p class="mt-card-text">"I always knew I was aggressive but seeing 'The Lion' with specific drills to improve my attacks was eye-opening."</p>
-      <div class="mt-card-author">— Alex, 1450 Lichess</div>
-    </div>
-    <div class="mt-card">
-      <p class="mt-card-text">"The opening recommendations actually match how I play. No other tool does this."</p>
-      <div class="mt-card-author">— Maria, 1680 Chess.com</div>
-    </div>
-    <div class="mt-card">
-      <p class="mt-card-text">"Turned out I'm an Anaconda. The AI coach told me to study Karpov, which makes total sense now."</p>
-      <div class="mt-card-author">— David, 1320 Lichess</div>
-    </div>
-  </section>
-
-  <!-- ── Mobile-only: Competitor differentiation (stacked) ── -->
+<!-- ── Mobile-only: Competitor differentiation (stacked) ── -->
   <section class="mobile-diff mobile-only" aria-label="Why Chessonality">
     <h3 class="mobile-diff-heading">Not another chess engine</h3>
     <div class="mdiff-row">
@@ -666,6 +1046,12 @@
         </div>
       </div>
 
+      <!-- Rotating coaching facts while the engine works -->
+      <div class="loading-fact" id="loadingFact">
+        <div class="loading-fact-kicker">While we analyze</div>
+        <div class="loading-fact-text" id="loadingFactText">There are more possible chess games than atoms in the observable universe — roughly 10^120 unique games.</div>
+      </div>
+
       <div style="display:none">
         <span id="lstepEngine"></span>
         <span id="lstepEval"></span>
@@ -699,21 +1085,52 @@
 ══════════════════════════════════════════════════ -->
 <div id="pagePersonality" class="app-page" style="display:none">
   <div class="pers-reveal" id="persReveal">
-    <div class="pers-content">
-      <div class="pers-subtitle">Your Chess Personality</div>
-      <div class="pers-emoji" id="persEmoji"></div>
-      <h1 class="pers-name" id="persName"></h1>
-      <div class="pers-tagline" id="persTagline"></div>
-      <p class="pers-description" id="persDescription"></p>
-      <div class="pers-traits" id="persTraits"></div>
-      <div class="pers-famous" id="persFamous"></div>
-      <div class="pers-actions">
-        <button class="hl-btn" onclick="goToAnalysis()">
-          Continue to Analysis <span class="btn-arrow">&#8594;</span>
+    <!-- Ambient spotlight that pulses behind the emoji -->
+    <div class="pers-spotlight" aria-hidden="true"></div>
+    <div class="pers-rays" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="pers-content" id="persContent">
+      <div class="pers-subtitle pers-stagger" data-delay="0">Chess personality detected</div>
+      <div class="pers-emoji pers-stagger" data-delay="120" id="persEmoji"></div>
+      <h1 class="pers-name pers-stagger" data-delay="320" id="persName"></h1>
+      <div class="pers-tagline pers-stagger" data-delay="520" id="persTagline"></div>
+      <p class="pers-description pers-stagger" data-delay="680" id="persDescription"></p>
+      <div class="pers-traits pers-stagger" data-delay="820" id="persTraits"></div>
+      <div class="pers-famous pers-stagger" data-delay="900" id="persFamous"></div>
+
+      <!-- Why you are this personality (dynamic breakdown) -->
+      <div class="pers-why pers-stagger" data-delay="1020" id="persWhy">
+        <div class="pers-why-head">
+          <span class="pers-why-icon">&#9812;</span>
+          <span>Why your game read as this</span>
+        </div>
+        <ul class="pers-why-list" id="persWhyList"></ul>
+      </div>
+
+      <!-- Match meter showing how strongly this personality fits -->
+      <div class="pers-match pers-stagger" data-delay="1160" id="persMatch">
+        <div class="pers-match-head">
+          <span class="pers-match-label">Match strength</span>
+          <span class="pers-match-val" id="persMatchVal">87%</span>
+        </div>
+        <div class="pers-match-bar"><div class="pers-match-fill" id="persMatchFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="pers-actions pers-stagger" data-delay="1320">
+        <button class="pers-share-btn pers-share-primary" onclick="sharePersonality()">
+          <span class="psp-text">Share my result</span>
+          <span class="psp-icon" aria-hidden="true">&#8599;</span>
         </button>
-        <button class="pers-share-btn" onclick="sharePersonality()">
-          &#128228; Share Result
-        </button>
+        <div class="pers-action-row">
+          <button class="pers-copy-btn" onclick="copyPersonalityResult(this)" id="persCopyBtn">
+            <span class="pcb-text">Copy link</span>
+          </button>
+          <button class="pers-continue-btn" onclick="goToAnalysis()">
+            Continue to full analysis <span class="btn-arrow">&#8594;</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -760,9 +1177,9 @@
 
     <!-- Game stats pills -->
     <div class="game-stats" id="gameStats" style="display:none">
-      <div class="gs-pill" id="gsAccuracy"><span class="gs-icon">&#127919;</span> <span id="gsAccVal"></span></div>
+      <div class="gs-pill" id="gsAccuracy"><span class="gs-icon">&#9813;</span> <span id="gsAccVal"></span></div>
       <div class="gs-pill" id="gsMoves"><span class="gs-icon">&#9823;</span> <span id="gsMovesVal"></span></div>
-      <div class="gs-pill" id="gsBook"><span class="gs-icon">&#128214;</span> <span id="gsBookVal"></span></div>
+      <div class="gs-pill" id="gsBook"><span class="gs-icon">&#9814;</span> <span id="gsBookVal"></span></div>
       <span id="analysisStatus" class="gs-status"></span>
     </div>
 
@@ -803,41 +1220,45 @@
                 </div>
                 <div class="move-list" id="moveList"></div>
               </div>
-              <div class="moves-right">
-                <!-- AI Coach action panel - buttons only, no inline text -->
+              <!-- Desktop-only right column: purged from DOM on mobile by inline script at end of body -->
+              <div class="moves-right moves-right-desktop" id="movesRightDesktop">
                 <div class="ai-coach-panel" id="aiCoachPanel">
-
-                  <!-- Single explain button + hint (grouped so they center together) -->
                   <div class="aic-btn-group">
-                    <button id="explainBtn" class="btn-explain" onclick="handleExplain()">
+                    <button id="explainBtnDesktop" class="btn-explain" onclick="handleExplain()">
                       Explain
                     </button>
-                    <div id="aicHint" class="aic-hint">Select a move to get started.</div>
+                    <div class="aic-hint">Select a move to get started.</div>
                   </div>
-
-                  <!-- Live board controls -->
-                  <div class="live-board-controls">
-                    <span id="liveBoardMoveBadge" class="live-board-badge" style="display:none">1 move ahead</span>
-                    <button id="liveBoardUndoBtn" class="btn-live-undo" style="display:none" onclick="liveBoardUndo()">
-                      &#8592; Undo Move
-                    </button>
-                    <button id="liveBoardUndoAllBtn" class="btn-live-undo-all" style="display:none" onclick="liveBoardUndoAll()">
-                      &#8634; Reset Board
-                    </button>
-                  </div>
-
-                  <!-- Inline slide deck output area -->
                   <div id="aicOutput" class="aic-output" style="display:none"></div>
-
-                  <!-- Hidden data stores (used by JS) -->
-                  <div style="display:none">
-                    <div id="moveExplanation"></div>
-                    <div id="explanation"></div>
-                  </div>
                 </div>
-
               </div>
             </div>
+          </div>
+
+          <!-- Live board controls (desktop + mobile) -->
+          <div class="live-board-controls" style="display:none" id="liveBoardControls">
+            <span id="liveBoardMoveBadge" class="live-board-badge" style="display:none">1 move ahead</span>
+            <button id="liveBoardUndoBtn" class="btn-live-undo" style="display:none" onclick="liveBoardUndo()">
+              &#8592; Undo Move
+            </button>
+            <button id="liveBoardUndoAllBtn" class="btn-live-undo-all" style="display:none" onclick="liveBoardUndoAll()">
+              &#8634; Reset Board
+            </button>
+          </div>
+
+          <!-- Hidden data stores (used by JS) -->
+          <div style="display:none">
+            <div id="moveExplanation"></div>
+            <div id="explanation"></div>
+          </div>
+
+          <!-- Mobile-only fixed explain bar (lives outside moves-panel so it can be
+               truly fixed at the bottom without being clipped by a display:none parent) -->
+          <div class="aic-btn-group" id="mobileExplainBar">
+            <button id="explainBtn" class="btn-explain" onclick="handleExplain()">
+              Explain
+            </button>
+            <div id="aicHint" class="aic-hint">Select a move to get started.</div>
           </div>
 
           <!-- Hidden thought blocks for summary (used by full game page) -->
@@ -951,7 +1372,7 @@
   <div class="prof-page">
 
     <!-- ── Top hub bar: identity + primary CTA ── -->
-    <div class="prof-hub-bar">
+    <div class="prof-hub-bar" data-reveal data-reveal-delay="40">
       <div class="prof-identity">
         <div class="profile-avatar-large">
           <svg class="profile-person-icon-lg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
@@ -969,7 +1390,7 @@
       </div>
       <div class="prof-hub-actions">
         <button class="prof-pglos-btn" onclick="openPglos()" title="Learn about all personalities">
-          &#129488; Personalities
+          Personalities
         </button>
         <button class="prof-analyze-btn" onclick="showPage('gameSelect')">
           <span class="prof-analyze-icon">&#9654;</span>
@@ -1000,7 +1421,7 @@
     </div>
 
     <!-- ── Tab bar ── -->
-    <div class="prof-tabs">
+    <div class="prof-tabs" data-reveal data-reveal-delay="120">
       <button class="prof-tab active" id="profTabOverview" onclick="switchProfTab('overview')">Overview</button>
       <button class="prof-tab" id="profTabHistory" onclick="switchProfTab('history')">My Games</button>
     </div>
@@ -1010,7 +1431,7 @@
 
       <!-- Row 1: Personality card + Breakdown (full width) -->
       <div class="prof-top-grid">
-        <div class="prof-primary" id="profPrimary">
+        <div class="prof-primary" id="profPrimary" data-reveal data-reveal-delay="180">
           <div class="prof-primary-inner" id="profPrimaryInner">
             <div class="prof-primary-sub">Your Chess Identity</div>
             <div class="prof-primary-emoji" id="profPrimaryEmoji">?</div>
@@ -1018,7 +1439,7 @@
             <div class="prof-primary-tagline" id="profPrimaryTagline">your chess personality</div>
           </div>
         </div>
-        <div class="prof-section prof-section-breakdown">
+        <div class="prof-section prof-section-breakdown" data-reveal data-reveal-delay="260">
           <div class="prof-section-title">Personality Breakdown</div>
           <div id="profBreakdown" class="prof-breakdown">
             <div class="ph-empty">Play games to build your personality profile.</div>
@@ -1027,8 +1448,8 @@
       </div>
 
       <!-- Row 2: Dashboard - streak + sparkline + collection counter -->
-      <div class="prof-engage-row" id="profEngageRow" style="display:none">
-        <div class="prof-streak-card" id="profStreakCard">
+      <div class="prof-engage-row" id="profEngageRow" style="display:none" data-reveal-stagger="70" data-reveal-base="320">
+        <div class="prof-streak-card" id="profStreakCard" data-reveal>
           <div class="prof-streak-flame" id="profStreakFlame">🔥</div>
           <div class="prof-streak-info">
             <div class="prof-streak-count" id="profStreakCount">0</div>
@@ -1036,16 +1457,19 @@
           </div>
           <div class="prof-streak-dots" id="profStreakDots"></div>
         </div>
-        <div class="prof-sparkline-card" id="profSparklineCard">
-          <div class="prof-sparkline-label">Personality Trend</div>
-          <canvas id="profSparkline" width="160" height="48"></canvas>
-          <div class="prof-sparkline-sub" id="profSparklineSub"></div>
+        <!-- Compact Personality Collection (replaces the old trend chart). -->
+        <div class="prof-collection prof-collection-compact" id="profCollection" data-reveal>
+          <div class="prof-collection-header">
+            <span class="prof-collection-title">Personality Collection</span>
+            <span class="prof-collection-counter" id="profCollectionCounter">0/8 discovered</span>
+          </div>
+          <div class="prof-collection-grid" id="profCollectionGrid"></div>
         </div>
       </div>
 
       <!-- Row 3: Feature CTA cards (Repertoire, DNA, Coach) -->
-      <div class="prof-feature-row" id="profFeatureRow" style="display:none">
-        <div class="prof-feat-card prof-feat-rep" onclick="openRepertoire()">
+      <div class="prof-feature-row" id="profFeatureRow" style="display:none" data-reveal-stagger="80" data-reveal-base="440">
+        <div class="prof-feat-card prof-feat-rep" onclick="openRepertoire()" data-reveal>
           <div class="prof-feat-icon prof-feat-icon-text">&#9823;</div>
           <div class="prof-feat-body">
             <div class="prof-feat-title">Your Ideal Openings</div>
@@ -1053,15 +1477,7 @@
           </div>
           <div class="prof-feat-status" id="profFeatRepStatus"></div>
         </div>
-        <div class="prof-feat-card prof-feat-dna" id="profInsightsCta" style="display:none" onclick="openInsights()">
-          <div class="prof-feat-icon prof-feat-icon-text">&#9815;</div>
-          <div class="prof-feat-body">
-            <div class="prof-feat-title">My Chess DNA</div>
-            <div class="prof-feat-sub" id="profFeatDnaSub">Personality evolution &amp; strengths radar</div>
-          </div>
-          <div class="prof-feat-status" id="profFeatDnaStatus"></div>
-        </div>
-        <div class="prof-feat-card prof-feat-coach" id="profCoachPreview" style="display:none" onclick="openCoachPage()">
+        <div class="prof-feat-card prof-feat-coach" id="profCoachPreview" onclick="openCoachPage()" data-reveal>
           <div class="prof-feat-icon prof-feat-icon-text">&#9812;</div>
           <div class="prof-feat-body">
             <div class="prof-feat-title">AI Coach</div>
@@ -1069,16 +1485,18 @@
           </div>
           <div class="prof-feat-status" id="profFeatCoachStatus"></div>
         </div>
+        <div class="prof-feat-card prof-feat-dna" id="profInsightsCta" onclick="openInsights()" data-reveal>
+          <div class="prof-feat-icon prof-feat-icon-text">&#9819;</div>
+          <div class="prof-feat-body">
+            <div class="prof-feat-title">Game Insights</div>
+            <div class="prof-feat-sub" id="profFeatDnaSub">Critical moments &amp; opening performance</div>
+          </div>
+          <div class="prof-feat-status" id="profFeatDnaStatus"></div>
+        </div>
       </div>
 
-      <!-- Row 4: Personality Collection (horizontal grid) -->
-      <div class="prof-collection" id="profCollection" style="display:none">
-        <div class="prof-collection-header">
-          <span class="prof-collection-title">Personality Collection</span>
-          <span class="prof-collection-counter" id="profCollectionCounter">0/8 discovered</span>
-        </div>
-        <div class="prof-collection-grid" id="profCollectionGrid"></div>
-      </div>
+      <!-- (Row 4 Personality Collection removed — it now lives in Row 2
+           in place of the old "Style Consistency" sparkline.) -->
 
     </div>
 
@@ -1196,7 +1614,7 @@
     <!-- Narrative: go deeper -->
     <div class="rep-narrative rep-scroll-section" id="repNarrative4" style="display:none">
       <div class="rep-narrative-text">Ready to master these lines?</div>
-      <div class="rep-narrative-sub">Dive into individual game analysis to sharpen every opening.</div>
+      <div class="rep-narrative-sub">Analyze a game to sharpen every opening.</div>
       <div class="rep-narrative-line"></div>
     </div>
 
@@ -1221,10 +1639,10 @@
       <div class="rep-crosslinks-title">Go deeper</div>
       <div class="rep-crosslinks-grid">
         <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();">
-          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9815;</span>
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9819;</span>
           <div>
-            <div class="rep-crosslink-name">Chess DNA</div>
-            <div class="rep-crosslink-desc">See how your personality evolves over time</div>
+            <div class="rep-crosslink-name">Game Insights</div>
+            <div class="rep-crosslink-desc">Find your turning points and best openings</div>
           </div>
         </div>
         <div class="rep-crosslink" onclick="openCoachPage()">
@@ -1249,7 +1667,7 @@
 
 
 <!-- ══════════════════════════════════════════════════
-     PAGE 9 - INSIGHTS (Chess DNA)
+     PAGE 9 - GAME INSIGHTS (Critical Moments + Openings)
 ══════════════════════════════════════════════════ -->
 <div id="pageInsights" class="app-page" style="display:none">
 
@@ -1259,8 +1677,8 @@
       <span class="ins-back-arrow">&#8592;</span> Back
     </button>
     <div class="ins-header-center">
-      <div class="ins-header-title">My Chess DNA</div>
-      <div class="ins-header-sub" id="insHeaderSub">Your chess identity at a glance</div>
+      <div class="ins-header-title">Game Insights</div>
+      <div class="ins-header-sub" id="insHeaderSub">Lessons drawn from the games you've played</div>
     </div>
     <div style="width:64px"></div><!-- spacer -->
   </header>
@@ -1268,91 +1686,26 @@
   <!-- Tab pills -->
   <div class="ins-pills-wrap">
     <div class="ins-pills">
-      <button class="ins-pill active" id="insTabStrengths"  onclick="switchInsTab('strengths')">&#127760; Strengths</button>
-      <button class="ins-pill"        id="insTabEvolution"  onclick="switchInsTab('evolution')">&#128200; Evolution</button>
+      <button class="ins-pill active" id="insTabMoments"  onclick="switchInsTab('moments')">Critical Moments</button>
+      <button class="ins-pill"        id="insTabOpenings" onclick="switchInsTab('openings')">Openings</button>
     </div>
   </div>
 
-  <!-- ══ PANEL: STRENGTHS ══ -->
-  <div id="insTabPanelStrengths" class="ins-panel">
+  <!-- ══ PANEL: CRITICAL MOMENTS ══ -->
+  <div id="insTabPanelMoments" class="ins-panel">
     <div class="ins-page-wrap">
-
-      <!-- Two-col: radar + bar list -->
-      <div class="ins-strengths-grid">
-
-        <!-- Radar -->
-        <div class="ins-card ins-card-radar">
-          <div class="ins-card-label">Personality radar</div>
-          <div class="ins-radar-wrap">
-            <canvas id="insRadarChart" class="ins-radar-canvas"></canvas>
-          </div>
-        </div>
-
-        <!-- Bar breakdown -->
-        <div class="ins-card ins-card-bars">
-          <div class="ins-card-label">Dimension breakdown</div>
-          <div id="insStrengthBars" class="ins-strength-bars"></div>
-        </div>
-
+      <div id="insMomentsContent" class="ins-moments-wrap">
+        <div class="ins-loading"><div class="ins-loading-spinner"></div><div class="ins-loading-text">Scanning your games for turning points…</div></div>
       </div>
     </div>
   </div>
 
-  <!-- ══ PANEL: EVOLUTION ══ -->
-  <div id="insTabPanelEvolution" class="ins-panel" style="display:none">
+  <!-- ══ PANEL: OPENINGS ══ -->
+  <div id="insTabPanelOpenings" class="ins-panel" style="display:none">
     <div class="ins-page-wrap">
-
-      <!-- Chart card: title row + canvas -->
-      <div class="ins-card ins-card-chart">
-        <div class="ins-chart-header">
-          <div>
-            <div class="ins-chart-title" id="insChartTitle">Personality Score Trajectory</div>
-            <div class="ins-chart-subtitle" id="insChartSubtitle">Primary personality score across your analyzed games</div>
-          </div>
-          <div class="ins-chart-badges" id="insChartBadges"></div>
-        </div>
-        <canvas id="insLineChart" class="ins-canvas"></canvas>
-        <div class="ins-chart-legend">
-          <span class="ins-cleg-item"><span class="ins-cleg-line ins-cleg-solid"></span>Primary score</span>
-          <span class="ins-cleg-item"><span class="ins-cleg-line ins-cleg-dashed"></span>Running average</span>
-          <span class="ins-cleg-item"><span class="ins-cleg-dot ins-cleg-peak"></span>Peak game</span>
-        </div>
+      <div id="insOpeningsContent" class="ins-openings-wrap">
+        <div class="ins-loading"><div class="ins-loading-spinner"></div><div class="ins-loading-text">Aggregating opening performance…</div></div>
       </div>
-
-      <!-- Bottom stat cards -->
-      <div class="ins-stat-cards" id="insEvoStats"></div>
-
-    </div>
-  </div>
-
-  <!-- ══ PANEL: COACH ══ -->
-  <div id="insTabPanelCoach" class="ins-panel" style="display:none">
-    <div class="ins-page-wrap ins-page-wrap-coach">
-
-      <div class="ins-coach-card">
-        <div class="ins-coach-header">
-          <div class="ins-coach-icon-wrap">
-            <span class="ins-coach-icon">&#129302;</span>
-          </div>
-          <div>
-            <div class="ins-coach-title">AI Chess Coach</div>
-            <div class="ins-coach-subtitle">Personalised advice based on your DNA</div>
-          </div>
-        </div>
-
-        <div id="insCoachContent" class="ins-coach-body">
-          <div class="ins-coach-empty">
-            <div class="ins-coach-empty-icon">&#127942;</div>
-            <div class="ins-coach-empty-text">Your personalised coaching plan is one click away.</div>
-          </div>
-        </div>
-
-        <button class="ins-coach-cta" id="insCoachBtn" onclick="generateInsightsAdvice()">
-          <span class="ins-coach-cta-icon">&#9889;</span>
-          Get Personalised Advice
-        </button>
-      </div>
-
     </div>
   </div>
 
@@ -1364,15 +1717,14 @@
 ══════════════════════════════════════════════════ -->
 <div id="pageCoach" class="app-page" style="display:none">
 
-  <!-- Coach header -->
-  <header class="coach-page-header">
-    <button class="coach-back-btn" onclick="showPage('profile'); renderFullProfile();">
-      <span class="coach-back-arrow">&#8592;</span> Back
+  <!-- Coach header (matches Repertoire header style) -->
+  <header class="ins-header rep-page-header coach-page-header">
+    <button class="ins-back-btn" onclick="showPage('profile'); renderFullProfile();">
+      <span class="ins-back-arrow">&#8592;</span> Back
     </button>
-    <div class="coach-header-center">
-      <div class="coach-header-icon">&#129302;</div>
-      <div class="coach-header-title">AI Chess Coach</div>
-      <div class="coach-header-sub">Your personalised practice plan</div>
+    <div class="ins-header-center">
+      <div class="ins-header-title">AI Chess Coach</div>
+      <div class="ins-header-sub" id="coachHeaderSub">Your personalised practice plan</div>
     </div>
     <div style="width:64px"></div>
   </header>
@@ -1396,6 +1748,34 @@
         <span class="coach-page-cta-icon">&#9889;</span>
         Generate Practice Plan
       </button>
+
+      <!-- Cross-links to other features -->
+      <div class="rep-crosslinks coach-crosslinks" id="coachCrosslinks" data-reveal>
+        <div class="rep-crosslinks-title">Go deeper</div>
+        <div class="rep-crosslinks-grid" data-reveal-stagger="80" data-reveal-base="60">
+          <div class="rep-crosslink" onclick="openRepertoire()" data-reveal>
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9823;</span>
+            <div>
+              <div class="rep-crosslink-name">Your Ideal Openings</div>
+              <div class="rep-crosslink-desc">Personality-matched repertoire with stats</div>
+            </div>
+          </div>
+          <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();" data-reveal>
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9819;</span>
+            <div>
+              <div class="rep-crosslink-name">Game Insights</div>
+              <div class="rep-crosslink-desc">Find your turning points and best openings</div>
+            </div>
+          </div>
+          <div class="rep-crosslink" onclick="showPage('gameSelect');" data-reveal>
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9816;</span>
+            <div>
+              <div class="rep-crosslink-name">Analyze Another Game</div>
+              <div class="rep-crosslink-desc">Every game refines your coach plan</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -1641,37 +2021,38 @@
 <!-- ── Onboarding walkthrough ── -->
 <div class="onboarding-overlay" id="onboardingOverlay" style="display:none">
 
-  <!-- Step 1: LEFT - single animal intro -->
+  <!-- Step 1: Welcome — editorial intro -->
   <div class="ob-scene ob-scene-left ob-animate-in" id="obScene0">
     <div class="ob-spotlight ob-spot-left">
-      <div class="ob-animal">&#129409;</div>
-      <h2 class="ob-title">Every player has a personality</h2>
-      <p class="ob-text">Are you an aggressive Lion, a patient Anaconda, or a cunning Fox? Analyze your games and the AI detects your chess personality, then coaches you on your best and worst moments.</p>
+      <div class="ob-eyebrow">Welcome</div>
+      <h2 class="ob-title">Your game tells us who you are.</h2>
+      <p class="ob-text">Import one game. See how you actually play, and what to practice next.</p>
       <div class="ob-scene-actions">
         <button class="ob-skip" onclick="closeOnboarding()">Skip</button>
-        <button class="ob-next" onclick="nextOnboardingStep()">Next &rarr;</button>
+        <button class="ob-next" onclick="nextOnboardingStep()">Continue &rarr;</button>
       </div>
     </div>
   </div>
 
-  <!-- Step 2: RIGHT - analysis preview -->
+  <!-- Step 2: What you get -->
   <div class="ob-scene ob-scene-right" id="obScene1" style="display:none">
     <div class="ob-spotlight ob-spot-right">
-      <div class="ob-animal">&#128300;</div>
-      <h2 class="ob-title">Every move, fully decoded</h2>
-      <p class="ob-text">Paste any PGN from Lichess or Chess.com and every move gets quality-coded instantly. Tap one and the AI walks you through it as a three-slide deck: a plain-language overview, the structural idea, and the engine's best alternative based on the next three moves.</p>
+      <div class="ob-eyebrow">What you get</div>
+      <h2 class="ob-title">One game in, four things out.</h2>
+      <p class="ob-text">A chess personality. Move by move coaching. An opening repertoire. A practice plan.</p>
       <div class="ob-scene-actions">
         <button class="ob-skip" onclick="closeOnboarding()">Skip</button>
-        <button class="ob-next" onclick="nextOnboardingStep()">Next &rarr;</button>
+        <button class="ob-next" onclick="nextOnboardingStep()">Continue &rarr;</button>
       </div>
     </div>
   </div>
 
-  <!-- Step 3: FULLSCREEN - personality quiz -->
+  <!-- Step 3: Personality self-guess -->
   <div class="ob-scene ob-scene-full" id="obScene2" style="display:none">
     <div class="ob-full-cta" style="margin-bottom:8px">
-      <h2 class="ob-title">Which one do you think you are?</h2>
-      <p class="ob-text">Tap the personality that feels most like you.</p>
+      <div class="ob-eyebrow">A hunch first</div>
+      <h2 class="ob-title">Which one do you <em>think</em> you are?</h2>
+      <p class="ob-text">Pick the archetype that feels closest. We'll see if the analysis agrees once you import a game.</p>
     </div>
     <div class="ob-full-grid ob-quiz-grid">
       <div class="ob-full-animal ob-quiz-animal" data-personality="anaconda" onclick="obPickPersonality(this)"><span>&#128013;</span><span class="ob-full-name">Anaconda</span><span class="ob-quiz-hint">Patient &amp; positional</span></div>
@@ -1685,32 +2066,37 @@
     </div>
     <div class="ob-quiz-result" id="obQuizResult" style="display:none">
       <div class="ob-quiz-result-text" id="obQuizResultText"></div>
-      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">Let's find out for real &rarr;</button>
+      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">See what your games say &rarr;</button>
     </div>
     <div class="ob-quiz-skip" id="obQuizSkip">
-      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">Next &rarr;</button>
+      <button class="ob-next ob-next-big" onclick="nextOnboardingStep()">Continue &rarr;</button>
     </div>
   </div>
 
-  <!-- Step 4: DARK MODE choice -->
+  <!-- Step 4: Theme picker -->
   <div class="ob-scene ob-scene-full ob-scene-theme" id="obScene3" style="display:none">
     <div class="ob-theme-card">
-      <div class="ob-theme-moon">🌗</div>
-      <h2 class="ob-title">Do you prefer the dark side?</h2>
-      <p class="ob-text">Choose your vibe. You can always change it later.</p>
+      <div class="ob-eyebrow">One last thing</div>
+      <h2 class="ob-title">Pick your vibe.</h2>
+      <p class="ob-text">Chessonality is tuned for dark mode — that's where the editorial palette looks its best. Light mode is there if you prefer it. You can change your mind any time from the header.</p>
       <div class="ob-theme-choices">
         <button class="ob-theme-btn ob-theme-dark" onclick="obPickTheme('dark')">
-          <span class="ob-theme-btn-icon">🌙</span>
-          <span class="ob-theme-btn-label">Dark Mode</span>
-          <span class="ob-theme-btn-sub">Easy on the eyes</span>
+          <span class="ob-theme-btn-swatch" aria-hidden="true">
+            <span class="ob-swatch-dark"></span>
+          </span>
+          <span class="ob-theme-btn-recommended">Recommended</span>
+          <span class="ob-theme-btn-label">Dark</span>
+          <span class="ob-theme-btn-sub">Warm ink on black</span>
         </button>
         <button class="ob-theme-btn ob-theme-light" onclick="obPickTheme('light')">
-          <span class="ob-theme-btn-icon">☀️</span>
-          <span class="ob-theme-btn-label">Light Mode</span>
-          <span class="ob-theme-btn-sub">Crisp &amp; clean</span>
+          <span class="ob-theme-btn-swatch" aria-hidden="true">
+            <span class="ob-swatch-light"></span>
+          </span>
+          <span class="ob-theme-btn-label">Light</span>
+          <span class="ob-theme-btn-sub">Cream paper</span>
         </button>
       </div>
-      <button class="ob-skip ob-theme-skip" onclick="closeOnboarding()">Keep current &rarr;</button>
+      <button class="ob-skip ob-theme-skip" onclick="closeOnboarding()">Keep current setting &rarr;</button>
     </div>
   </div>
 
@@ -1841,13 +2227,17 @@
 <script src="tour.js"></script>
 <script src="streaks.js"></script>
 <script src="sync.js"></script>
+<script src="interactive.js"></script>
 
 <script>
 // ── Theme ──────────────────────────────────────────────────
+// Dark is the default. We only honor an explicit user choice (set via the
+// theme toggle or the onboarding picker). OS `prefers-color-scheme` is
+// intentionally ignored so the editorial dark look is what new visitors
+// see, regardless of their system setting.
 (function () {
   const saved = localStorage.getItem('ce-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
+  const theme = saved || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
   updateThemeIcon(theme);
 })();
@@ -2056,12 +2446,17 @@ function isPremium() {
   const exp = parseInt(localStorage.getItem('cp-license-exp') || '0');
   return exp > Date.now();
 }
+function isPaidTierEnabled() {
+  return window.CP_CONFIG?.PAID_TIER_ENABLED === true;
+}
 function freeAnalysesRemaining() {
+  if (!isPaidTierEnabled()) return Infinity;
   const limit = (window.CP_CONFIG?.FREE_ANALYSES) || 2;
   return Math.max(0, limit - getFreeAnalysesUsed());
 }
 function checkPaywall() {
   // Returns true if analysis can proceed, false if paywalled
+  if (!isPaidTierEnabled()) return true; // Soft-launch: unlimited for everyone
   if (isPremium()) return true;
   if (freeAnalysesRemaining() > 0) {
     incrementFreeAnalysesUsed();
@@ -2072,6 +2467,7 @@ function checkPaywall() {
   return false;
 }
 function openPaywall() {
+  if (!isPaidTierEnabled()) return; // Never show paywall during soft-launch
   document.getElementById('overlay').classList.add('open');
   document.getElementById('paywallModal').classList.add('open');
 }
@@ -2123,6 +2519,7 @@ async function submitLicenseKey() {
 function updateFreeBadge() {
   const badge = document.getElementById('freeAnalysesBadge');
   if (!badge) return;
+  if (!isPaidTierEnabled()) { badge.style.display = 'none'; return; }
   if (isPremium()) { badge.style.display = 'none'; return; }
   const rem = freeAnalysesRemaining();
   badge.style.display = '';
@@ -2303,16 +2700,19 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- ── Guided tour overlay (analysis + profile) ── -->
+<!-- ── Guided tour overlay (landing + analysis + profile) ── -->
 <div class="tour-overlay" id="tourOverlay" style="display:none">
   <div class="tour-highlight" id="tourHighlight"></div>
-  <div class="tour-tooltip" id="tourTooltip">
-    <div class="tour-tooltip-text" id="tourText"></div>
+  <div class="tour-tooltip" id="tourTooltip" role="dialog" aria-labelledby="tourTitle">
+    <div class="tour-eyebrow" id="tourEyebrow">A Guided Tour</div>
+    <h3 class="tour-title" id="tourTitle"></h3>
+    <p class="tour-body" id="tourText"></p>
+    <div class="tour-progress" id="tourProgress" aria-hidden="true"></div>
     <div class="tour-tooltip-footer">
       <span class="tour-step-counter" id="tourCounter"></span>
       <div class="tour-tooltip-actions">
-        <button class="tour-skip" onclick="closeTour()">Skip</button>
-        <button class="tour-next" onclick="nextTourStep()">Next &rarr;</button>
+        <button class="tour-skip" type="button" onclick="closeTour()">Skip</button>
+        <button class="tour-next" type="button" onclick="nextTourStep()">Next &rarr;</button>
       </div>
     </div>
   </div>
@@ -2366,5 +2766,24 @@ function mobileTabGo(tab) {
 })();
 </script>
 
+<script>
+// On narrow screens, PHYSICALLY REMOVE the desktop-only right column
+// from the DOM so nothing can render it, no CSS cascade can reveal it,
+// and DevTools shows it as genuinely gone. Runs as early as possible.
+(function purgeMovesRightOnMobile() {
+  function purge() {
+    if (window.innerWidth <= 860) {
+      var el = document.getElementById('movesRightDesktop');
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }
+  }
+  // Run immediately (script is at end of body, so element exists)
+  purge();
+  // Also run on DOMContentLoaded in case of races
+  document.addEventListener('DOMContentLoaded', purge);
+})();
+</script>
+
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

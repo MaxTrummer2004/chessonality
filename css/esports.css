@@ -79,9 +79,9 @@
   transition: all 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
 }
 .hero-plat-btn.active {
-  background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(139,92,246,0.1)) !important;
-  border-color: rgba(233,69,96,0.4) !important;
-  box-shadow: 0 0 20px rgba(233,69,96,0.1);
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.15), rgba(139,92,246,0.1)) !important;
+  border-color: rgba(212, 162, 76,0.4) !important;
+  box-shadow: 0 0 20px rgba(212, 162, 76,0.1);
   transform: translateY(-1px);
 }
 
@@ -119,7 +119,7 @@
   font-size: 0.88rem !important;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(233,69,96,0.25) !important;
+  box-shadow: 0 8px 30px rgba(212, 162, 76,0.25) !important;
 }
 .hero-input-go::after,
 .hero-input-go-full::after {
@@ -228,7 +228,7 @@
 }
 .wt-plan-item.wt-plan-worst .wt-plan-count {
   color: var(--accent);
-  text-shadow: 0 0 20px rgba(233,69,96,0.4);
+  text-shadow: 0 0 20px rgba(212, 162, 76,0.4);
 }
 .wt-plan-item.wt-plan-best .wt-plan-count {
   color: var(--good);
@@ -601,26 +601,61 @@
   border-radius: 20px !important;
 }
 
-/* Pill tabs: floating pills */
+/* Pill tabs: bold, prominent — these are primary navigation */
 .ins-pills {
-  background: transparent !important;
-  border: none !important;
-  gap: 8px !important;
-  padding: 0 !important;
+  background: color-mix(in srgb, var(--surface2) 92%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  gap: 6px !important;
+  padding: 6px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 8px 24px rgba(15, 15, 40, 0.18),
+              0 0 0 1px rgba(212, 175, 55, 0.10) !important;
+}
+[data-theme="light"] .ins-pills {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 8px 22px rgba(20, 20, 60, 0.08),
+              0 0 0 1px rgba(212, 175, 55, 0.18) !important;
 }
 .ins-pill {
-  border-radius: 20px !important;
-  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  border: 1px solid transparent !important;
   background: transparent !important;
+  color: var(--text-dim) !important;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 0.76rem !important;
-  padding: 8px 20px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  padding: 14px 28px !important;
   transition: all 0.25s !important;
 }
+.ins-pill:hover:not(.active) {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--gi-gold, #d4af37) 8%, transparent) !important;
+}
 .ins-pill.active {
-  border-color: transparent !important;
-  box-shadow: 0 4px 20px rgba(139,92,246,0.35) !important;
+  background: linear-gradient(135deg, #f0c758 0%, #d4af37 100%) !important;
+  color: #1a1a1a !important;
+  border-color: rgba(212, 175, 55, 0.55) !important;
+  box-shadow: 0 8px 26px rgba(212, 175, 55, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-1px);
+}
+[data-theme="light"] .ins-pill.active {
+  background: linear-gradient(135deg, #f0c758 0%, #d4af37 100%) !important;
+  color: #1a1a1a !important;
+  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.42),
+              inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Mobile: scale the pills down so two of them fit comfortably on a
+   ≥320px viewport while staying tap-friendly (~44px tall via padding). */
+@media (max-width: 760px) {
+  .ins-pill {
+    padding: 12px 18px !important;
+    font-size: 0.84rem !important;
+  }
+  .ins-pills { gap: 4px !important; padding: 5px !important; }
 }
 
 /* Coach card: fully dissolved - no box at all */
@@ -671,21 +706,7 @@
 .coach-plan-icon {
   animation: floatSlow 3s ease-in-out infinite;
 }
-.coach-task {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 14px 4px !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--text-dim) 10%, transparent) !important;
-  transition: all 0.25s !important;
-}
-.coach-task:last-child {
-  border-bottom: none !important;
-}
-.coach-task:hover {
-  background: color-mix(in srgb, var(--pers-color, #8b5cf6) 4%, transparent) !important;
-  padding-left: 10px !important;
-}
+/* NOTE: legacy .coach-task overrides removed — canonical styles live in coach.css */
 .coach-task-check {
   border: 2px solid rgba(139,92,246,0.35) !important;
   background: transparent !important;
@@ -708,7 +729,7 @@
   font-size: 0.78rem !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  margin-top: 20px !important;
+  margin-top: 4px !important;
 }
 
 /* Dissolve all coach section boxes */
@@ -1097,7 +1118,7 @@
 /* Footer with new plan button */
 .coach-story-footer {
   text-align: center;
-  padding: 40px 0 20px;
+  padding: 10px 0 20px;
 }
 .coach-story-new-btn {
   display: inline-flex;

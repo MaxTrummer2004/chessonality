@@ -3,7 +3,7 @@
  * ─────────────────────────────────────
  * Handles:
  *   POST /api/claude       → proxy to Anthropic (max_tokens 300)
- *   POST /api/claude-long  → proxy to Anthropic (max_tokens 600)
+ *   POST /api/claude-long  → proxy to Anthropic (max_tokens 1000)
  *   POST /api/verify-key   → verify a license key
  *   GET  /api/health       → health check
  *
@@ -30,7 +30,9 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
-const FREE_LIMIT = 2; // free analyses per browser (enforced on frontend + here as soft limit)
+// Soft-launch: paid tier is disabled, so we give everyone a high free limit.
+// Bump this back down (e.g. to 2) once Stripe billing goes live.
+const FREE_LIMIT = 9999;
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 export default {
@@ -115,7 +117,7 @@ async function handleClaude(request, env, isLong) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: isLong ? 600 : 300,
+      max_tokens: isLong ? 1000 : 300,
       messages: [{ role: 'user', content: body.prompt }]
     })
   });

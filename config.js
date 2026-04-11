@@ -14,6 +14,11 @@ window.CP_CONFIG = {
   // While empty, the app uses the local API key from claude-api.js (dev only).
   PROXY_URL: 'https://chess-personality-api.maxtrummer.workers.dev',
 
+  // Soft-launch flag. While false, the Pro/paywall UI is hidden and every
+  // user gets unlimited free analyses. Flip to true once the Austrian
+  // Gewerbe is registered and Stripe billing is ready to go live.
+  PAID_TIER_ENABLED: false,
+
   // Stripe Payment Link for the €4.99/month Pro subscription.
   // 1. Go to https://dashboard.stripe.com/payment-links
   // 2. Create a recurring product "Chessonality Pro" at €4.99/month

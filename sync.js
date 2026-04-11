@@ -77,7 +77,16 @@ function openSyncModal(mode) {
 
 function closeSyncModal() {
   const overlay = document.getElementById('syncModalOverlay');
-  if (overlay) overlay.style.display = 'none';
+  if (!overlay) return;
+  if (overlay.style.display === 'none') return;
+  // Play exit animation, then hide. Guard against repeated clicks.
+  if (overlay._closingTimer) return;
+  overlay.classList.add('is-closing');
+  overlay._closingTimer = setTimeout(() => {
+    overlay.classList.remove('is-closing');
+    overlay.style.display = 'none';
+    overlay._closingTimer = null;
+  }, 200);
 }
 
 function _showSyncStep(step) {

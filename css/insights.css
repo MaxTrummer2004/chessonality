@@ -43,7 +43,7 @@
   border-color: var(--accent);
   color: #fff;
   transform: scale(1.1);
-  box-shadow: 0 0 16px rgba(233, 69, 96, 0.35);
+  box-shadow: 0 0 16px rgba(212, 162, 76, 0.35);
 }
 
 .quiz-skip-btn {
@@ -172,7 +172,7 @@
 .gs-platform-btn.active {
   border-color: var(--accent);
   color: var(--text);
-  background: rgba(233, 69, 96, 0.06);
+  background: rgba(212, 162, 76, 0.06);
 }
 .gs-platform-btn:hover:not(.active) {
   border-color: var(--text-dim);

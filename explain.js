@@ -148,8 +148,8 @@ function renderAicRich(rawHtml, cls, mode) {
   // Personality name color map (names without "The")
   const PERS_COLORS = {
     'Anaconda': '#22c55e', 'Eagle': '#3b82f6', 'Fox': '#f59e0b',
-    'Lion': '#e94560',     'Owl': '#8b5cf6',   'Shark': '#06b6d4',
-    'Phoenix': '#ff6b6b',  'Turtle': '#94a3b8'
+    'Lion': '#d4a24c',     'Owl': '#8b5cf6',   'Shark': '#06b6d4',
+    'Phoenix': '#e8b864',  'Turtle': '#94a3b8'
   };
 
   function colorizePersonality(html) {
@@ -698,20 +698,25 @@ function handleShowContWt(ply) {
   const deck = contWrap.querySelector('.cont-slideshow');
   if (deck) _contSlideShow(deck, 0);
 
-  const btn = body.querySelector('.cont-btn');
+  // The See/Hide Continuation buttons now live above the board
+  // (in #wtBoardTop), not inside the coach body.
+  const top = document.getElementById('wtBoardTop');
+  const btn = top ? top.querySelector('.cont-btn') : null;
   if (btn) btn.style.display = 'none';
-  const againBtn = body.querySelector('.cont-btn-again');
+  const againBtn = top ? top.querySelector('.cont-btn-again') : null;
   if (againBtn) againBtn.style.display = '';
 }
 
 function handleHideContWt(ply) {
   const body = document.getElementById('wtCoachBody');
-  if (!body) return;
-  const contWrap = body.querySelector('.cont-wrap');
-  if (contWrap) contWrap.innerHTML = '';
-  const btn = body.querySelector('.cont-btn');
+  if (body) {
+    const contWrap = body.querySelector('.cont-wrap');
+    if (contWrap) contWrap.innerHTML = '';
+  }
+  const top = document.getElementById('wtBoardTop');
+  const btn = top ? top.querySelector('.cont-btn') : null;
   if (btn) btn.style.display = '';
-  const againBtn = body.querySelector('.cont-btn-again');
+  const againBtn = top ? top.querySelector('.cont-btn-again') : null;
   if (againBtn) againBtn.style.display = 'none';
 
   // Restore walkthrough board to the original move position
@@ -723,8 +728,8 @@ function handleHideContWt(ply) {
 // Generate the "Show Continuation" button HTML (used by both analysis + walkthrough)
 function _contButtonHtml(onclickShow, onclickHide) {
   return `<div class="cont-btn-wrap">
-    <button class="cont-btn" onclick="${onclickShow}">Show Best Continuation</button>
-    <button class="cont-btn-again" onclick="${onclickHide}" style="display:none">Hide Continuation</button>
+    <button class="cont-btn" onclick="${onclickShow}">&#9654; See Continuation</button>
+    <button class="cont-btn-again" onclick="${onclickHide}" style="display:none">&#10005; Hide Continuation</button>
   </div>`;
 }
 
@@ -1029,54 +1034,45 @@ function updateExplainButtons() {
   }
 
   const deckDone = !hasFreeMoves && !!_explainCache[deckKey];
-
-  const btn = document.getElementById('explainBtn');
-  const btnGroup = btn ? btn.closest('.aic-btn-group') : null;
-  const hint = document.getElementById('aicHint');
   const output = document.getElementById('aicOutput');
 
-  if (deckDone && output) {
-    // Deck ready - hide button + hint, show response filling the space
-    if (btnGroup) btnGroup.style.display = 'none';
-    if (hint) hint.style.display = 'none';
-    output.style.display = '';
-    // Build deck + continuation button
-    let deckHtml = '<div class="cont-wrap"></div>';
-    if (_contFensCache[currentPly] && _contFensCache[currentPly].sans.length > 0) {
-      deckHtml += _contButtonHtml('handleShowContAnalysis()', 'handleHideContAnalysis()');
-    }
-    deckHtml += _explainCache[deckKey];
-    output.innerHTML = deckHtml;
-    const deck = output.querySelector('.aic-slide-deck');
-    if (deck) _slideDeckShowSlide(deck, 0);
-  } else if (hasFreeMoves) {
-    // User is exploring free moves - show greyed-out "Back to game" button
-    if (btnGroup) btnGroup.style.display = '';
-    if (btn) {
-      btn.style.display = '';
+  // Helper: apply state to a single explain button + its sibling hint
+  function _applyBtnState(btn) {
+    if (!btn) return;
+    const hint = btn.parentElement ? btn.parentElement.querySelector('.aic-hint') : null;
+    if (deckDone) {
       btn.disabled = false;
+      btn.classList.remove('btn-back-to-game');
+      btn.classList.add('btn-rewatch');
+      btn.innerHTML = '&#9654; Re-watch Presentation';
+      btn.onclick = handleExplain;
+      if (hint) hint.style.display = 'none';
+    } else if (hasFreeMoves) {
+      btn.disabled = false;
+      btn.classList.remove('btn-rewatch');
       btn.classList.add('btn-back-to-game');
       btn.innerHTML = '&#8592; Back to game moves';
       btn.onclick = function() { liveBoardUndoAll(); };
-    }
-    if (output) { output.style.display = 'none'; output.innerHTML = ''; }
-    if (hint) { hint.style.display = 'none'; }
-  } else {
-    // No deck - show Explain button centered, hide output
-    if (btnGroup) btnGroup.style.display = '';
-    if (btn) {
-      btn.style.display = '';
+      if (hint) hint.style.display = 'none';
+    } else {
       btn.disabled = noMove;
       btn.classList.remove('btn-back-to-game');
+      btn.classList.remove('btn-rewatch');
       btn.innerHTML = 'Explain';
       btn.onclick = handleExplain;
-    }
-    if (output) { output.style.display = 'none'; output.innerHTML = ''; }
-    if (hint) {
-      hint.style.display = noMove ? '' : 'none';
-      hint.textContent = noMove ? 'Select a move to get started.' : '';
+      if (hint) {
+        hint.style.display = noMove ? '' : 'none';
+        hint.textContent = noMove ? 'Select a move to get started.' : '';
+      }
     }
   }
+
+  // Drive the mobile fixed bar button (#explainBtn in #mobileExplainBar)
+  _applyBtnState(document.getElementById('explainBtn'));
+  // Drive the desktop sidebar button (#explainBtnDesktop)
+  _applyBtnState(document.getElementById('explainBtnDesktop'));
+
+  if (output) { output.style.display = 'none'; output.innerHTML = ''; }
 }
 
 // Single entry point - "Explain" button click (shows full 3-slide deck)
@@ -1094,7 +1090,7 @@ function _scrollToExplainTarget() {
     const out = document.getElementById('aicOutput');
     if (out && out.offsetHeight > 0) return out;
     return document.getElementById('aiCoachPanel')
-        || document.querySelector('.moves-right')
+        || document.querySelector('.moves-right-desktop')
         || document.querySelector('.moves-panel');
   };
   const doScroll = () => {
@@ -1135,55 +1131,24 @@ function handleExplain() {
 
   _activeAnalysisView = 'move'; // compat
 
-  const deckKey = _explainKey('deck', currentPly);
-  if (_explainCache[deckKey]) {
-    updateExplainButtons();
-    _scrollToExplainTarget();
-    return;
-  }
-  explainMoveAndAsk();
-  _scrollToExplainTarget();
+  // Launch the single-move walkthrough. It shares wtCache/_rawReplyCache,
+  // so repeat clicks on the same move reuse the cached explanation
+  // instantly and updateExplainButtons() will show a Re-watch button.
+  try { launchSingleMoveWalkthrough(currentPly); } catch (e) { console.warn('[Explain] launch failed:', e); }
 }
 
 // Keep old name as alias for any external callers
 function handleAicAsk() { handleExplain(); }
 
-// ── Combined explain+ask for the new layout ──
+// ── Combined explain+ask (legacy path kept for external callers) ──
 async function explainMoveAndAsk() {
   if (currentPly < 1) {
     setMoveNote('Navigate to a move first.', true);
     return;
   }
-  const deckKey = _explainKey('deck', currentPly);
-  if (_explainCache[deckKey]) return; // already done - safeguard only
-
-  // Also check raw reply cache (from walkthrough)
-  if (_rawReplyCache[currentPly]) {
-    _explainCache[deckKey] = _buildAnalysisSlideDeck(_rawReplyCache[currentPly]);
-    updateExplainButtons();
-    return;
-  }
-
   const key = document.getElementById('apiKey')?.value?.trim() || '';
   const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
   if (!hasAccess) { setMoveNote('API key missing. Open Settings.', true); return; }
-
-  // Hide button group, show loading in the output area
-  const explainBtn = document.getElementById('explainBtn');
-  const btnGroup = explainBtn ? explainBtn.closest('.aic-btn-group') : null;
-  if (btnGroup) btnGroup.style.display = 'none';
-  const hint = document.getElementById('aicHint');
-  if (hint) hint.style.display = 'none';
-  const output = document.getElementById('aicOutput');
-  if (output) {
-    output.style.display = '';
-    output.innerHTML = '<div class="aic-loading"><span class="spinner"></span> Analyzing\u2026</div>';
-    // Scroll the explain box into the center of the viewport immediately on click,
-    // so the user sees the loading state (and then the result) without manual scrolling.
-    requestAnimationFrame(() => {
-      try { output.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-    });
-  }
 
   // Fetch engine top moves for the position BEFORE this move (what should have been played)
   // Annotated: each half-move gets a plain-English description so Claude can read them literally.
@@ -1326,16 +1291,10 @@ async function explainMoveAndAsk() {
     const deckHtml = _buildAnalysisSlideDeck(reply);
     const deckKey = _explainKey('deck', currentPly);
     _explainCache[deckKey] = deckHtml;
-    // Show the deck starting at Overview (slide 0) - user navigates with dots/arrows
-    if (output) {
-      output.innerHTML = deckHtml;
-      const deck = output.querySelector('.aic-slide-deck');
-      if (deck) _slideDeckShowSlide(deck, 0);
-    }
     updateExplainButtons();
     _persistAiCache();
   } catch (err) {
-    if (output) output.innerHTML = `<div class="aic-error">Error: ${err.message}</div>`;
+    setMoveNote('Error: ' + err.message, true);
   }
 }
 
@@ -1701,44 +1660,7 @@ function launchWalkthrough() {
   _wtActive = true;
   // Preserve any previously saved entries - only clear if no persisted cache exists
 
-  // Build overlay if it doesn't exist
-  let overlay = document.getElementById('wtOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'wtOverlay';
-    overlay.className = 'wt-overlay';
-    overlay.innerHTML = `
-      <div class="wt-backdrop"></div>
-      <div class="wt-layout">
-        <div class="wt-board-spotlight" id="wtBoardSpot">
-          <div class="wt-board-clone" id="wtBoardClone"></div>
-          <div class="wt-board-nav">
-            <span class="wt-move-label" id="wtMoveLabel"></span>
-          </div>
-        </div>
-        <div class="wt-coach-panel" id="wtCoachPanel">
-          <div class="wt-coach-header">
-            <div class="wt-coach-avatar" id="wtCoachAvatar"></div>
-            <div class="wt-coach-title" id="wtCoachTitle"></div>
-            <button class="wt-close" onclick="closeWalkthrough()" title="Close walkthrough">&times;</button>
-          </div>
-          <div class="wt-coach-badge" id="wtCoachBadge"></div>
-          <div class="wt-coach-body" id="wtCoachBody"></div>
-          <div class="wt-thought-area" id="wtThoughtArea" style="display:none"></div>
-          <div class="wt-coach-footer">
-            <div class="wt-progress" id="wtProgress"></div>
-            <div class="wt-actions">
-              <button class="wt-btn-back" id="wtBtnBack" onclick="wtBack()">&#8592; Back</button>
-              <button class="wt-btn-next" id="wtBtnNext" onclick="wtNext()">Next &#8594;</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    document.addEventListener('keydown', _wtKeyHandler);
-  }
-
+  const overlay = _wtEnsureOverlay();
   overlay.style.display = 'flex';
   overlay.classList.remove('wt-fadeout');
   requestAnimationFrame(() => overlay.classList.add('wt-visible'));
@@ -1774,6 +1696,9 @@ function closeWalkthrough() {
     overlay.style.display = 'none';
     overlay.classList.remove('wt-fadeout');
   }, 250);
+  // Refresh the analysis-page Explain button (so a just-viewed
+  // single-move walkthrough leaves behind a "Re-watch" button).
+  try { if (typeof updateExplainButtons === 'function') updateExplainButtons(); } catch (_) {}
 }
 
 // Navigate
@@ -1893,16 +1818,34 @@ function _wtRenderStep(idx) {
   thoughtArea.style.display = 'none';
   thoughtArea.innerHTML = '';
 
-  // Progress dots
-  progress.innerHTML = _wtSteps.map((_, i) =>
-    `<span class="wt-dot${i === idx ? ' active' : ''}${i < idx ? ' done' : ''}"></span>`
-  ).join('');
+  // Progress dots (hide when there is only a single step)
+  if (_wtSteps.length > 1) {
+    progress.style.display = '';
+    progress.innerHTML = _wtSteps.map((_, i) =>
+      `<span class="wt-dot${i === idx ? ' active' : ''}${i < idx ? ' done' : ''}"></span>`
+    ).join('');
+  } else {
+    progress.style.display = 'none';
+    progress.innerHTML = '';
+  }
 
-  // Back/Next buttons
+  // Back/Next buttons (hidden entirely when it's a single-step overlay;
+  // the header's × close button is enough there).
+  const isOnly = _wtSteps.length === 1;
   btnBack.style.display = idx > 0 ? '' : 'none';
   const isLast = idx === _wtSteps.length - 1;
-  btnNext.innerHTML = isLast ? 'Finish &#10003;' : 'Next &#8594;';
-  btnNext.classList.toggle('wt-btn-finish', isLast);
+  if (isOnly) {
+    btnNext.style.display = 'none';
+  } else {
+    btnNext.style.display = '';
+    btnNext.innerHTML = isLast ? 'Finish &#10003;' : 'Next &#8594;';
+    btnNext.classList.toggle('wt-btn-finish', isLast);
+  }
+
+  // Clear the board-top slot — 'move' steps will repopulate it with the
+  // "See Continuation" button once continuation data is available.
+  const boardTop = document.getElementById('wtBoardTop');
+  if (boardTop) boardTop.innerHTML = '';
 
   // Personality
   const pers = currentPersonality?.primary;
@@ -1971,28 +1914,43 @@ function _wtRenderStep(idx) {
 
     // Title based on category
     if (step.category === 'worst') {
-      title.textContent = step.cls === 'blunder' ? '\u265A Critical Blunder' : '\u265A Mistake';
-    } else {
+      if (step.cls === 'blunder') title.textContent = '\u265A Critical Blunder';
+      else if (step.cls === 'mistake') title.textContent = '\u265A Mistake';
+      else title.textContent = '\u265A Inaccuracy';
+    } else if (step.category === 'best') {
       title.textContent = step.cls === 'brilliant' ? '\u2655 Brilliant Move!' : '\u2713 Great Move';
+    } else {
+      const pers = currentPersonality?.primary;
+      title.textContent = pers?.name ? `${pers.name} Coach` : '\u2658 Move Analysis';
     }
+
+    // Helper: mount the cont-wrap (for the slideshow) inside the coach body,
+    // and the Show/Hide Continuation button above the board.
+    const mountCont = () => {
+      const bt = document.getElementById('wtBoardTop');
+      if (!bt) return;
+      if (_contFensCache[step.ply] && _contFensCache[step.ply].sans.length > 0) {
+        bt.innerHTML = _contButtonHtml(`handleShowContWt(${step.ply})`, `handleHideContWt(${step.ply})`);
+      } else {
+        bt.innerHTML = '';
+      }
+    };
 
     // Load AI explanation (cached or fresh)
     const cacheKey = `wt:${step.ply}:${step.cls}`;
-    const contBtnHtml = (_contFensCache[step.ply] && _contFensCache[step.ply].sans.length > 0)
-      ? _contButtonHtml(`handleShowContWt(${step.ply})`, `handleHideContWt(${step.ply})`)
-      : '';
     if (_wtCache[cacheKey]) {
-      body.innerHTML = _wtCache[cacheKey] + '<div class="cont-wrap"></div>' + contBtnHtml;
+      body.innerHTML = _wtCache[cacheKey] + '<div class="cont-wrap"></div>';
+      mountCont();
     } else {
       body.innerHTML = '<div class="wt-loading"><span class="spinner"></span> Analyzing this move...</div>';
       _wtFetchExplanation(step, cacheKey).then(html => {
         if (_wtIdx === idx) { // still on same step
-          // Re-check cont data (may have been computed during fetch)
-          const freshContBtn = (_contFensCache[step.ply] && _contFensCache[step.ply].sans.length > 0)
-            ? _contButtonHtml(`handleShowContWt(${step.ply})`, `handleHideContWt(${step.ply})`)
-            : '';
-          body.innerHTML = html + '<div class="cont-wrap"></div>' + freshContBtn;
+          body.innerHTML = html + '<div class="cont-wrap"></div>';
+          mountCont();
         }
+        // Refresh the analysis-page Explain button so it morphs into
+        // a "Re-watch Presentation" button once the deck is cached.
+        try { updateExplainButtons(); _persistAiCache && _persistAiCache(); } catch (_) {}
       });
     }
   }
@@ -2433,3 +2391,89 @@ function explainFullGame() {
   goToFullGameBreakdown();
 }
 
+/* ══════════════════════════════════════════════════════════════
+   SINGLE-MOVE WALKTHROUGH — reuses the Game Walkthrough overlay
+   for a single move/position. Launched from the Explain button so
+   the explanation gets the same cinematic treatment, instead of
+   text crammed into the side panel.
+═══════════════════════════════════════════════════════════════ */
+
+// Categorize a ply for the walkthrough 'move' slide
+function _wtCategoryForPly(ply) {
+  const cls = (typeof classifyMove === 'function') ? classifyMove(ply) : null;
+  if (cls === 'blunder' || cls === 'mistake' || cls === 'inaccuracy') {
+    return { cls, category: 'worst' };
+  }
+  if (cls === 'brilliant' || cls === 'good') {
+    return { cls, category: 'best' };
+  }
+  return { cls: cls || 'neutral', category: 'neutral' };
+}
+
+// Build (or reuse) the walkthrough overlay DOM
+function _wtEnsureOverlay() {
+  let overlay = document.getElementById('wtOverlay');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.id = 'wtOverlay';
+  overlay.className = 'wt-overlay';
+  overlay.innerHTML = `
+    <div class="wt-backdrop"></div>
+    <div class="wt-layout">
+      <div class="wt-board-spotlight" id="wtBoardSpot">
+        <div class="wt-board-top" id="wtBoardTop"></div>
+        <div class="wt-board-clone" id="wtBoardClone"></div>
+        <div class="wt-board-nav">
+          <span class="wt-move-label" id="wtMoveLabel"></span>
+        </div>
+      </div>
+      <div class="wt-coach-panel" id="wtCoachPanel">
+        <div class="wt-coach-header">
+          <div class="wt-coach-avatar" id="wtCoachAvatar"></div>
+          <div class="wt-coach-title" id="wtCoachTitle"></div>
+          <button class="wt-close" onclick="closeWalkthrough()" title="Close walkthrough">&times;</button>
+        </div>
+        <div class="wt-coach-badge" id="wtCoachBadge"></div>
+        <div class="wt-coach-body" id="wtCoachBody"></div>
+        <div class="wt-thought-area" id="wtThoughtArea" style="display:none"></div>
+        <div class="wt-coach-footer">
+          <div class="wt-progress" id="wtProgress"></div>
+          <div class="wt-actions">
+            <button class="wt-btn-back" id="wtBtnBack" onclick="wtBack()">&#8592; Back</button>
+            <button class="wt-btn-next" id="wtBtnNext" onclick="wtNext()">Next &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.addEventListener('keydown', _wtKeyHandler);
+  return overlay;
+}
+
+// Launch a single-move walkthrough for the given ply.
+// Reuses the existing walkthrough overlay/renderer so typography and
+// layout are byte-for-byte identical to the Game Walkthrough.
+function launchSingleMoveWalkthrough(ply) {
+  if (ply < 1 || !positions[ply]) return;
+  const key = document.getElementById('apiKey')?.value?.trim() || '';
+  const hasAccess = key || (window.CP_CONFIG?.PROXY_URL || '').trim();
+  if (!hasAccess) { alert('API key missing. Open Settings.'); return; }
+
+  const { cls, category } = _wtCategoryForPly(ply);
+  _wtSteps = [{ type: 'move', ply, cls, category, askThought: false }];
+  _wtIdx = 0;
+  _wtActive = true;
+
+  const overlay = _wtEnsureOverlay();
+  overlay.style.display = 'flex';
+  overlay.classList.remove('wt-fadeout');
+  requestAnimationFrame(() => overlay.classList.add('wt-visible'));
+
+  // iOS Safari nudge so the address bar collapses
+  if (window.innerWidth <= 860) {
+    try { window.scrollTo(0, 1); setTimeout(() => window.scrollTo(0, 1), 50); } catch (e) {}
+  }
+
+  _wtRenderStep(0);
+}

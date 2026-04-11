@@ -31,6 +31,11 @@
   display: none;
 }
 
+/* Mobile explain bar: only visible inside the mobile media query */
+#mobileExplainBar {
+  display: none;
+}
+
 
 @media (max-width: 767px) {
 
@@ -160,7 +165,7 @@
   body[data-page="landing"]    .mtab-home,
   body[data-page="profile"]    .mtab-profile,
   body[data-page="gameSelect"] .mtab-analyze {
-    color: var(--accent, #e94560);
+    color: var(--accent, #d4a24c);
     font-weight: 700;
   }
   .mtab:active { transform: scale(0.97); transition: transform 100ms ease; }
@@ -191,16 +196,32 @@
     backdrop-filter: none !important;
   }
 
-  /* Show theme toggle + settings on mobile too (user-requested).
-     Hide only the redundant help-tour and profile buttons — the bottom
-     tab bar already handles profile navigation. */
-  .landing-header .header-actions .help-tour-btn,
-  #pageMain > header .header-actions .help-tour-btn {
+  /* Show theme toggle + settings + guided-tour button on mobile too.
+     Hide only the redundant profile button — the bottom tab bar
+     already handles profile navigation. */
+  .landing-header .header-actions .profile-btn:not(.help-tour-btn),
+  #pageMain > header .header-actions .profile-btn:not(.help-tour-btn) {
     display: none !important;
   }
-  .landing-header .header-actions .profile-btn,
-  #pageMain > header .header-actions .profile-btn {
-    display: none !important;
+  .landing-header .header-actions .help-tour-btn,
+  #pageMain > header .header-actions .help-tour-btn {
+    display: inline-flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    border-radius: var(--radius-sm, 8px) !important;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+  }
+  .landing-header .header-actions .help-tour-btn svg,
+  #pageMain > header .header-actions .help-tour-btn svg {
+    width: 18px !important;
+    height: 18px !important;
   }
   /* Compact the icon buttons so they fit alongside the centered brand */
   .landing-header .header-actions,
@@ -427,7 +448,7 @@
     margin: 18px 0 0 !important;
     padding: 14px 18px;
     background: transparent;
-    border: 1px solid rgba(233, 69, 96, 0.35);
+    border: 1px solid rgba(212, 162, 76, 0.35);
     border-radius: 14px;
     color: var(--text);
     font-size: 15px;
@@ -443,7 +464,7 @@
   }
   .mobile-see-sample-btn:active {
     transform: scale(0.98);
-    background: rgba(233, 69, 96, 0.08);
+    background: rgba(212, 162, 76, 0.08);
   }
   .mobile-see-sample-btn[hidden],
   .mobile-see-sample-btn.is-hidden {
@@ -468,9 +489,9 @@
   .mobile-lion-sample.revealed {
     padding: 18px 18px 16px;
     background:
-      radial-gradient(120% 140% at 0% 0%, rgba(233,69,96,0.14) 0%, rgba(233,69,96,0) 60%),
+      radial-gradient(120% 140% at 0% 0%, rgba(212, 162, 76,0.14) 0%, rgba(212, 162, 76,0) 60%),
       var(--surface, rgba(255,255,255,0.04));
-    border: 1px solid rgba(233,69,96,0.25);
+    border: 1px solid rgba(212, 162, 76,0.25);
     border-radius: 18px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.2);
     opacity: 0.85;
@@ -542,9 +563,9 @@
   .mls-trait-fill {
     height: 100%;
     width: var(--w, 0%);
-    background: linear-gradient(90deg, #7f1d1d 0%, #e94560 60%, #ff6b6b 100%);
+    background: linear-gradient(90deg, #7a5a14 0%, #d4a24c 60%, #e8b864 100%);
     border-radius: 3px;
-    box-shadow: 0 0 10px rgba(233,69,96,0.45);
+    box-shadow: 0 0 10px rgba(212, 162, 76,0.45);
     animation: ce-mls-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   @keyframes ce-mls-grow {
@@ -1147,7 +1168,7 @@
     flex-direction: column !important;
     gap: 16px;
   }
-  .moves-left, .moves-right { width: 100% !important; }
+  .moves-left, .moves-right-desktop { width: 100% !important; }
   .panel-label {
     font-size: 12px !important;
     text-transform: uppercase;
@@ -1216,13 +1237,42 @@
     text-align: center;
   }
 
+  /* Desktop-only right column + explain group: hidden on mobile */
+  .moves-right-desktop,
+  .aic-btn-group-desktop {
+    display: none !important;
+  }
+  /* The moves panel (move list + progress bar) is redundant on mobile —
+     the board nav arrows already provide navigation. Hide the entire
+     panel-box so there's no empty card below the arrows. */
+  #pageMain .panel-box.moves-panel {
+    display: none !important;
+  }
+  /* All in-flow children of #pageAnalysis are hidden on mobile (moves-panel
+     hidden, live-board-controls hidden, mobileExplainBar is position:fixed,
+     thought blocks hidden). The .tab-page container itself still has a
+     background, border, padding and shadow that render as an empty pill
+     above the Game Walkthrough card. Strip those on mobile. We cannot
+     display:none the container because #mobileExplainBar is a fixed-position
+     descendant and would be hidden along with its parent. */
+  #pageMain #pageAnalysis.tab-page {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  #pageMain #pageAnalysis.tab-page::before,
+  #pageMain #pageAnalysis.tab-page::after {
+    display: none !important;
+    content: none !important;
+  }
+
   /* ─── Sticky Explain bar (analysis page only) ──────────────────────
-     The Explain button is the primary action on this page, so it must
-     stay reachable no matter where the user has scrolled. We promote
-     the existing .aic-btn-group to a fixed bottom bar above the tab
-     bar; the existing JS already toggles its display when output is
-     shown / a new move is selected, so no JS change is needed. */
-  body[data-page="main"] .aic-btn-group {
+     #mobileExplainBar lives directly inside #pageMain (outside the
+     moves-panel) so it is never clipped by a display:none parent.
+     It is always fixed at the bottom above the tab bar. */
+  #mobileExplainBar {
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
@@ -1240,7 +1290,7 @@
     gap: 4px;
     box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.18);
   }
-  body[data-page="main"] .aic-btn-group .aic-hint {
+  #mobileExplainBar .aic-hint {
     margin-top: 2px;
   }
   /* Reserve room at the bottom of the analysis page so the sticky bar
@@ -1281,7 +1331,7 @@
     width: 100% !important;
     padding: 18px !important;
     border-radius: 16px !important;
-    border-left: 3px solid var(--accent, #e94560) !important;
+    border-left: 3px solid var(--accent, #d4a24c) !important;
   }
   .rep-opening-name, .rep-card-name, .rep-card h3 {
     font-size: 18px !important;
@@ -1308,86 +1358,129 @@
      ════════════════════════════════════════════════════════════ */
 
   .prof-page {
-    padding: 16px 20px 24px !important;
+    padding: 14px 16px 24px !important;
     max-width: none !important;
   }
   .prof-hub-bar {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 16px !important;
-    padding: 16px !important;
-    border-radius: 16px !important;
+    gap: 12px !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
   }
   .prof-identity {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
   .profile-avatar-large {
-    width: 56px !important; height: 56px !important;
+    width: 46px !important; height: 46px !important;
     flex-shrink: 0;
   }
-  .profile-name-display { font-size: 18px !important; font-weight: 600 !important; }
-  .prof-games-count { font-size: 13px !important; color: var(--text-dim); }
+  .profile-name-display { font-size: 17px !important; font-weight: 600 !important; }
+  .prof-games-count { font-size: 12.5px !important; color: var(--text-dim); margin-top: 2px !important; }
   .prof-hub-actions {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
     gap: 8px !important;
   }
   .prof-pglos-btn,
   .prof-analyze-btn {
-    width: 100% !important;
-    min-height: 48px !important;
-    font-size: 15px !important;
-    border-radius: 12px !important;
+    flex: 1 1 140px !important;
+    min-width: 0 !important;
+    width: auto !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    padding: 0 14px !important;
+    border-radius: 11px !important;
     justify-content: center;
   }
+  /* Analyze is the primary — let it breathe a bit more */
+  .prof-analyze-btn { flex: 1.15 1 160px !important; }
 
   /* Tab bar */
   .prof-tabs {
     display: flex !important;
-    gap: 8px;
-    margin-bottom: 16px !important;
+    gap: 6px;
+    margin-bottom: 14px !important;
   }
   .prof-tab {
     flex: 1;
-    min-height: 44px;
-    font-size: 14px;
+    min-height: 40px;
+    font-size: 13.5px;
     border-radius: 10px;
   }
 
   /* Top-row grid → stacked */
   .prof-top-grid,
-  .prof-engage-row,
   .prof-feature-row {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
   }
 
-  /* Personality primary card */
-  .prof-primary {
-    padding: 24px 20px !important;
-    border-radius: 20px !important;
+  /* ── Overview panel: reorder on mobile ──
+     Visual order we want:
+       1. Chess Identity + Breakdown   (.prof-top-grid)
+       2. Streak card                  (from .prof-engage-row)
+       3. Feature cards                (.prof-feature-row)
+       4. Personality Collection       (from .prof-engage-row)
+     We pull streak + collection out of their row wrapper with
+     display:contents so they can be ordered independently. */
+  #profTabPanelOverview {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
   }
-  .prof-primary-emoji { font-size: 64px !important; }
-  .prof-primary-name { font-size: 22px !important; font-weight: 600 !important; }
-  .prof-primary-tagline { font-size: 14px !important; }
+  .prof-engage-row {
+    display: contents !important;
+  }
+  .prof-top-grid    { order: 0; }
+  .prof-feature-row { order: 1; }
+  .prof-streak-card { order: 2; }
+  .prof-collection  { order: 3; }
+
+  /* Personality primary card — horizontal chip layout on mobile.
+     Emoji on the left, three text lines stacked on the right. Keeps
+     the card under ~80 px tall instead of the old hero block. */
+  .prof-primary {
+    padding: 0 !important;
+    border-radius: 14px !important;
+  }
 
   /* Feature CTA cards */
   .prof-feat-card {
-    padding: 16px !important;
-    border-radius: 16px !important;
-    min-height: 72px;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    min-height: 64px;
   }
-  .prof-feat-title { font-size: 15px !important; font-weight: 600 !important; }
+  .prof-feat-icon { font-size: 1.6rem !important; }
+  .prof-feat-title { font-size: 14.5px !important; font-weight: 600 !important; }
   .prof-feat-sub { font-size: 12px !important; }
 
-  /* Personality collection grid: 2 cols on mobile (was 4+) */
+  /* Personality Collection — compact chip grid on mobile */
+  .prof-collection {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+  }
+  .prof-collection-header {
+    margin-bottom: 6px !important;
+  }
+  .prof-collection-title {
+    font-size: 10.5px !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase;
+  }
+  .prof-collection-counter {
+    font-size: 9.5px !important;
+    padding: 2px 7px !important;
+  }
   .prof-collection-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
   }
 
   /* History list rows */
@@ -1509,9 +1602,17 @@
   .app-page.page-enter {
     animation: ce-page-fade 300ms ease-out 40ms both;
   }
+  .app-page.page-leave {
+    animation: ce-page-fade-out 140ms ease-out forwards;
+    pointer-events: none;
+  }
   @keyframes ce-page-fade {
     from { opacity: 0; }
     to   { opacity: 1; }
+  }
+  @keyframes ce-page-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
   }
 
   /* Bottom-sheet entrance */
@@ -1549,36 +1650,72 @@
     13. FIXES — user feedback round
      ════════════════════════════════════════════════════════════ */
 
-  /* ── Profile primary card: center the personality element ──
-     Desktop puts the card in a 280px grid track, so the inner content
-     looked centered. On mobile we collapse to a single column and need
-     to explicitly stack + center the inner content. */
+  /* ── Profile primary card: horizontal chip layout ──
+     Emoji on the left spanning all rows, eyebrow + name + tagline
+     stacked on the right. The HTML is flat (sub, emoji, name, tagline),
+     so we use CSS grid areas to place them without changing markup. */
   .prof-primary {
-    padding: 0 !important;          /* avoid doubled padding with inner */
+    padding: 0 !important;
     display: block !important;
     width: 100% !important;
-    text-align: center !important;
+    text-align: left !important;
   }
   .prof-primary-inner {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 28px 20px !important;
-    text-align: center !important;
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "emoji sub"
+      "emoji name"
+      "emoji tag";
+    column-gap: 14px !important;
+    row-gap: 0 !important;
+    padding: 12px 14px !important;
+    text-align: left !important;
     width: 100% !important;
-  }
-  .prof-primary-sub,
-  .prof-primary-emoji,
-  .prof-primary-name,
-  .prof-primary-tagline {
-    width: 100% !important;
-    text-align: center !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    align-items: center;
   }
   .prof-primary-emoji {
-    margin: 0 0 12px !important;
+    grid-area: emoji;
+    align-self: center;
+    justify-self: center;
+    font-size: 38px !important;
+    line-height: 1 !important;
+    width: auto !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+  .prof-primary-sub {
+    grid-area: sub;
+    align-self: end;
+    width: auto !important;
+    text-align: left !important;
+    margin: 0 !important;
+    font-size: 0.56rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px !important;
+    text-transform: uppercase;
+    color: var(--text-muted) !important;
+    line-height: 1.2 !important;
+  }
+  .prof-primary-name {
+    grid-area: name;
+    align-self: center;
+    width: auto !important;
+    text-align: left !important;
+    margin: 1px 0 0 !important;
+    font-size: 15.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+  .prof-primary-tagline {
+    grid-area: tag;
+    align-self: start;
+    width: auto !important;
+    text-align: left !important;
+    margin: 1px 0 0 !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
   }
 
 
@@ -1755,38 +1892,33 @@
   .wt-overlay .wt-dot.active { width: 16px !important; }
 
 
-  /* ── Personality Collection cards: keep emojis readable on mobile ──
+  /* ── Personality Collection cards: compact chip grid on mobile.
      The locked cards were 45% opacity + 80% grayscale, so on a small
-     dark background the emojis read as blank. Soften the dim treatment
-     and bump font sizes. */
-  .prof-collection-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
+     dark background the emojis read as blank — soften the dim treatment
+     but keep the overall footprint small. ── */
   .prof-collect-card {
-    padding: 16px 10px !important;
-    min-height: 92px;
-    border-radius: 14px !important;
+    padding: 8px 4px !important;
+    min-height: 0 !important;
+    border-radius: 10px !important;
   }
   .prof-collect-card.locked {
     opacity: 0.7 !important;
     filter: none !important;
   }
   .prof-collect-emoji {
-    font-size: 32px !important;
+    font-size: 22px !important;
     line-height: 1 !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 3px !important;
     display: block !important;
   }
   .prof-collect-name {
-    font-size: 12px !important;
-    font-weight: 700 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
     line-height: 1.2 !important;
   }
   .prof-collect-pct {
-    font-size: 11px !important;
-    margin-top: 4px !important;
+    font-size: 9px !important;
+    margin-top: 2px !important;
   }
   .prof-collect-lock {
     font-size: 12px !important;
@@ -1851,7 +1983,7 @@
   html body #pageMain .board-wrapper {
     filter:
       drop-shadow(0 8px 20px rgba(0,0,0,0.45))
-      drop-shadow(0 0 1px rgba(233,69,96,0.15)) !important;
+      drop-shadow(0 0 1px rgba(212, 162, 76,0.15)) !important;
     box-shadow: none !important;
   }
   /* Squares — no borders, clean cells */
@@ -1901,5 +2033,694 @@
     transform: none;
     box-shadow: none;
     filter: none;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║  EDITORIAL REFRESH (v3)                                       ║
+   ║  Mobile polish that pairs with css/refresh.css + base.css v3. ║
+   ║  Loaded last → wins specificity battles inside the breakpoint.║
+   ╚═══════════════════════════════════════════════════════════════╝
+   ──────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+
+  /* ── Top bar: warm-ink, hairline border, no shadow ────────────────── */
+  .landing-header,
+  #pageMain > header,
+  .ins-header,
+  .coach-page-header {
+    height: 56px !important;
+    min-height: 56px !important;
+    background: rgba(19, 18, 16, 0.86) !important;
+    backdrop-filter: saturate(140%) blur(14px) !important;
+    -webkit-backdrop-filter: saturate(140%) blur(14px) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  [data-theme="light"] .landing-header,
+  [data-theme="light"] #pageMain > header,
+  [data-theme="light"] .ins-header,
+  [data-theme="light"] .coach-page-header {
+    background: rgba(247, 243, 232, 0.86) !important;
+  }
+  /* Brand mark uses the editorial serif on mobile too */
+  .landing-header .brand-logo,
+  #pageMain > header .brand-logo {
+    font-family: var(--font-display) !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.015em !important;
+  }
+  .landing-header .brand-logo span,
+  #pageMain > header .brand-logo span {
+    color: var(--accent) !important;
+    -webkit-text-fill-color: currentColor !important;
+    background: none !important;
+    font-style: italic;
+    font-weight: 500 !important;
+  }
+  /* Icon buttons in header — borderless, generous tap area */
+  .landing-header .header-actions .icon-btn,
+  #pageMain > header .header-actions .icon-btn {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: var(--text-dim) !important;
+  }
+  .landing-header .header-actions .icon-btn:active,
+  #pageMain > header .header-actions .icon-btn:active {
+    background: var(--surface2) !important;
+  }
+
+
+  /* ── Bottom tab bar: refined ──────────────────────────────────────── */
+  .mobile-tabbar {
+    background: rgba(19, 18, 16, 0.92) !important;
+    backdrop-filter: saturate(140%) blur(18px) !important;
+    -webkit-backdrop-filter: saturate(140%) blur(18px) !important;
+    border-top: 1px solid var(--border) !important;
+    height: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+    box-shadow: 0 -2px 24px rgba(0, 0, 0, 0.18);
+  }
+  [data-theme="light"] .mobile-tabbar {
+    background: rgba(247, 243, 232, 0.94) !important;
+    box-shadow: 0 -2px 24px rgba(110, 90, 40, 0.10);
+  }
+  .mtab {
+    color: var(--text-muted) !important;
+    font-family: var(--font-body) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase;
+    gap: 4px !important;
+    padding: 8px 4px 6px !important;
+    position: relative;
+  }
+  .mtab-icon {
+    width: 24px !important;
+    height: 24px !important;
+    stroke-width: 1.6 !important;
+    transition: stroke var(--transition);
+  }
+  /* Active state: amber color + top bar indicator */
+  .mtab[aria-current="page"],
+  body[data-page="landing"]    .mtab-home,
+  body[data-page="profile"]    .mtab-profile,
+  body[data-page="gameSelect"] .mtab-analyze,
+  body[data-page="repInput"]   .mtab-analyze,
+  body[data-page="main"]       .mtab-analyze {
+    color: var(--accent) !important;
+    font-weight: 700 !important;
+  }
+  .mtab[aria-current="page"]::before,
+  body[data-page="landing"]    .mtab-home::before,
+  body[data-page="profile"]    .mtab-profile::before,
+  body[data-page="gameSelect"] .mtab-analyze::before,
+  body[data-page="repInput"]   .mtab-analyze::before,
+  body[data-page="main"]       .mtab-analyze::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+  }
+
+
+  /* ── Landing hero: editorial serif typography ─────────────────────── */
+  .founder-badge {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    padding: 6px 12px !important;
+    border-radius: var(--radius-pill) !important;
+    margin-bottom: 24px !important;
+  }
+  .founder-badge .fb-dot {
+    background: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(212, 162, 76, 0.18) !important;
+  }
+  .founder-badge .fb-text {
+    font-family: var(--font-body) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em;
+  }
+  .landing-title-cro {
+    font-family: var(--font-display) !important;
+    font-size: 44px !important;
+    font-weight: 600 !important;
+    line-height: 1.04 !important;
+    letter-spacing: -0.035em !important;
+    text-align: left !important;
+    margin: 0 0 18px !important;
+  }
+  .landing-title-cro .lt-mobile > span {
+    color: var(--accent) !important;
+    -webkit-text-fill-color: currentColor !important;
+    background: none !important;
+    font-style: italic;
+    font-weight: 500 !important;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+  }
+  .landing-sub-cro {
+    font-family: var(--font-body) !important;
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+    color: var(--text-dim) !important;
+    text-align: left !important;
+    margin: 0 0 28px !important;
+  }
+  .landing-hero-text {
+    padding-top: 28px !important;
+    padding-bottom: 28px !important;
+  }
+
+
+  /* ── Primary hero CTA: solid amber, big thumb target ──────────────── */
+  .btn-cro-primary,
+  #heroCtaBtn {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border: 1px solid var(--accent-deep) !important;
+    border-radius: var(--radius-sm) !important;
+    font-family: var(--font-body) !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    min-height: 56px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px rgba(212,162,76,0.18) !important;
+    animation: none !important;
+    transition: background var(--transition), transform 0.12s ease !important;
+  }
+  .btn-cro-primary::before,
+  #heroCtaBtn::before { display: none !important; }
+  .btn-cro-primary:active,
+  #heroCtaBtn:active {
+    transform: scale(0.985) !important;
+    background: var(--accent-2) !important;
+  }
+
+
+  /* ── Counter under CTA — small caps, left aligned ─────────────────── */
+  .cro-counter {
+    margin: 18px 0 0 !important;
+    justify-content: flex-start !important;
+    font-family: var(--font-body) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase;
+    color: var(--text-muted) !important;
+    opacity: 1 !important;
+    gap: 8px !important;
+  }
+  .cro-counter::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 18px !important;
+    height: 1px !important;
+    background: var(--border-hi) !important;
+  }
+  .cro-counter-num {
+    font-family: var(--font-display) !important;
+    font-feature-settings: "tnum" !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-dim) !important;
+  }
+
+
+  /* ── Sample personality card — refined warm-ink ───────────────────── */
+  .mobile-see-sample-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text) !important;
+    font-family: var(--font-body) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin: 22px 0 0 !important;
+    padding: 14px 18px !important;
+  }
+  .mobile-see-sample-btn:active {
+    background: var(--surface2) !important;
+    border-color: var(--accent) !important;
+  }
+  .mobile-lion-sample.revealed {
+    background:
+      radial-gradient(140% 120% at 0% 0%, rgba(212, 162, 76, 0.10), transparent 60%),
+      var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
+    opacity: 1 !important;
+  }
+  .mls-label {
+    font-family: var(--font-body) !important;
+    color: var(--text-muted) !important;
+  }
+  .mls-name {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.015em;
+  }
+  .mls-tag {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+  .mls-trait-name { font-family: var(--font-body) !important; }
+  .mls-trait-val {
+    font-family: var(--font-display) !important;
+    font-feature-settings: "tnum";
+  }
+
+
+  /* ── Mobile personality carousel — editorial cards ────────────────── */
+  .mobile-pers-carousel-heading {
+    font-family: var(--font-display) !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  .mpc-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 18px 16px !important;
+  }
+  .mpc-card-name {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+  }
+  .mpc-card-tag {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+
+
+  /* ── Mobile "How it works" — editorial steps ──────────────────────── */
+  .mhow-heading {
+    font-family: var(--font-display) !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  .mhow-step {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .mhow-step .mhow-num {
+    background: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    color: var(--accent) !important;
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    font-weight: 600 !important;
+  }
+  .mhow-title {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+  }
+
+
+  /* ── Mobile competitor diff — left-bordered editorial blocks ──────── */
+  .mobile-diff-heading {
+    font-family: var(--font-display) !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  .mdiff-row {
+    background: transparent !important;
+    border: none !important;
+    border-left: 2px solid var(--accent) !important;
+    border-radius: 0 !important;
+    padding: 12px 16px !important;
+    margin-bottom: 18px !important;
+  }
+  .mdiff-label {
+    font-family: var(--font-body) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.12em !important;
+    color: var(--text-muted) !important;
+  }
+  .mdiff-text {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    color: var(--text) !important;
+  }
+
+
+  /* ── Choice modal sheet: refined handle and typography ────────────── */
+  .choice-modal {
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border-hi) !important;
+  }
+  .choice-modal-handle {
+    background: var(--text-muted) !important;
+    width: 36px !important;
+    height: 4px !important;
+    border-radius: 2px !important;
+    opacity: 0.5 !important;
+  }
+  .choice-modal-title {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.015em !important;
+  }
+  .choice-modal-sub {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+  .choice-card {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .choice-card:active {
+    background: var(--surface3) !important;
+    border-color: var(--accent) !important;
+  }
+  .choice-card-title {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+  }
+  .choice-card-icon-text { color: var(--accent) !important; }
+  .choice-card-badge {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border-color: var(--accent-deep) !important;
+  }
+
+
+  /* ── Game select / import: cleaner heading hierarchy ──────────────── */
+  #pageGameSelect .hero-input-title,
+  #pageRepInput .hero-input-title {
+    font-family: var(--font-display) !important;
+    font-size: 26px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  #pageGameSelect .hero-input-sub,
+  #pageRepInput .hero-input-sub {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+  .gs-tab {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    font-family: var(--font-body) !important;
+    font-weight: 600 !important;
+  }
+  .gs-tab.active {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border-color: var(--accent-deep) !important;
+  }
+  .hero-plat-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: var(--font-body) !important;
+  }
+  .hero-plat-btn.active {
+    border-color: var(--accent) !important;
+    background: var(--surface2) !important;
+    color: var(--text) !important;
+  }
+  .hero-input {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+  }
+  .hero-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(212, 162, 76, 0.18) !important;
+  }
+  .hero-input-go {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border: 1px solid var(--accent-deep) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px rgba(212,162,76,0.18) !important;
+  }
+  .hero-input-go:active {
+    background: var(--accent-2) !important;
+    transform: scale(0.985) !important;
+  }
+
+
+  /* ── Analysis page: refined personality card + stats ──────────────── */
+  .analysis-pers-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .analysis-pers-card .apc-name {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+  }
+  .analysis-pers-card .apc-label {
+    font-family: var(--font-body) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px !important;
+  }
+  .gs-pill {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    font-family: var(--font-body) !important;
+    border-radius: var(--radius-pill) !important;
+  }
+
+
+  /* ── Sticky Explain bar: solid amber, refined ─────────────────────── */
+  #mobileExplainBar {
+    background: rgba(19, 18, 16, 0.94) !important;
+    backdrop-filter: saturate(140%) blur(14px) !important;
+    -webkit-backdrop-filter: saturate(140%) blur(14px) !important;
+    border-top: 1px solid var(--border-hi) !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.30) !important;
+    padding: 12px 16px 14px !important;
+  }
+  [data-theme="light"] #mobileExplainBar {
+    background: rgba(247, 243, 232, 0.94) !important;
+    box-shadow: 0 -8px 24px rgba(110, 90, 40, 0.14) !important;
+  }
+  /* Bottom tab bar already accounts for safe area, ensure Explain bar
+     sits above it with consistent stack height (60px now, was 56px). */
+  #mobileExplainBar {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body[data-page="main"] {
+    padding-bottom: calc(60px + 88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .btn-explain {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border: 1px solid var(--accent-deep) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(212,162,76,0.18) !important;
+    font-family: var(--font-body) !important;
+    font-weight: 700 !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    font-size: 15px !important;
+  }
+  .btn-explain:active {
+    background: var(--accent-2) !important;
+    transform: scale(0.985) !important;
+  }
+  .aic-hint {
+    font-family: var(--font-body) !important;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.04em;
+  }
+
+
+  /* ── Walkthrough + Coach CTA cards on analysis page ───────────────── */
+  .walkthrough-cta,
+  .coach-cta-analysis {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 18px 16px !important;
+  }
+  .walkthrough-cta:active,
+  .coach-cta-analysis:active {
+    background: var(--surface2) !important;
+    border-color: var(--accent) !important;
+  }
+  .walkthrough-cta-icon {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--accent) !important;
+  }
+  .walkthrough-cta-title {
+    font-family: var(--font-display) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    letter-spacing: -0.005em;
+  }
+  .walkthrough-cta-sub {
+    font-family: var(--font-body) !important;
+    font-size: 12px !important;
+    color: var(--text-dim) !important;
+  }
+
+
+  /* ── Profile hub bar ──────────────────────────────────────────────── */
+  .prof-hub-bar {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .profile-name-display {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+  }
+  .prof-games-count {
+    font-family: var(--font-body) !important;
+    color: var(--text-dim) !important;
+  }
+  .prof-analyze-btn {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border: 1px solid var(--accent-deep) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(212,162,76,0.18) !important;
+    font-family: var(--font-body) !important;
+    font-weight: 700 !important;
+  }
+  .prof-pglos-btn {
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    border-radius: var(--radius-sm) !important;
+    font-family: var(--font-body) !important;
+    font-weight: 600 !important;
+  }
+  .prof-tab {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    font-family: var(--font-body) !important;
+  }
+  .prof-tab.active {
+    background: var(--surface2) !important;
+    color: var(--text) !important;
+    border-color: var(--accent) !important;
+  }
+  .prof-feat-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .prof-feat-icon {
+    background: transparent !important;
+    border: none !important;
+    color: var(--accent) !important;
+  }
+  .prof-feat-title {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+  }
+  .prof-feat-sub {
+    font-family: var(--font-body) !important;
+    color: var(--text-dim) !important;
+  }
+  .prof-primary {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+  }
+  .prof-primary-name {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  .prof-primary-tagline {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+
+
+  /* ── Generic modal sheets: warm ink, refined handle ───────────────── */
+  #settingsModal > .modal,
+  #imprintModal > .modal,
+  #privacyModal > .modal,
+  #termsModal > .modal,
+  #confirmModal > .modal,
+  #milestoneOverlay > .modal,
+  #paywallModal > .modal,
+  #welcomeProModal > .modal,
+  #analysisErrorOverlay > .modal,
+  #milestoneOverlay > .milestone-card,
+  #paywallModal > .paywall-modal,
+  #analysisErrorOverlay > .aeo-modal {
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border-hi) !important;
+  }
+
+
+  /* ── Personality reveal: bigger thumb-zone share buttons ──────────── */
+  .pers-share-primary {
+    background: var(--accent) !important;
+    color: #1c1812 !important;
+    border: 1px solid var(--accent-deep) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px rgba(212,162,76,0.18) !important;
+    min-height: 56px !important;
+  }
+  .pers-name {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.025em !important;
+  }
+  .pers-tagline {
+    font-family: var(--font-display) !important;
+    font-style: italic;
+    color: var(--text-dim) !important;
+  }
+
+
+  /* ── Footer ────────────────────────────────────────────────────────── */
+  .landing-footer {
+    background: var(--bg) !important;
+    border-top: 1px solid var(--border) !important;
+  }
+  .lf-link {
+    font-family: var(--font-body) !important;
+    color: var(--text-muted) !important;
+  }
+
+
+  /* ── Final touches: kill purple gradient on mhow-num and other AI
+        accent colors that survived from the old palette ──────────────── */
+  .mhow-num,
+  .pers-num,
+  [class*="-num"]:not(.gs-pill):not(.cro-counter-num) {
+    background: none !important;
   }
 }

@@ -99,23 +99,90 @@
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   align-self: flex-start;
+}
+.prof-sparkline-helper {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-bottom: 8px;
+  align-self: stretch;
 }
 #profSparkline {
   width: 100%;
   height: 48px;
 }
-.prof-sparkline-sub {
-  font-size: 0.68rem;
+.prof-sparkline-axis {
+  display: flex;
+  justify-content: space-between;
+  align-self: stretch;
+  font-size: 0.6rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+.prof-sparkline-sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: 6px;
   align-self: flex-start;
 }
 
 /* ── Personality Collection ── */
 .prof-collection {
   margin-bottom: 18px;
+}
+
+/* Compact variant: lives inside the dashboard row in place of the
+   former "Style Consistency" sparkline. Smaller cards, tighter gaps,
+   and a card-style background so it visually matches the streak card. */
+.prof-collection.prof-collection-compact {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.prof-collection.prof-collection-compact .prof-collection-header {
+  margin-bottom: 8px;
+}
+.prof-collection.prof-collection-compact .prof-collection-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+.prof-collection.prof-collection-compact .prof-collection-counter {
+  font-size: 0.64rem;
+  padding: 2px 8px;
+}
+.prof-collection.prof-collection-compact .prof-collection-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.prof-collection.prof-collection-compact .prof-collect-card {
+  padding: 8px 4px;
+  border-radius: 10px;
+}
+.prof-collection.prof-collection-compact .prof-collect-emoji {
+  font-size: 1.15rem;
+  margin-bottom: 2px;
+}
+.prof-collection.prof-collection-compact .prof-collect-name {
+  font-size: 0.58rem;
+}
+.prof-collection.prof-collection-compact .prof-collect-pct {
+  font-size: 0.55rem;
+  margin-top: 2px;
+}
+.prof-collection.prof-collection-compact .prof-collect-lock {
+  font-size: 0.55rem;
+  margin-top: 1px;
 }
 .prof-collection-header {
   display: flex;
@@ -133,7 +200,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent);
-  background: rgba(233,69,96,0.1);
+  background: rgba(212, 162, 76,0.1);
   padding: 3px 10px;
   border-radius: 20px;
 }

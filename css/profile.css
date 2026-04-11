@@ -13,7 +13,7 @@
 }
 .profile-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 4px 18px rgba(233,69,96,0.45);
+  box-shadow: 0 4px 18px rgba(212, 162, 76,0.45);
 }
 .profile-btn .profile-avatar-letter {
   font-size: 0.88rem; font-weight: 800;
@@ -361,14 +361,14 @@
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-size: 1.02rem; font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 14px rgba(233,69,96,0.30);
+  box-shadow: 0 2px 14px rgba(212, 162, 76,0.30);
   transition: all var(--transition);
   white-space: nowrap;
   flex-shrink: 0;
 }
 .prof-analyze-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(233,69,96,0.45);
+  box-shadow: 0 6px 22px rgba(212, 162, 76,0.45);
 }
 .prof-analyze-icon { font-size: 0.75rem; }
 
@@ -669,20 +669,102 @@
 }
 .pss-btn-ghost:hover { border-color: rgba(148, 163, 184, 0.25); }
 
-/* Mobile layout: stack */
-@media (max-width: 640px) {
+/* Mobile layout: single compact row. Linear.app-style banner strip —
+   one line, one primary CTA, ghost hidden (restore flow lives in settings).
+   Rules are scoped to the mobile breakpoint used by the rest of the app. */
+@media (max-width: 767px) {
+  /* NOTE: do not use `display: flex !important` here — sync.js toggles the
+     banner/status via inline display:none, and !important would defeat that. */
   .prof-sync-banner {
-    flex-wrap: wrap;
-    padding: 12px 14px;
+    flex-wrap: nowrap !important;
+    align-items: center;
     gap: 10px;
+    padding: 10px 12px !important;
+    margin: 0 0 14px 0;
+    border-radius: 12px;
+    min-height: 52px;
   }
-  .psb-body { flex: 1 1 calc(100% - 42px); }
+  .psb-icon {
+    font-size: 18px;
+    width: 22px;
+    flex: 0 0 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .psb-body {
+    flex: 1 1 auto !important;
+    min-width: 0;
+  }
+  .psb-title {
+    font-size: 0.82rem !important;
+    line-height: 1.25;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .psb-sub { display: none !important; }
   .psb-actions {
-    flex: 1 1 100%;
-    flex-wrap: wrap;
+    flex: 0 0 auto !important;
+    gap: 6px;
+    margin-right: 4px;
   }
-  .psb-btn { flex: 1 1 auto; text-align: center; }
-  .psb-close { position: absolute; top: 8px; right: 8px; }
+  .psb-btn {
+    font-size: 0.74rem !important;
+    font-weight: 600;
+    padding: 7px 12px !important;
+    border-radius: 8px;
+    min-height: 32px !important;
+    min-width: 0 !important;
+    white-space: nowrap;
+    flex: 0 0 auto !important;
+  }
+  .psb-btn-ghost { display: none !important; }
+  .psb-close {
+    position: static !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 18px;
+    flex: 0 0 26px;
+    min-height: 26px !important;
+    min-width: 26px !important;
+  }
+
+  /* ── Synced-state chip. Truly compact: dot + single line + small
+     refresh icon. Vertically centered in the gap between the hub bar
+     and the tabs via symmetric 14px margins (which collapse against
+     the hub-bar's matching 14px bottom margin). Unlink moves to
+     settings on mobile. Display is NOT overridden here so sync.js
+     can still toggle it via inline style. ── */
+  .prof-sync-status {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    gap: 6px !important;
+    margin: 14px auto !important;
+    min-height: 0 !important;
+    border-radius: 999px !important;
+    width: fit-content !important;
+    max-width: calc(100% - 8px);
+  }
+  .pss-dot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+  .pss-text {
+    font-size: 11px !important;
+  }
+  .pss-btn {
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+    min-height: 18px !important;
+    min-width: 0 !important;
+    height: 18px !important;
+    border-radius: 999px !important;
+    line-height: 1 !important;
+  }
+  .pss-btn-ghost { display: none !important; }
 }
 
 /* ============================================================
@@ -699,9 +781,13 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: syncOverlayIn 0.2s ease-out;
+  animation: syncOverlayIn 0.24s var(--ease-out-quart, ease-out);
 }
-@keyframes syncOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes syncOverlayIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes syncOverlayOut { from { opacity: 1; } to { opacity: 0; } }
+.sync-modal-overlay.is-closing {
+  animation: syncOverlayOut 0.18s var(--ease-out-quart, ease-out) forwards;
+}
 
 .sync-modal {
   position: relative;
@@ -712,11 +798,18 @@
   border-radius: 20px;
   padding: 28px 26px 24px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
-  animation: syncModalIn 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  animation: syncModalIn 0.32s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 }
 @keyframes syncModalIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(18px) scale(0.965); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes syncModalOut {
+  from { opacity: 1; transform: translateY(0)    scale(1); }
+  to   { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+.sync-modal-overlay.is-closing .sync-modal {
+  animation: syncModalOut 0.2s var(--ease-out-quart, ease-out) forwards;
 }
 .sync-modal-close {
   position: absolute;

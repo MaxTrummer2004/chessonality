@@ -222,7 +222,11 @@ function showPersonalityReveal() {
   if (!currentPersonality) { goToAnalysis(); return; }
   const p = currentPersonality.primary;
 
-  document.getElementById('persReveal').style.background = p.gradient;
+  const reveal = document.getElementById('persReveal');
+  reveal.style.background = p.gradient;
+  reveal.setAttribute('data-pers', p.id);
+  const content = document.getElementById('persContent');
+  if (content) content.setAttribute('data-pers', p.id);
   document.getElementById('persEmoji').textContent = p.emoji;
   document.getElementById('persName').textContent = p.name;
   document.getElementById('persTagline').textContent = p.tagline;
@@ -255,6 +259,7 @@ function showAnalysisPersonality() {
   const card = document.getElementById('analysisPersonalityCard');
   if (!card || !currentPersonality) return;
   const p = currentPersonality.primary;
+  card.setAttribute('data-pers', p.id);
   document.getElementById('apcEmoji').textContent = p.emoji;
   document.getElementById('apcName').textContent = p.name;
   document.getElementById('apcName').style.color = p.color;

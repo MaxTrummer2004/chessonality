@@ -24,12 +24,12 @@
 }
 /* Gradient fills per card */
 .prof-feat-rep {
-  background: linear-gradient(135deg, rgba(233,69,96,0.12) 0%, rgba(233,69,96,0.04) 100%);
-  border: 1px solid rgba(233,69,96,0.18);
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.12) 0%, rgba(212, 162, 76,0.04) 100%);
+  border: 1px solid rgba(212, 162, 76,0.18);
 }
 .prof-feat-dna {
-  background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(139,92,246,0.04) 100%);
-  border: 1px solid rgba(139,92,246,0.18);
+  background: linear-gradient(135deg, rgba(212,175,55,0.14) 0%, rgba(184,134,11,0.04) 100%);
+  border: 1px solid rgba(212,175,55,0.22);
 }
 .prof-feat-coach {
   background: linear-gradient(135deg,
@@ -41,15 +41,16 @@
   transform: translateY(-3px);
 }
 .prof-feat-rep:hover {
-  background: linear-gradient(135deg, rgba(233,69,96,0.18) 0%, rgba(233,69,96,0.06) 100%);
-  border-color: rgba(233,69,96,0.35);
-  box-shadow: 0 8px 24px rgba(233,69,96,0.12);
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.18) 0%, rgba(212, 162, 76,0.06) 100%);
+  border-color: rgba(212, 162, 76,0.35);
+  box-shadow: 0 8px 24px rgba(212, 162, 76,0.12);
 }
 .prof-feat-dna:hover {
-  background: linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(139,92,246,0.06) 100%);
-  border-color: rgba(139,92,246,0.35);
-  box-shadow: 0 8px 24px rgba(139,92,246,0.12);
+  background: linear-gradient(135deg, rgba(212,175,55,0.20) 0%, rgba(184,134,11,0.06) 100%);
+  border-color: rgba(212,175,55,0.42);
+  box-shadow: 0 8px 24px rgba(212,175,55,0.16);
 }
+.prof-feat-dna .prof-feat-icon-text { color: #d4af37; opacity: 1; }
 .prof-feat-coach:hover {
   background: linear-gradient(135deg,
     color-mix(in srgb, var(--pers-color, var(--accent, #8b5cf6)) 22%, transparent) 0%,
@@ -92,7 +93,8 @@
   font-weight: 600;
 }
 .pfs-ready {
-  color: var(--good);
+  color: #166534; /* dark green */
+  font-weight: 700;
 }
 .pfs-new {
   color: var(--accent);
@@ -604,20 +606,20 @@
   transition: height 0.22s;
 }
 .choice-card-rep::before {
-  background: linear-gradient(90deg, var(--accent), #f59e0b);
+  background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-2));
 }
 .choice-card-analyze::before {
-  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  background: linear-gradient(90deg, var(--accent-2), var(--accent), var(--accent-deep));
 }
 .choice-card:hover {
   transform: translateY(-4px);
   border-color: var(--accent);
-  box-shadow: 0 12px 40px rgba(233,69,96,0.18);
+  box-shadow: 0 12px 40px rgba(212,162,76,0.18);
 }
 .choice-card:hover::before { height: 4px; }
 .choice-card-analyze:hover {
-  border-color: #8b5cf6;
-  box-shadow: 0 12px 40px rgba(139,92,246,0.18);
+  border-color: var(--accent);
+  box-shadow: 0 12px 40px rgba(212,162,76,0.18);
 }
 .choice-card-icon {
   font-size: 2.8rem;
@@ -726,7 +728,4 @@
   .prof-feature-row {
     grid-template-columns: repeat(3, 1fr);
   }
-  .rep-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+ 

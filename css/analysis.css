@@ -47,7 +47,15 @@
   transition: all var(--transition);
 }
 .gs-pill:hover { border-color: var(--text-muted); color: var(--text); }
-.gs-icon { font-size: 0.8rem; line-height: 1; }
+.gs-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--accent);
+  /* Force text (monochrome) presentation on platforms that would
+     otherwise render chess glyphs as colorful emoji (iOS / macOS). */
+  font-variant-emoji: text;
+  font-feature-settings: "tnum";
+}
 .gs-pill .dot { margin-right: 0; }
 .gs-status { font-size: 0.72rem; color: var(--text-dim); margin-left: auto; }
 .gs-good { border-color: rgba(34,197,94,0.4); color: var(--good); }
@@ -96,7 +104,7 @@
 
 /* ── Board glow effect ── */
 #pageMain .board-wrapper {
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.55)) drop-shadow(0 0 1px rgba(233,69,96,0.15));
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.55)) drop-shadow(0 0 1px rgba(212, 162, 76,0.15));
 }
 #pageMain .board {
   border: 2px solid rgba(255,255,255,0.08);
@@ -174,9 +182,9 @@
   transition: all var(--transition);
 }
 #pageMain .move-cell.active {
-  background: linear-gradient(135deg, rgba(233,69,96,0.18), rgba(255,107,107,0.12));
-  outline: 1px solid rgba(233,69,96,0.35);
-  box-shadow: 0 2px 8px rgba(233,69,96,0.1);
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.18), rgba(232, 184, 100,0.12));
+  outline: 1px solid rgba(212, 162, 76,0.35);
+  box-shadow: 0 2px 8px rgba(212, 162, 76,0.1);
   transform: scale(1.02);
 }
 
@@ -205,10 +213,10 @@
   box-shadow: var(--shadow-sm);
 }
 #pageMain .explain-btns .btn:hover {
-  background: linear-gradient(135deg, rgba(233,69,96,0.08), rgba(255,107,107,0.05));
+  background: linear-gradient(135deg, rgba(212, 162, 76,0.08), rgba(232, 184, 100,0.05));
   border-color: var(--accent);
   color: var(--accent);
-  box-shadow: 0 2px 12px rgba(233,69,96,0.12);
+  box-shadow: 0 2px 12px rgba(212, 162, 76,0.12);
 }
 
 /* ── Ask Claude button - bigger, glowing ── */
@@ -231,7 +239,7 @@
 /* ── Game plan panel - themed ── */
 #pageMain .gameplan-panel {
   border-left: 3px solid var(--accent);
-  background: linear-gradient(135deg, var(--surface2) 0%, rgba(233,69,96,0.04) 100%);
+  background: linear-gradient(135deg, var(--surface2) 0%, rgba(212, 162, 76,0.04) 100%);
 }
 #pageMain .gameplan-panel::before {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
@@ -271,7 +279,7 @@
   flex-shrink: 0;
   min-width: 0;
 }
-.moves-right {
+.moves-right-desktop {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -368,6 +376,26 @@
   box-shadow: none;
 }
 
+/* "Re-watch presentation" state - after the single-move walkthrough
+   has been viewed once, the Explain button morphs into a softer
+   button that reopens the cached presentation. */
+.btn-explain.btn-rewatch {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--pers-color, var(--accent)) 25%, var(--surface2)) 0%,
+    color-mix(in srgb, var(--pers-color-2, var(--accent-2)) 22%, var(--surface2)) 100%);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 35%, var(--border));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--pers-color, var(--accent)) 18%, transparent);
+  font-size: 0.86rem;
+  letter-spacing: 0.2px;
+}
+.btn-explain.btn-rewatch:hover:not(:disabled) {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--pers-color, var(--accent)) 40%, var(--surface2)) 0%,
+    color-mix(in srgb, var(--pers-color-2, var(--accent-2)) 36%, var(--surface2)) 100%);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--pers-color, var(--accent)) 32%, transparent);
+}
+
 /* Legacy - keep for any remaining references */
 .btn-ask-move {
   width: calc(100% - 24px);
@@ -418,11 +446,11 @@
   padding: 10px 14px;
   background: var(--surface2);
   border-radius: 10px;
-  border-left: 3px solid rgba(139,92,246,0.35);
+  border-left: 3px solid rgba(212,162,76,0.38);
 }
 .coach-explanation p:last-child { margin-bottom: 0; }
 .coach-explanation p:only-child { border-left-width: 0; background: none; padding: 0; }
-.coach-explanation strong { font-weight: 700; color: #c4b5fd; }
+.coach-explanation strong { font-weight: 700; color: var(--accent-2); }
 
 .ct-grid-sm {
   display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
@@ -566,7 +594,7 @@
   padding: 18px 24px;
   margin-top: 8px;
   background: var(--surface);
-  border: 1px solid rgba(139,92,246,0.25);
+  border: 1px solid rgba(212,162,76,0.28);
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -578,21 +606,21 @@
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, #8b5cf6 0%, #6366f1 100%);
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent-deep) 100%);
   border-radius: 4px 0 0 4px;
 }
 .coach-cta-analysis:hover {
-  border-color: #8b5cf6;
+  border-color: var(--accent);
   background: var(--surface2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.25), 0 0 0 1px rgba(139,92,246,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25), 0 0 0 1px rgba(212,162,76,0.22);
 }
 .coach-cta-analysis .walkthrough-cta-title { font-size: 1.05rem; }
 .coach-cta-analysis .walkthrough-cta-arrow {
-  color: #8b5cf6; transition: transform 0.2s ease;
+  color: var(--accent); transition: transform 0.2s ease;
 }
 .coach-cta-analysis:hover .walkthrough-cta-arrow {
-  color: #a78bfa; transform: translateX(4px);
+  color: var(--accent-2); transform: translateX(4px);
 }
 
 /* Legacy standalone button - hidden, replaced by walkthrough-cta */
@@ -796,7 +824,7 @@
 .aic-eval-pill.good    { background: rgba(34,197,94,0.12);  color: #4ade80; border-color: rgba(34,197,94,0.3); }
 .aic-eval-pill.bad     { background: rgba(239,68,68,0.12);  color: #f87171; border-color: rgba(239,68,68,0.3); }
 .aic-eval-pill.equal   { background: rgba(107,114,128,0.12);color: #9ca3af; border-color: rgba(107,114,128,0.3); }
-.aic-eval-pill.mate    { background: rgba(233,69,96,0.15);  color: var(--accent); border-color: rgba(233,69,96,0.4); }
+.aic-eval-pill.mate    { background: rgba(212, 162, 76,0.15);  color: var(--accent); border-color: rgba(212, 162, 76,0.4); }
 .aic-eval-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 /* Move classification badge row */
@@ -861,7 +889,7 @@
 .aic-move-chip {
   display: inline-flex;
   align-items: center;
-  padding: 1px 7px;
+  padding: 2px 8px;
   background: color-mix(in srgb, var(--pers-color, var(--accent)) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 40%, transparent);
   border-radius: 5px;
@@ -1033,11 +1061,12 @@
   margin: 0;
 }
 
-/* Section theme colours */
+/* Section theme colours — kept distinct but all warm or neutral to
+   stay on-brand. No cool purples/blues. */
 .sec-overview     { --sec-color: var(--accent); }
-.sec-tactics      { --sec-color: #f59e0b; }
-.sec-structure    { --sec-color: #22c55e; }
-.sec-continuation { --sec-color: #a78bfa; }
+.sec-tactics      { --sec-color: #db6a25; }   /* mistake-orange */
+.sec-structure    { --sec-color: #43a86b; }   /* good-green */
+.sec-continuation { --sec-color: var(--accent-2); }
 
 /* ══════════════════════════════════════════════
    INLINE OUTPUT AREA
@@ -1144,7 +1173,7 @@
 .aic-slide-body .aic-move-chip {
   display: inline-flex;
   align-items: center;
-  padding: 0px 5px;
+  padding: 2px 7px;
   background: color-mix(in srgb, var(--pers-color, var(--accent)) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--pers-color, var(--accent)) 35%, transparent);
   border-radius: 4px;
@@ -1237,18 +1266,19 @@
 }
 
 /* Dot colours match section */
-.aic-slide-dot.slide-overview.active  { background: var(--accent, #8b5cf6); }
-.aic-slide-dot.slide-tactics.active   { background: #f59e0b; }
-.aic-slide-dot.slide-structure.active { background: #22c55e; }
+.aic-slide-dot.slide-overview.active  { background: var(--accent); }
+.aic-slide-dot.slide-tactics.active   { background: #db6a25; }
+.aic-slide-dot.slide-structure.active { background: #43a86b; }
 
-/* ── Light mode: Structure uses a darker blue instead of green ── */
-[data-theme="light"] .sec-structure { --sec-color: #1d4ed8; }
+/* ── Light mode: Structure stays green (matches the `good` token).
+     No cool-tone override — blue doesn't belong on this brand. ── */
+[data-theme="light"] .sec-structure { --sec-color: #166534; }
 [data-theme="light"] .slide-structure {
-  color: #1d4ed8;
-  background: rgba(29, 78, 216, 0.10);
-  border-color: rgba(29, 78, 216, 0.25);
+  color: #166534;
+  background: rgba(22,101,52,0.10);
+  border-color: rgba(22,101,52,0.25);
 }
-[data-theme="light"] .aic-slide-dot.slide-structure.active { background: #1d4ed8; }
+[data-theme="light"] .aic-slide-dot.slide-structure.active { background: #166534; }
 
 /* ── Button group ── */
 /* Button group: centers the Explain button in the available space */
@@ -1569,7 +1599,7 @@
 @media (max-width: 700px) {
   .moves-split { flex-direction: column; }
   .moves-left { width: 100%; }
-  .moves-right { width: 100%; }
+  .moves-right-desktop { width: 100%; }
   .coach-pos-actions { flex-direction: column; }
   .mp-layout {
     flex-direction: column;

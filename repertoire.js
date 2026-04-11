@@ -310,11 +310,13 @@ function renderProfileFeatureRow(history, agg) {
   const dnaStatus = document.getElementById('profFeatDnaStatus');
   const coachStatus = document.getElementById('profFeatCoachStatus');
 
-  // Repertoire: check if generated
-  const repData = localStorage.getItem('ce-repertoire-personality');
+  // Repertoire: check if generated (either the new batch payload or
+  // the legacy sentinel key — both are written by startRepertoireFlow)
+  const repData = localStorage.getItem('ce-repertoire-batch')
+               || localStorage.getItem('ce-repertoire-personality');
   if (repStatus) {
     repStatus.innerHTML = repData
-      ? '<span class="pfs-ready">&#10003; Generated</span>'
+      ? '<span class="pfs-ready">Repertoire generated</span>'
       : '<span class="pfs-new">Ready to generate</span>';
   }
 
@@ -325,11 +327,21 @@ function renderProfileFeatureRow(history, agg) {
       : `<span class="pfs-new">${3 - history.length} more game${3 - history.length === 1 ? '' : 's'} needed</span>`;
   }
 
-  // Coach: check if plan cached
-  const coachCached = localStorage.getItem('ce-coach-plan');
+  // Coach: check if plan cached. The actual coach cache is stored under
+  // 'ce-coach-cache-v2' (see _COACH_CACHE_STORAGE_KEY in insights.js).
+  // We check both the v2 key and the legacy 'ce-coach-plan' for safety.
+  let coachCached = null;
+  try {
+    const raw = localStorage.getItem('ce-coach-cache-v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.html) coachCached = true;
+    }
+  } catch {}
+  if (!coachCached) coachCached = localStorage.getItem('ce-coach-plan');
   if (coachStatus) {
     coachStatus.innerHTML = coachCached
-      ? '<span class="pfs-ready">&#10003; Plan ready</span>'
+      ? '<span class="pfs-ready">Plan generated</span>'
       : '<span class="pfs-new">Generate your plan</span>';
   }
 }
@@ -341,10 +353,52 @@ async function openRepertoire() {
   await renderRepertoirePage();
 }
 
+// Read the repertoire-only batch (saved by startRepertoireFlow) and
+// return a synthetic { history, agg } pair shaped like the legacy
+// global-history calls so the rest of the renderer keeps working.
+// Returns { history: [], agg: null } if no repertoire has been built.
+function _loadRepertoireBatch() {
+  try {
+    const raw = localStorage.getItem('ce-repertoire-batch');
+    if (!raw) return { history: [], agg: null };
+    const payload = JSON.parse(raw);
+    if (!payload || !Array.isArray(payload.breakdown) || !payload.primaryId) {
+      return { history: [], agg: null };
+    }
+    const breakdown = payload.breakdown
+      .map(b => ({ personality: PERSONALITIES[b.id], pct: b.pct }))
+      .filter(b => b.personality);
+    if (breakdown.length === 0) return { history: [], agg: null };
+    const agg = {
+      primary: PERSONALITIES[payload.primaryId] || breakdown[0].personality,
+      totalGames: payload.totalGames || breakdown.length,
+      breakdown
+    };
+    // Map the lightweight repertoire entries into the same shape
+    // computePlayerStats() expects, with personalityScores attached so
+    // any per-personality stat lines still work.
+    const persScoresForEntry = breakdown.map(b => ({ id: b.personality.id, pct: b.pct }));
+    const history = (payload.entries || []).map(e => ({
+      ...e,
+      date: payload.savedAt,
+      personality: agg.primary.id,
+      personalityScores: persScoresForEntry,
+      source: 'repertoire-batch'
+    }));
+    return { history, agg };
+  } catch (e) {
+    console.warn('loadRepertoireBatch failed', e);
+    return { history: [], agg: null };
+  }
+}
+
 async function renderRepertoirePage() {
-  let history = [];
-  try { history = await dbGetHistory(); } catch {}
-  const agg = await getAggregatePersonality();
+  // Repertoire is fully self-contained: read ONLY from the dedicated
+  // ce-repertoire-batch localStorage key, never from the global history
+  // DB or getAggregatePersonality(). This guarantees that games uploaded
+  // for repertoire analysis do not influence personality stats, the DNA
+  // card, streaks, insights, or any other persistent stat.
+  const { history, agg } = _loadRepertoireBatch();
 
   const heroEmoji = document.getElementById('repHeroEmoji');
   const heroTitle = document.getElementById('repHeroTitle');
@@ -370,14 +424,11 @@ async function renderRepertoirePage() {
   [nar1, nar2, nar3, nar4].forEach(n => { if (n) n.style.display = 'none'; });
 
   if (!agg) {
-    if (heroEmoji) heroEmoji.textContent = '\u2659';
-    if (heroTitle) heroTitle.textContent = 'Analyze games to unlock your repertoire';
-    if (heroSub) heroSub.textContent = 'We match openings to your unique playing style. Analyze at least one game to get started.';
-    if (insSection) insSection.style.display = 'none';
-    if (whiteSection) whiteSection.style.display = 'none';
-    if (blackSection) blackSection.style.display = 'none';
-    if (crosslinks) crosslinks.style.display = 'none';
-    if (analysisCta) analysisCta.style.display = 'none';
+    // No repertoire built yet → send the user straight to the same
+    // username-input page that the landing-page CTA uses, instead of
+    // showing a dead-end "analyze games to unlock" screen.
+    showPage('repInput');
+    if (typeof initRepInput === 'function') initRepInput();
     return;
   }
 
@@ -722,9 +773,23 @@ async function startRepertoireFlow() {
     await _sleep(200);
 
     // ── Step 3: Detect personality ──
+    // IMPORTANT: this scoring is REPERTOIRE-ONLY. We deliberately do NOT
+    // write the analysed games into the global history DB, because the
+    // user only uploaded them to get an opening repertoire — they should
+    // not flow into personality stats, the DNA card, streaks, insights,
+    // or any other persistent stat. Everything stays local to this batch
+    // and is persisted to its own localStorage key further down.
     _repLoadStep(3, 'active', 'Scoring personality traits…');
     _repLoadProgress(66);
     await _sleep(400);
+
+    // Local accumulator for the batch's personality scores. Mirrors the
+    // shape produced by getAggregatePersonality() so the rest of the
+    // repertoire flow can consume it unchanged.
+    const _repTotals = {};
+    PERSONALITY_LIST.forEach(p => _repTotals[p.id] = 0);
+    const _repBatchEntries = [];
+    let _repLastResult = null;
 
     for (let i = 0; i < parsedGames.length; i++) {
       const pg = parsedGames[i];
@@ -750,31 +815,64 @@ async function startRepertoireFlow() {
       const emptyQ = {};
       PERSONALITY_LIST.forEach(p => emptyQ[p.id] = 0);
       const personalityResult = determinePersonality(gameScores, emptyQ);
+      _repLastResult = personalityResult;
 
-      const entry = {
-        id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-        date: new Date().toISOString(),
+      // Accumulate locally — DO NOT write to history DB.
+      for (const s of personalityResult.scores) {
+        _repTotals[s.personality.id] = (_repTotals[s.personality.id] || 0) + s.pct;
+      }
+      _repBatchEntries.push({
         playerColor: pg.isWhite ? 'w' : 'b',
         result: pg.game.result,
         totalMoves: mc,
         opening: pg.game.opening || '',
         opponent: pg.isWhite ? pg.game.black : pg.game.white,
-        personality: personalityResult.primary.id,
-        personalityScores: personalityResult.scores.map(s => ({ id: s.personality.id, pct: s.pct })),
-        mistakes: gameStats.mistakes,
-        blunders: gameStats.blunders,
         bookDepth: gameStats.bookDepth,
-        source: 'repertoire-batch'
-      };
-      await dbSaveHistoryEntry(entry);
+        mistakes: gameStats.mistakes,
+        blunders: gameStats.blunders
+      });
 
       _repLoadStep(3, 'active', `Game ${i + 1}: ${personalityResult.primary.emoji} ${personalityResult.primary.name}`);
       _repLoadProgress(66 + Math.round(((i + 1) / parsedGames.length) * 18));
       await _sleep(200 + Math.random() * 150);
     }
 
-    // Get final aggregate
-    const agg = await getAggregatePersonality();
+    // Build the aggregate locally from the batch — same shape as
+    // getAggregatePersonality() so downstream code is unaffected.
+    let agg = null;
+    if (parsedGames.length > 0) {
+      const sorted = Object.entries(_repTotals)
+        .map(([id, total]) => ({
+          personality: PERSONALITIES[id],
+          pct: Math.round(total / parsedGames.length)
+        }))
+        .sort((a, b) => b.pct - a.pct);
+      agg = {
+        primary: sorted[0].personality,
+        totalGames: parsedGames.length,
+        breakdown: sorted
+      };
+    }
+
+    // Persist the repertoire-only result so renderRepertoirePage can
+    // read it back without touching the global history DB.
+    try {
+      const repPayload = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        username: username,
+        platform: _repPlatform,
+        totalGames: parsedGames.length,
+        primaryId: agg ? agg.primary.id : null,
+        breakdown: agg
+          ? agg.breakdown.map(b => ({ id: b.personality.id, pct: b.pct }))
+          : [],
+        entries: _repBatchEntries
+      };
+      localStorage.setItem('ce-repertoire-batch', JSON.stringify(repPayload));
+      // Keep the legacy "is generated?" sentinel happy.
+      if (agg) localStorage.setItem('ce-repertoire-personality', agg.primary.id);
+    } catch (e) { console.warn('repertoire batch persist failed', e); }
     _repLoadStep(3, 'done', agg ? `Primary: ${agg.primary.emoji} ${agg.primary.name}` : 'Done');
     _repLoadProgress(86);
     await _sleep(300);
