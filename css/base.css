@@ -7,7 +7,43 @@
    thoughtful chess publication.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=Noto+Color+Emoji&display=swap');
+
+/* ── Emoji font redirect ─────────────────────────────────────────
+   Alias each user-facing font family to Noto Color Emoji for the
+   supplementary-plane emoji range (U+1F000–1FAFF). That covers
+   every personality animal (🦁 U+1F981, 🐢 U+1F422, 🦊 U+1F98A,
+   🦅 U+1F985, 🦉 U+1F989, 🦈 U+1F988, 🐍 U+1F40D, 🔥 U+1F525),
+   while leaving BMP glyphs (including the chess pieces ♔–♟ at
+   U+2654–265F and the step-icon gear/check/disc at U+2699, U+2713,
+   U+26AB) untouched. Because the redirect is keyed by family name,
+   any CSS rule that writes `font-family: 'Space Grotesk', …` or
+   `'Inter', …` now falls through to Noto Color Emoji for those
+   codepoints — no per-selector edits required. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/notocoloremoji/v39/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf) format('truetype');
+  unicode-range: U+1F000-1FAFF;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/notocoloremoji/v39/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf) format('truetype');
+  unicode-range: U+1F000-1FAFF;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/notocoloremoji/v39/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf) format('truetype');
+  unicode-range: U+1F000-1FAFF;
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -51,9 +87,14 @@
   --dur-md:   0.36s;
   --dur-lg:   0.52s;
   --dur-page: 0.46s;
-  /* Fonts: editorial display + clean grotesk body. */
-  --font-display: 'Fraunces', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
-  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Fonts: editorial display + clean grotesk body.
+     `Apple Color Emoji` / `Noto Color Emoji` / `Segoe UI Emoji`
+     are appended to every stack so emoji codepoints fall through
+     to a colour-emoji font on all platforms. iOS keeps its native
+     Apple set; Windows/Linux now pick up Google's Noto Color Emoji
+     (loaded above) instead of the flat Segoe outlines. */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Apple Garamond', Georgia, 'Apple Color Emoji', 'Noto Color Emoji', 'Segoe UI Emoji', serif;
+  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', 'Apple Color Emoji', 'Noto Color Emoji', 'Segoe UI Emoji', sans-serif;
 }
 
 /* ── Dark theme: warm ink ── */

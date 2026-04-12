@@ -314,14 +314,14 @@
 }
 .ob-theme-btn:active { transform: translateY(0); }
 
-/* Recommended (dark) — highlighted with the amber border treatment */
-.ob-theme-dark {
+/* Recommended (light) — highlighted with the amber border treatment */
+.ob-theme-light {
   border-color: var(--accent);
   box-shadow:
     0 0 0 1px rgba(212, 162, 76, 0.40) inset,
     0 14px 36px rgba(212, 162, 76, 0.14);
 }
-.ob-theme-dark:hover {
+.ob-theme-light:hover {
   border-color: var(--accent-2);
   box-shadow:
     0 0 0 1px rgba(212, 162, 76, 0.55) inset,
@@ -341,7 +341,7 @@
   border-radius: var(--radius-pill);
   margin-bottom: 12px;
 }
-.ob-theme-light .ob-theme-btn-recommended { display: none; }
+.ob-theme-dark .ob-theme-btn-recommended { display: none; }
 
 .ob-theme-btn-swatch {
   display: block;

@@ -105,12 +105,12 @@ function showOnboarding() {
 function closeOnboarding() {
   document.getElementById('onboardingOverlay').style.display = 'none';
   localStorage.setItem('ce-onboarded', '1');
-  // If the user hasn't saved a theme preference yet, lock in dark — the
-  // editorial design is tuned for it and a lot of the imagery assumes it.
+  // If the user hasn't saved a theme preference yet, lock in light — the
+  // new default for first-time visitors.
   if (!localStorage.getItem('ce-theme')) {
-    localStorage.setItem('ce-theme', 'dark');
-    document.documentElement.setAttribute('data-theme', 'dark');
-    if (typeof updateThemeIcon === 'function') updateThemeIcon('dark');
+    localStorage.setItem('ce-theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (typeof updateThemeIcon === 'function') updateThemeIcon('light');
   }
 }
 function nextOnboardingStep() {

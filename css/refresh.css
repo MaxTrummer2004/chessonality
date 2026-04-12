@@ -1075,6 +1075,39 @@
   line-height: 1.5;
 }
 
+/* ── AI Chess Coach header: editorial serif, solid text ──
+   Overrides the violet `linear-gradient` + glowPulse animation that
+   esports.css:388 applies to every `.ins-header-title`. On the Coach
+   page that blue gradient clashes with the rest of the editorial
+   design, so we match the Insights treatment: solid text in the
+   display serif, no gradient, no animation. */
+#pageCoach .ins-header-title,
+.coach-page-header .ins-header-title {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.05 !important;
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+  animation: none !important;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+}
+[data-theme="light"] #pageCoach .ins-header-title,
+[data-theme="light"] .coach-page-header .ins-header-title {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+}
+#pageCoach .ins-header-sub,
+.coach-page-header .ins-header-sub {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--text-dim) !important;
+}
+
 /* ── Pill tabs: editorial understated ── */
 #pageInsights .ins-pills-wrap {
   padding: 20px 20px 4px;
@@ -1617,25 +1650,20 @@
 }
 
 /* ════════════════════════════════════════════════
-   12. PERSONALITY EMOJIS — BRAND DUOTONE
+   12. PERSONALITY EMOJIS — NATIVE COLOUR
    ────────────────────────────────────────────────
-   Keep the exact OS-native emoji shape, but flatten
-   every color down to two-stop duotones.
-
-   Strategy: the DARK stop of each duotone is the
-   animal's own signature color (anaconda green,
-   lion red, shark cyan, etc.); the LIGHT stop is
-   always brand gold #e8b864. This gives each
-   personality a recognisable accent while keeping
-   unified brand treatment via gold highlights.
-
-   The correct filter is picked via a `data-pers`
-   attribute placed on any ancestor of the emoji
-   element by the JS that renders it. A fallback
-   `#brand-duotone` (dark-gold → gold) catches any
-   emoji whose personality isn't yet known. */
-
-/* Fallback — used when no ancestor declares data-pers */
+   Render the OS-native colour emoji on every
+   platform. The earlier `filter: url(#brand-duotone)`
+   (plus per-animal `#duo-lion`, `#duo-turtle`, …)
+   mapped Segoe UI Emoji glyphs onto the duotone's
+   dark stop, which turned the turtle teal-blue, gave
+   the showcase lion a red halo, and drained the
+   colour out of every personality card on desktop.
+   iOS Safari silently skipped the filter so mobile
+   looked fine — we now match that behaviour on
+   desktop by not applying any filter at all. The
+   `#duo-*` filter defs are still in index.html in
+   case other code references them directly. */
 .pers-emoji,
 .apc-emoji,
 .prof-primary-emoji,
@@ -1644,115 +1672,21 @@
 .mls-emoji,
 .hv-persona-icon,
 .pglos-emoji,
+.mpc-card-emoji,
 .showcase-card-personality .showcase-card-icon,
 .ob-full-animal > span:first-child {
-  filter: url(#brand-duotone);
-  -webkit-filter: url(#brand-duotone);
-  transition: filter 0.25s ease;
+  filter: none;
+  -webkit-filter: none;
+  transition: transform 0.25s ease;
 }
 
-/* Per-animal duotones. Match any ancestor with data-pers OR the
-   onboarding quiz elements which already carry data-personality. */
-[data-pers="anaconda"] .pers-emoji,
-[data-pers="anaconda"] .apc-emoji,
-[data-pers="anaconda"] .prof-primary-emoji,
-[data-pers="anaconda"].prof-collect-card .prof-collect-emoji,
-[data-pers="anaconda"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="anaconda"] > span:first-child {
-  filter: url(#duo-anaconda);
-  -webkit-filter: url(#duo-anaconda);
-}
-[data-pers="eagle"] .pers-emoji,
-[data-pers="eagle"] .apc-emoji,
-[data-pers="eagle"] .prof-primary-emoji,
-[data-pers="eagle"].prof-collect-card .prof-collect-emoji,
-[data-pers="eagle"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="eagle"] > span:first-child {
-  filter: url(#duo-eagle);
-  -webkit-filter: url(#duo-eagle);
-}
-[data-pers="fox"] .pers-emoji,
-[data-pers="fox"] .apc-emoji,
-[data-pers="fox"] .prof-primary-emoji,
-[data-pers="fox"].prof-collect-card .prof-collect-emoji,
-[data-pers="fox"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="fox"] > span:first-child {
-  filter: url(#duo-fox);
-  -webkit-filter: url(#duo-fox);
-}
-[data-pers="lion"] .pers-emoji,
-[data-pers="lion"] .apc-emoji,
-[data-pers="lion"] .prof-primary-emoji,
-[data-pers="lion"].prof-collect-card .prof-collect-emoji,
-[data-pers="lion"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="lion"] > span:first-child,
-.showcase-card-personality .showcase-card-icon,
-.mls-emoji,
-.hv-persona-icon {
-  filter: url(#duo-lion);
-  -webkit-filter: url(#duo-lion);
-}
-[data-pers="owl"] .pers-emoji,
-[data-pers="owl"] .apc-emoji,
-[data-pers="owl"] .prof-primary-emoji,
-[data-pers="owl"].prof-collect-card .prof-collect-emoji,
-[data-pers="owl"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="owl"] > span:first-child {
-  filter: url(#duo-owl);
-  -webkit-filter: url(#duo-owl);
-}
-[data-pers="shark"] .pers-emoji,
-[data-pers="shark"] .apc-emoji,
-[data-pers="shark"] .prof-primary-emoji,
-[data-pers="shark"].prof-collect-card .prof-collect-emoji,
-[data-pers="shark"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="shark"] > span:first-child {
-  filter: url(#duo-shark);
-  -webkit-filter: url(#duo-shark);
-}
-[data-pers="phoenix"] .pers-emoji,
-[data-pers="phoenix"] .apc-emoji,
-[data-pers="phoenix"] .prof-primary-emoji,
-[data-pers="phoenix"].prof-collect-card .prof-collect-emoji,
-[data-pers="phoenix"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="phoenix"] > span:first-child {
-  filter: url(#duo-phoenix);
-  -webkit-filter: url(#duo-phoenix);
-}
-[data-pers="turtle"] .pers-emoji,
-[data-pers="turtle"] .apc-emoji,
-[data-pers="turtle"] .prof-primary-emoji,
-[data-pers="turtle"].prof-collect-card .prof-collect-emoji,
-[data-pers="turtle"].pglos-slide .pglos-emoji,
-.ob-full-animal[data-personality="turtle"] > span:first-child {
-  filter: url(#duo-turtle);
-  -webkit-filter: url(#duo-turtle);
-}
-
-/* Hover / selected lift — brightness bump layered on top. */
+/* Hover / selected lift — pure transform so the native emoji
+   colour is preserved (no filter recolouring). */
 .prof-collect-card:hover .prof-collect-emoji,
 .ob-full-animal:hover > span:first-child,
 .ob-full-animal.is-selected > span:first-child {
-  filter: brightness(1.12);
-  -webkit-filter: brightness(1.12);
+  transform: translateY(-1px) scale(1.04);
 }
-/* Restore the duotone on hover by re-asserting the specific animal */
-[data-pers="anaconda"].prof-collect-card:hover .prof-collect-emoji { filter: url(#duo-anaconda) brightness(1.12); }
-[data-pers="eagle"].prof-collect-card:hover    .prof-collect-emoji { filter: url(#duo-eagle)    brightness(1.12); }
-[data-pers="fox"].prof-collect-card:hover      .prof-collect-emoji { filter: url(#duo-fox)      brightness(1.12); }
-[data-pers="lion"].prof-collect-card:hover     .prof-collect-emoji { filter: url(#duo-lion)     brightness(1.12); }
-[data-pers="owl"].prof-collect-card:hover      .prof-collect-emoji { filter: url(#duo-owl)      brightness(1.12); }
-[data-pers="shark"].prof-collect-card:hover    .prof-collect-emoji { filter: url(#duo-shark)    brightness(1.12); }
-[data-pers="phoenix"].prof-collect-card:hover  .prof-collect-emoji { filter: url(#duo-phoenix)  brightness(1.12); }
-[data-pers="turtle"].prof-collect-card:hover   .prof-collect-emoji { filter: url(#duo-turtle)   brightness(1.12); }
-.ob-full-animal[data-personality="anaconda"]:hover > span:first-child { filter: url(#duo-anaconda) brightness(1.12); }
-.ob-full-animal[data-personality="eagle"]:hover    > span:first-child { filter: url(#duo-eagle)    brightness(1.12); }
-.ob-full-animal[data-personality="fox"]:hover      > span:first-child { filter: url(#duo-fox)      brightness(1.12); }
-.ob-full-animal[data-personality="lion"]:hover     > span:first-child { filter: url(#duo-lion)     brightness(1.12); }
-.ob-full-animal[data-personality="owl"]:hover      > span:first-child { filter: url(#duo-owl)      brightness(1.12); }
-.ob-full-animal[data-personality="shark"]:hover    > span:first-child { filter: url(#duo-shark)    brightness(1.12); }
-.ob-full-animal[data-personality="phoenix"]:hover  > span:first-child { filter: url(#duo-phoenix)  brightness(1.12); }
-.ob-full-animal[data-personality="turtle"]:hover   > span:first-child { filter: url(#duo-turtle)   brightness(1.12); }
 
 /* Mobile-specific overrides live in mobile.css and the dedicated
    media query at the bottom of this file. */

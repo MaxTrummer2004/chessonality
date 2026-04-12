@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -754,14 +754,14 @@
   <section class="mobile-pers-carousel mobile-only" aria-label="Chess personalities">
     <h3 class="mobile-pers-carousel-heading">Which one are you?</h3>
     <div class="mpc-strip">
-      <div class="mpc-card"><div class="mpc-card-emoji">🦁</div><div class="mpc-card-name">The Lion</div><div class="mpc-card-tag">Attack. Dominate. Conquer.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🐍</div><div class="mpc-card-name">The Anaconda</div><div class="mpc-card-tag">Squeeze. Wait. Win.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🦅</div><div class="mpc-card-name">The Eagle</div><div class="mpc-card-tag">Tactical. Sharp-eyed.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🦊</div><div class="mpc-card-name">The Fox</div><div class="mpc-card-tag">Creative. Cunning.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🦉</div><div class="mpc-card-name">The Owl</div><div class="mpc-card-tag">Methodical. Patient.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🦈</div><div class="mpc-card-name">The Shark</div><div class="mpc-card-tag">Relentless pressure.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🔥</div><div class="mpc-card-name">The Phoenix</div><div class="mpc-card-tag">Rises from any position.</div></div>
-      <div class="mpc-card"><div class="mpc-card-emoji">🐢</div><div class="mpc-card-name">The Turtle</div><div class="mpc-card-tag">Defends. Endures. Wins.</div></div>
+      <div class="mpc-card" data-pers="lion"><div class="mpc-card-emoji">🦁</div><div class="mpc-card-name">The Lion</div><div class="mpc-card-tag">Attack. Dominate. Conquer.</div></div>
+      <div class="mpc-card" data-pers="anaconda"><div class="mpc-card-emoji">🐍</div><div class="mpc-card-name">The Anaconda</div><div class="mpc-card-tag">Squeeze. Wait. Win.</div></div>
+      <div class="mpc-card" data-pers="eagle"><div class="mpc-card-emoji">🦅</div><div class="mpc-card-name">The Eagle</div><div class="mpc-card-tag">Tactical. Sharp-eyed.</div></div>
+      <div class="mpc-card" data-pers="fox"><div class="mpc-card-emoji">🦊</div><div class="mpc-card-name">The Fox</div><div class="mpc-card-tag">Creative. Cunning.</div></div>
+      <div class="mpc-card" data-pers="owl"><div class="mpc-card-emoji">🦉</div><div class="mpc-card-name">The Owl</div><div class="mpc-card-tag">Methodical. Patient.</div></div>
+      <div class="mpc-card" data-pers="shark"><div class="mpc-card-emoji">🦈</div><div class="mpc-card-name">The Shark</div><div class="mpc-card-tag">Relentless pressure.</div></div>
+      <div class="mpc-card" data-pers="phoenix"><div class="mpc-card-emoji">🔥</div><div class="mpc-card-name">The Phoenix</div><div class="mpc-card-tag">Rises from any position.</div></div>
+      <div class="mpc-card" data-pers="turtle"><div class="mpc-card-emoji">🐢</div><div class="mpc-card-name">The Turtle</div><div class="mpc-card-tag">Defends. Endures. Wins.</div></div>
     </div>
   </section>
 
@@ -2078,22 +2078,22 @@
     <div class="ob-theme-card">
       <div class="ob-eyebrow">One last thing</div>
       <h2 class="ob-title">Pick your vibe.</h2>
-      <p class="ob-text">Chessonality is tuned for dark mode — that's where the editorial palette looks its best. Light mode is there if you prefer it. You can change your mind any time from the header.</p>
+      <p class="ob-text">Chessonality opens in light mode — crisp cream paper, editorial type. Dark mode is there if you prefer it. You can change your mind any time from the header.</p>
       <div class="ob-theme-choices">
-        <button class="ob-theme-btn ob-theme-dark" onclick="obPickTheme('dark')">
-          <span class="ob-theme-btn-swatch" aria-hidden="true">
-            <span class="ob-swatch-dark"></span>
-          </span>
-          <span class="ob-theme-btn-recommended">Recommended</span>
-          <span class="ob-theme-btn-label">Dark</span>
-          <span class="ob-theme-btn-sub">Warm ink on black</span>
-        </button>
         <button class="ob-theme-btn ob-theme-light" onclick="obPickTheme('light')">
           <span class="ob-theme-btn-swatch" aria-hidden="true">
             <span class="ob-swatch-light"></span>
           </span>
+          <span class="ob-theme-btn-recommended">Recommended</span>
           <span class="ob-theme-btn-label">Light</span>
           <span class="ob-theme-btn-sub">Cream paper</span>
+        </button>
+        <button class="ob-theme-btn ob-theme-dark" onclick="obPickTheme('dark')">
+          <span class="ob-theme-btn-swatch" aria-hidden="true">
+            <span class="ob-swatch-dark"></span>
+          </span>
+          <span class="ob-theme-btn-label">Dark</span>
+          <span class="ob-theme-btn-sub">Warm ink on black</span>
         </button>
       </div>
       <button class="ob-skip ob-theme-skip" onclick="closeOnboarding()">Keep current setting &rarr;</button>
@@ -2231,13 +2231,13 @@
 
 <script>
 // ── Theme ──────────────────────────────────────────────────
-// Dark is the default. We only honor an explicit user choice (set via the
+// Light is the default. We only honor an explicit user choice (set via the
 // theme toggle or the onboarding picker). OS `prefers-color-scheme` is
-// intentionally ignored so the editorial dark look is what new visitors
-// see, regardless of their system setting.
+// intentionally ignored so new visitors always land on the light look,
+// regardless of their system setting.
 (function () {
   const saved = localStorage.getItem('ce-theme');
-  const theme = saved || 'dark';
+  const theme = saved || 'light';
   document.documentElement.setAttribute('data-theme', theme);
   updateThemeIcon(theme);
 })();
@@ -2273,7 +2273,7 @@ function openSettings() {
   const nameEl = document.getElementById('settingsName');
   if (nameEl) nameEl.value = (typeof getProfileName === 'function' ? getProfileName() : '') || '';
   // Sync theme buttons
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
   document.getElementById('sttLight') && document.getElementById('sttLight').classList.toggle('active', theme === 'light');
   document.getElementById('sttDark')  && document.getElementById('sttDark').classList.toggle('active', theme === 'dark');
   document.getElementById('overlay').classList.add('open');

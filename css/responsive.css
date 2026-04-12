@@ -696,7 +696,7 @@
   .landing-fold {
     min-height: 0;
     justify-content: flex-start;
-    padding: 18px 0 32px;
+    padding: 4px 0 32px;
   }
 
   /* Carousel is no longer absolute — flows in normal order at the top */

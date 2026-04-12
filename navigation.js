@@ -66,9 +66,17 @@ function showPage(name) {
         el.classList.remove('page-enter', 'page-leave');
       }
     });
-    // Each .app-page has its own internal scroll
+    // Each .app-page has its own internal scroll on desktop; on mobile
+    // the document itself scrolls (html has scroll-behavior: smooth,
+    // so pass behavior:'instant' to avoid animating the reset).
     try { targetEl.scrollTop = 0; } catch {}
-    window.scrollTo(0, 0);
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
     // Re-run the reveal observer against the freshly shown page
     if (typeof window.ceResetReveals === 'function') {
       window.ceResetReveals(targetEl);

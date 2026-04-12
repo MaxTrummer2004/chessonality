@@ -443,7 +443,13 @@ async function renderRepertoirePage() {
   // Hero - tint the hero block with the personality color (very subtle)
   const heroTintEl = document.querySelector('.rep-hero');
   if (heroTintEl) heroTintEl.style.setProperty('--rep-hero-tint', p.color);
-  if (heroEmoji) heroEmoji.textContent = p.emoji;
+  if (heroEmoji) {
+    heroEmoji.textContent = p.emoji;
+    // The placeholder pawn glyph uses `rep-hero-emoji-text` to render as
+    // a faded purple chess symbol. Strip it so the real personality
+    // emoji displays at full opacity in its native colour.
+    heroEmoji.classList.remove('rep-hero-emoji-text');
+  }
   if (heroTitle) heroTitle.innerHTML = `Openings for <span style="color:${p.color}">${persName}</span> Players`;
   if (heroSub) heroSub.textContent = `Based on ${agg.totalGames} analyzed game${agg.totalGames !== 1 ? 's' : ''}, here's the repertoire that fits how you actually play.`;
   if (headerSub) headerSub.textContent = `Matched to your ${persName} personality`;

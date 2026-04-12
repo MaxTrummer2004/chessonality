@@ -389,7 +389,7 @@
     min-height: 0 !important;
     display: flex !important;
     flex-direction: column !important;
-    padding-top: 44px;
+    padding-top: 8px;
     padding-bottom: 24px !important;
   }
   .landing-title-cro {
@@ -1428,9 +1428,15 @@
        3. Feature cards                (.prof-feature-row)
        4. Personality Collection       (from .prof-engage-row)
      We pull streak + collection out of their row wrapper with
-     display:contents so they can be ordered independently. */
+     display:contents so they can be ordered independently.
+
+     NOTE: no !important on display — switchProfTab() toggles tabs
+     via an inline `style="display: none"`, which has to be able to
+     win over this rule. Inline styles beat non-!important stylesheet
+     rules regardless of specificity, so this layout still applies
+     while the panel is active and cleanly collapses when hidden. */
   #profTabPanelOverview {
-    display: flex !important;
+    display: flex;
     flex-direction: column !important;
     gap: 12px !important;
   }
