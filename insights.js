@@ -79,7 +79,7 @@ async function renderCoachPage() {
     const _wasPageMode = _coachPageMode;
     _coachPageMode = true;
     try {
-      if (content) content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
+      if (content) _mountCoachDeck(content, _coachCache.html, _coachTasks);
     } finally {
       _coachPageMode = _wasPageMode;
     }
@@ -101,6 +101,13 @@ function resetCoachPagePlan() {
   const content = document.getElementById('coachPageContent');
   if (btn) { btn.style.display = ''; btn.disabled = true; btn.innerHTML = '<span class="coach-page-cta-icon">&#9889;</span> Generating...'; }
   if (content) content.innerHTML = '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Creating your new practice plan...</div></div>';
+  // Detach deck handlers from the old plan
+  if (_coachDeckKeyHandler) {
+    document.removeEventListener('keydown', _coachDeckKeyHandler, true);
+    _coachDeckKeyHandler = null;
+  }
+  const outerLinks = document.getElementById('coachCrosslinks');
+  if (outerLinks) outerLinks.style.display = '';
   generateCoachPageAdvice();
 }
 
@@ -1139,7 +1146,11 @@ async function _generateCoachAdviceShared(content, btn) {
   if (cacheKey && _coachCache.key === cacheKey && _coachCache.html) {
     _coachTasks = _coachCache.tasks || [];
     _cpoLastHtml = _coachCache.html;
-    content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
+    if (_coachPageMode) {
+      _mountCoachDeck(content, _coachCache.html, _coachTasks);
+    } else {
+      content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(_coachCache.html, _coachTasks) + '</div>';
+    }
     if (btn) { btn.innerHTML = '<span class="ins-coach-cta-icon">&#10003;</span> Advice generated'; btn.disabled = true; }
     return;
   }
@@ -1310,8 +1321,12 @@ Then exactly 2 famous master games. Each on its own line: "GAME: [White] vs [Bla
     }
     _coachTasks = tasks;
 
-    // Build the content as a scroll-driven story page
-    content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(rendered, tasks) + '</div>';
+    // Build the content: slide-deck on the coach page, scroll-story elsewhere
+    if (_coachPageMode) {
+      _mountCoachDeck(content, rendered, tasks);
+    } else {
+      content.innerHTML = '<div class="ins-coach-result">' + _buildCoachResultHtml(rendered, tasks) + '</div>';
+    }
     _coachCache = { key: cacheKey, html: rendered, tasks: tasks };
     _saveCoachCacheToStorage();
     if (btn) {
@@ -1607,4 +1622,269 @@ function toggleCoachTask(idx) {
   _saveCoachCacheToStorage();
 }
 
-                                                                                                                                                            
+
+// ══════════════════════════════════════════════
+// AI COACH — SLIDE DECK PRESENTATION
+// (mirrors the Opening Repertoire deck UX)
+// ══════════════════════════════════════════════
+let _coachDeckIdx = 0;
+let _coachDeckTotal = 0;
+let _coachDeckAnimating = false;
+let _coachDeckKeyHandler = null;
+let _coachDeckClickHandler = null;
+
+function _buildCoachDeckHtml(renderedHtml, tasks) {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = renderedHtml;
+  const block = wrap.querySelector('.aic-rich-block') || wrap;
+
+  const sections = [];
+  const badges = [];
+  let cur = null;
+  for (const node of Array.from(block.children)) {
+    const cls = node.classList;
+    const isHead = cls && cls.contains('aic-section-head');
+    const isBadge = cls && (cls.contains('aic-eval-pill') || cls.contains('aic-class-row'));
+    if (isBadge) { badges.push(node.outerHTML); continue; }
+    if (isHead) {
+      if (cur) sections.push(cur);
+      const heading = node.textContent.trim()
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+        .trim();
+      cur = { heading: heading, body: '' };
+    } else if (cur) {
+      cur.body += node.outerHTML;
+    }
+  }
+  if (cur) sections.push(cur);
+
+  const narratives = [
+    { label: 'Train the pattern',       sub: 'Puzzles that target your weakest area.' },
+    { label: 'Study the concept',       sub: 'A single resource to fill the gap.' },
+    { label: 'Practice with intention', sub: 'Deliberate games with pre-move questions.' },
+    { label: 'Learn from the masters',  sub: 'Games that illustrate the idea in action.' },
+  ];
+
+  const slides = [];
+
+  // 1) Intro slide
+  slides.push(`
+    <div class="rep-slide-inner rep-slide-center coach-deck-slide-intro">
+      <div class="rep-slide-eyebrow rep-fx" data-fx="0">Your Practice Plan</div>
+      <h2 class="rep-slide-title rep-fx" data-fx="1">Four focused tasks,<br>built around you</h2>
+      <p class="rep-slide-sub rep-fx" data-fx="2">
+        A pattern to train, a concept to study, deliberate games to play, and master games to learn from &mdash; chosen to sharpen the gaps in your play.
+      </p>
+      ${badges.length ? `<div class="coach-deck-badges rep-fx" data-fx="3">${badges.join('')}</div>` : ''}
+    </div>`);
+
+  // Strip emojis from HTML
+  function _stripEmojisHtml(h) {
+    return h.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').replace(/\s{2,}/g, ' ');
+  }
+
+  // 2) Section slides — first section (DNA/overview) shown after intro.
+  //    Sections 1..4 are tasks → render with the proper task card (with
+  //    real study/game links), not raw TASK:/RESOURCE: text.
+  sections.forEach((sec, i) => {
+    let nar;
+    if (i === 0) {
+      nar = { label: 'Where you stand', sub: 'Your strengths and the gaps we saw.' };
+    } else {
+      nar = narratives[i - 1] || { label: 'Next up', sub: '' };
+    }
+
+    let bodyHtml;
+    let bodyVariant;
+    if (i === 0) {
+      bodyHtml = _stripEmojisHtml(sec.body);
+      bodyVariant = 'coach-deck-body-narrative';
+    } else if (tasks && tasks[i - 1]) {
+      bodyHtml = _buildSingleTaskCard(tasks[i - 1], i - 1);
+      bodyVariant = 'coach-deck-body-task';
+    } else {
+      bodyHtml = _stripEmojisHtml(sec.body);
+      bodyVariant = 'coach-deck-body-narrative';
+    }
+
+    slides.push(`
+      <div class="rep-slide-inner rep-slide-center coach-deck-slide">
+        <div class="rep-slide-eyebrow rep-fx" data-fx="0">${nar.label}</div>
+        <h2 class="rep-slide-title coach-deck-slide-title rep-fx" data-fx="1">${sec.heading || 'Section'}</h2>
+        ${nar.sub ? `<p class="rep-slide-sub rep-fx" data-fx="2">${nar.sub}</p>` : ''}
+        <div class="rep-slide-opening-divider rep-fx" data-fx="3"></div>
+        <div class="coach-deck-body ${bodyVariant} rep-fx" data-fx="4">${bodyHtml}</div>
+      </div>`);
+  });
+
+  // 3) CTA slide
+  slides.push(`
+    <div class="rep-slide-inner rep-slide-cta rep-slide-center">
+      <div class="rep-slide-eyebrow rep-fx" data-fx="0">You're set</div>
+      <h2 class="rep-slide-title rep-fx" data-fx="1">Time to put it in motion</h2>
+      <p class="rep-slide-sub rep-fx" data-fx="2">Play a live game and the coach will refine your plan from what it sees.</p>
+      <button class="rep-cta-btn rep-slide-cta-btn rep-fx" data-fx="3" onclick="showPage('gameSelect')">
+        Analyze a game
+        <span class="rep-cta-arrow">&#8594;</span>
+      </button>
+      <div class="rep-cta-divider rep-fx" data-fx="4"></div>
+      <div class="rep-cta-more-label rep-fx" data-fx="5">Or keep exploring</div>
+      <div class="rep-slide-crosslinks rep-fx" data-fx="6">
+        <div class="rep-crosslink" onclick="openRepertoire()">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9817;</span>
+          <div class="rep-crosslink-name">Your Ideal Openings</div>
+          <div class="rep-crosslink-desc">Personality-matched repertoire</div>
+        </div>
+        <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9819;</span>
+          <div class="rep-crosslink-name">Game Insights</div>
+          <div class="rep-crosslink-desc">Turning points &amp; best openings</div>
+        </div>
+        <div class="rep-crosslink" onclick="coachDeckGo(0)">
+          <span class="rep-crosslink-icon rep-crosslink-icon-text">&#10227;</span>
+          <div class="rep-crosslink-name">Replay plan</div>
+          <div class="rep-crosslink-desc">Walk through the slides again</div>
+        </div>
+      </div>
+    </div>`);
+
+  _coachDeckTotal = slides.length;
+
+  return `
+    <div class="coach-deck-wrap">
+      <div class="rep-deck-stage coach-deck-stage" id="coachDeckStage" role="region" aria-label="Coach practice plan" tabindex="0">
+        <div class="rep-deck-slides" id="coachDeckSlides">
+          ${slides.map((s, i) => `<div class="rep-slide${i === 0 ? ' rep-slide-active' : ''}" data-slide-idx="${i}">${s}</div>`).join('')}
+        </div>
+        <div class="rep-deck-hint" id="coachDeckHint">
+          <span class="rep-deck-hint-kbd">Click</span>
+          <span>or press</span>
+          <span class="rep-deck-hint-kbd">Space</span>
+          <span>to continue</span>
+        </div>
+      </div>
+      <div class="rep-deck-controls">
+        <button class="rep-deck-nav rep-deck-prev" id="coachDeckPrev" onclick="coachDeckGo(_coachDeckIdx - 1)" aria-label="Previous slide" disabled>
+          <span class="rep-deck-nav-arrow">&#8592;</span>
+        </button>
+        <div class="rep-deck-dots" id="coachDeckDots">
+          ${slides.map((_, i) => `<span class="rep-deck-dot${i === 0 ? ' rep-deck-dot-active' : ''}" onclick="coachDeckGo(${i})"></span>`).join('')}
+        </div>
+        <button class="rep-deck-nav rep-deck-next" id="coachDeckNext" onclick="coachDeckGo(_coachDeckIdx + 1)" aria-label="Next slide">
+          <span class="rep-deck-nav-arrow">&#8594;</span>
+        </button>
+      </div>
+    </div>`;
+}
+
+function _coachDeckActivate(idx) {
+  const slidesEl = document.getElementById('coachDeckSlides');
+  if (!slidesEl) return;
+  const slides = slidesEl.querySelectorAll('.rep-slide');
+  if (!slides.length) return;
+
+  idx = Math.max(0, Math.min(slides.length - 1, idx));
+  const prevIdx = _coachDeckIdx;
+  const direction = idx >= prevIdx ? 'fwd' : 'back';
+
+  slides.forEach((el, i) => {
+    el.classList.remove('rep-slide-active', 'rep-slide-exit', 'rep-slide-exit-back');
+    if (i === idx) {
+      el.classList.add('rep-slide-active');
+      el.setAttribute('data-direction', direction);
+      const fxEls = el.querySelectorAll('.rep-fx');
+      fxEls.forEach(fx => {
+        fx.classList.remove('rep-fx-in');
+        void fx.offsetWidth;
+        const delay = parseInt(fx.getAttribute('data-fx'), 10) || 0;
+        fx.style.animationDelay = (80 + delay * 140) + 'ms';
+        fx.classList.add('rep-fx-in');
+      });
+    } else if (i === prevIdx) {
+      el.classList.add(direction === 'fwd' ? 'rep-slide-exit' : 'rep-slide-exit-back');
+    }
+  });
+
+  _coachDeckIdx = idx;
+  _coachDeckUpdateChrome();
+}
+
+function _coachDeckUpdateChrome() {
+  const total = _coachDeckTotal;
+  const dots = document.querySelectorAll('#coachDeckDots .rep-deck-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('rep-deck-dot-active', i === _coachDeckIdx);
+    d.classList.toggle('rep-deck-dot-visited', i < _coachDeckIdx);
+  });
+  const prevBtn = document.getElementById('coachDeckPrev');
+  const nextBtn = document.getElementById('coachDeckNext');
+  if (prevBtn) prevBtn.disabled = _coachDeckIdx === 0;
+  if (nextBtn) nextBtn.disabled = _coachDeckIdx >= total - 1;
+  const hint = document.getElementById('coachDeckHint');
+  if (hint) hint.classList.toggle('rep-deck-hint-hide', _coachDeckIdx > 0);
+}
+
+function coachDeckGo(idx) {
+  if (_coachDeckAnimating) return;
+  if (!_coachDeckTotal) return;
+  if (idx < 0 || idx >= _coachDeckTotal) return;
+  _coachDeckAnimating = true;
+  _coachDeckActivate(idx);
+  setTimeout(() => { _coachDeckAnimating = false; }, 420);
+}
+
+function _coachDeckAttachHandlers() {
+  if (_coachDeckKeyHandler) {
+    document.removeEventListener('keydown', _coachDeckKeyHandler, true);
+  }
+  _coachDeckKeyHandler = function(e) {
+    const coachPage = document.getElementById('pageCoach');
+    if (!coachPage || coachPage.style.display === 'none') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const keys = ['ArrowRight', 'ArrowLeft', ' ', 'Enter', 'PageDown', 'PageUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter' || e.key === 'PageDown') {
+      coachDeckGo(_coachDeckIdx + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      coachDeckGo(_coachDeckIdx - 1);
+    } else if (e.key === 'Home') {
+      coachDeckGo(0);
+    } else if (e.key === 'End') {
+      coachDeckGo(_coachDeckTotal - 1);
+    }
+  };
+  document.addEventListener('keydown', _coachDeckKeyHandler, true);
+
+  const stage = document.getElementById('coachDeckStage');
+  if (stage) {
+    if (_coachDeckClickHandler) stage.removeEventListener('click', _coachDeckClickHandler);
+    _coachDeckClickHandler = function(e) {
+      if (e.target.closest('button, a, .rep-crosslink, .rep-deck-dot')) return;
+      coachDeckGo(_coachDeckIdx + 1);
+    };
+    stage.addEventListener('click', _coachDeckClickHandler);
+  }
+}
+
+function _mountCoachDeck(content, renderedHtml, tasks) {
+  _coachDeckIdx = 0;
+  content.innerHTML = _buildCoachDeckHtml(renderedHtml, tasks);
+  // Hide the outer crosslinks (the deck has its own ending)
+  const outerLinks = document.getElementById('coachCrosslinks');
+  if (outerLinks) outerLinks.style.display = 'none';
+  // Kick first slide animations
+  requestAnimationFrame(() => {
+    const first = document.querySelector('#coachDeckSlides .rep-slide[data-slide-idx="0"] .rep-fx');
+    _coachDeckAttachHandlers();
+    _coachDeckUpdateChrome();
+    // Re-trigger fx on first slide
+    document.querySelectorAll('#coachDeckSlides .rep-slide[data-slide-idx="0"] .rep-fx').forEach(fx => {
+      fx.classList.remove('rep-fx-in');
+      void fx.offsetWidth;
+      const delay = parseInt(fx.getAttribute('data-fx'), 10) || 0;
+      fx.style.animationDelay = (80 + delay * 140) + 'ms';
+      fx.classList.add('rep-fx-in');
+    });
+  });
+}

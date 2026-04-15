@@ -494,6 +494,18 @@
 .ins-coach-result p { margin: 0 0 0.6em; }
 .ins-coach-result p:last-child { margin-bottom: 0; }
 
+/* ── Section card wrapping each heading + its content ── */
+.coach-section {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.coach-section p { margin: 0; }
+
 /* ── Section heading inside card ── */
 .coach-heading {
   display: flex;
@@ -524,6 +536,12 @@
   border-radius: 10px;
   font-size: 0.9rem;
   line-height: 1.6;
+}
+.coach-bullet {
+  color: #8b5cf6;
+  font-size: 0.5rem;
+  margin-top: 0.55em;
+  flex-shrink: 0;
 }
 .coach-numbered { gap: 12px; }
 .coach-num {
@@ -1000,6 +1018,12 @@
   color: var(--text-dim);
   letter-spacing: 0.02em;
 }
+.coach-congrats {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+}
 .coach-progress-wrap {
   display: flex;
   flex-direction: column;
@@ -1423,6 +1447,151 @@
 .coach-page-inner {
   max-width: 740px;
   margin: 0 auto;
+}
+/* When the coach plan is shown as a slide deck, widen the page body
+   and hide the bottom Generate CTA (the deck has its own ending slide). */
+.coach-page-body:has(.coach-deck-wrap) {
+  max-width: 1100px;
+  padding-bottom: 32px;
+}
+.coach-page-body:has(.coach-deck-wrap) .coach-page-inner {
+  max-width: none;
+}
+.coach-page-body:has(.coach-deck-wrap) .coach-page-cta {
+  display: none;
+}
+.coach-deck-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.coach-deck-stage {
+  min-height: 520px;
+  height: calc(100vh - 220px);
+  max-height: 760px;
+}
+.coach-deck-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.coach-deck-slide-title {
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem) !important;
+}
+/* Section body scrolls inside the slide so long plans stay readable */
+.coach-deck-body {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: left;
+  overflow-y: auto;
+  max-height: 52vh;
+  padding: 4px 6px;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.coach-deck-body > * { margin-top: 10px; }
+.coach-deck-body > *:first-child { margin-top: 0; }
+.coach-deck-body p { margin: 0 0 10px; }
+.coach-deck-body ul,
+.coach-deck-body ol { margin: 0 0 10px; padding-left: 22px; }
+.coach-deck-body li { margin-bottom: 6px; }
+.coach-deck-body a { color: var(--accent); text-decoration: underline; }
+/* Subtle scrollbar for the slide body */
+.coach-deck-body::-webkit-scrollbar { width: 6px; }
+.coach-deck-body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-dim) 28%, transparent);
+  border-radius: 3px;
+}
+
+/* ── Narrative body (first slide: "Your Profile") ──
+   A clean, elevated white card with generous padding and
+   soft shadow, centered on the slide. */
+.coach-deck-body-narrative {
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 16px;
+  padding: 28px 36px;
+  box-shadow:
+    0 1px 2px rgba(15, 15, 40, 0.04),
+    0 14px 40px rgba(15, 15, 40, 0.08);
+  max-width: 720px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text);
+  position: relative;
+}
+[data-theme="dark"] .coach-deck-body-narrative {
+  background: color-mix(in srgb, var(--surface) 94%, #000);
+  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 14px 40px rgba(0, 0, 0, 0.35);
+}
+.coach-deck-body-narrative p {
+  margin: 0 0 12px;
+}
+.coach-deck-body-narrative p:last-child { margin-bottom: 0; }
+.coach-deck-body-narrative strong {
+  font-weight: 600;
+}
+
+/* ── Task body (slides 2–5) ──
+   Remove the inherited padding/scroll styling so the task card
+   itself becomes the hero element, with a bit more breathing room
+   around it and a nicer light surface framing. */
+.coach-deck-body-task {
+  max-width: 820px;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.coach-deck-body-task .coach-task {
+  margin: 0;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow:
+    0 1px 2px rgba(15, 15, 40, 0.04),
+    0 18px 48px rgba(15, 15, 40, 0.10);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  padding: 28px 32px;
+}
+[data-theme="dark"] .coach-deck-body-task .coach-task {
+  background: color-mix(in srgb, var(--surface) 94%, #000);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 18px 48px rgba(0, 0, 0, 0.4);
+}
+.coach-deck-body-task .coach-task::before {
+  /* Widen the accent strip a touch inside the deck. */
+  width: 5px;
+}
+.coach-deck-body-task .coach-task-header {
+  margin-bottom: 14px;
+}
+.coach-deck-body-task .coach-task-title {
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+.coach-deck-body-task .coach-task-desc {
+  font-size: 0.98rem;
+  line-height: 1.55;
+  margin-top: 6px;
+}
+.coach-deck-body-task .coach-task-study,
+.coach-deck-body-task .coach-task-games,
+.coach-deck-body-task .coach-task-questions {
+  margin-top: 16px;
+}
+.coach-deck-body-task .coach-task-done-label {
+  margin-top: 18px;
+  padding-top: 14px;
 }
 /* Coach crosslinks — matches repertoire layout but with a slightly
    tighter top offset since there's no preceding narrative. */

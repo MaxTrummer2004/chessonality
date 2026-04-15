@@ -583,24 +583,27 @@ function _buildRepSlides(ctx) {
   slides.push({
     id: 'cta',
     html: `
-      <div class="rep-slide-inner">
+      <div class="rep-slide-inner rep-slide-cta rep-slide-center">
         <div class="rep-slide-eyebrow rep-fx" data-fx="0">That's your repertoire</div>
         <h2 class="rep-slide-title rep-fx" data-fx="1">Ready to play it for real?</h2>
         <p class="rep-slide-sub rep-fx" data-fx="2">
           Analyze a live game for move-by-move AI coaching, real engine evals, and
           feedback built around your ${persName} style.
         </p>
-        <div class="rep-slide-cta-block rep-fx" data-fx="3">
-          <button class="rep-cta-btn rep-slide-cta-btn" onclick="showPage('gameSelect')">
-            Analyze a game
-          </button>
-          <div class="rep-slide-cta-features">
-            <span>Eval bar &amp; engine</span>
-            <span>Move explanations</span>
-            <span>AI Coach plan</span>
-          </div>
+        <div class="rep-cta-features rep-fx" data-fx="3">
+          <span class="rep-cta-feature"><span class="rep-cta-check">&#10003;</span>Eval bar &amp; engine</span>
+          <span class="rep-cta-dot"></span>
+          <span class="rep-cta-feature"><span class="rep-cta-check">&#10003;</span>Move explanations</span>
+          <span class="rep-cta-dot"></span>
+          <span class="rep-cta-feature"><span class="rep-cta-check">&#10003;</span>AI Coach plan</span>
         </div>
-        <div class="rep-slide-crosslinks rep-fx" data-fx="4">
+        <button class="rep-cta-btn rep-slide-cta-btn rep-fx" data-fx="4" onclick="showPage('gameSelect')">
+          Analyze a game
+          <span class="rep-cta-arrow">&#8594;</span>
+        </button>
+        <div class="rep-cta-divider rep-fx" data-fx="5"></div>
+        <div class="rep-cta-more-label rep-fx" data-fx="6">Or keep exploring</div>
+        <div class="rep-slide-crosslinks rep-fx" data-fx="7">
           <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();">
             <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9819;</span>
             <div>
@@ -634,6 +637,20 @@ function _renderOpeningSlideHTML(o, i, total, colorLabel, pieceGlyph, vsLabel) {
   const vsBadge = vsLabel
     ? `<span class="rep-slide-vs">vs 1.${vsLabel}</span>`
     : '';
+
+  // Split "Nimzo-Indian Defense (1.d4 Nf6 2.c4 e6 3.Nc3 Bb4)" into
+  // name + moves so we can style them separately.
+  let displayName = o.name;
+  let movesLine = '';
+  const m = o.name.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (m) {
+    displayName = m[1].trim();
+    movesLine = m[2].trim();
+  }
+  const movesHTML = movesLine
+    ? `<div class="rep-slide-opening-moves rep-fx" data-fx="3">${movesLine}</div>`
+    : '';
+
   return `
     <div class="rep-slide-inner rep-slide-opening rep-slide-center">
       <div class="rep-slide-opening-head rep-fx" data-fx="0">
@@ -643,11 +660,16 @@ function _renderOpeningSlideHTML(o, i, total, colorLabel, pieceGlyph, vsLabel) {
         ${vsBadge}
       </div>
       <div class="rep-slide-opening-eco rep-fx" data-fx="1">${o.eco}</div>
-      <h2 class="rep-slide-opening-name rep-fx" data-fx="2">${o.name}</h2>
-      <div class="rep-slide-opening-why rep-fx" data-fx="3">${o.why}</div>
-      <div class="rep-slide-opening-idea rep-fx" data-fx="4">
-        <span class="rep-slide-opening-idea-label">Key idea</span>
-        <span class="rep-slide-opening-idea-text">${o.keyIdea}</span>
+      <h2 class="rep-slide-opening-name rep-fx" data-fx="2">${displayName}</h2>
+      ${movesHTML}
+      <div class="rep-slide-opening-divider rep-fx" data-fx="4"></div>
+      <div class="rep-slide-opening-section rep-slide-opening-why-section rep-fx" data-fx="5">
+        <span class="rep-slide-opening-section-label">Why it fits you</span>
+        <p class="rep-slide-opening-why">${o.why}</p>
+      </div>
+      <div class="rep-slide-opening-section rep-slide-opening-idea-section rep-fx" data-fx="6">
+        <span class="rep-slide-opening-section-label">Key idea</span>
+        <p class="rep-slide-opening-idea-text">${o.keyIdea}</p>
       </div>
     </div>`;
 }
