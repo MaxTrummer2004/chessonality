@@ -303,7 +303,24 @@ function buildPersonalInsights(stats, agg) {
 function renderProfileFeatureRow(history, agg) {
   const row = document.getElementById('profFeatureRow');
   if (!row) return;
-  row.style.display = (history.length >= 1) ? '' : 'none';
+  const shouldShow = history.length >= 1;
+  row.style.display = shouldShow ? '' : 'none';
+
+  // Reveal-system fix: the row starts as display:none, so the
+  // IntersectionObserver registered the [data-reveal] children while
+  // they had no layout box. When we flip display back on, the cards
+  // can stay stuck at opacity:0 (especially on desktop where mobile.css's
+  // `display: flex !important` override doesn't apply). Force them
+  // visible immediately and stagger them in.
+  if (shouldShow) {
+    const cards = row.querySelectorAll(':scope > [data-reveal]');
+    const step = parseInt(row.dataset.revealStagger || '80', 10) || 80;
+    const base = parseInt(row.dataset.revealBase || '0', 10) || 0;
+    cards.forEach((el, i) => {
+      el.style.setProperty('--reveal-delay', (base + i * step) + 'ms');
+      el.classList.add('is-visible');
+    });
+  }
 
   // Feature card status indicators
   const repStatus = document.getElementById('profFeatRepStatus');
@@ -392,6 +409,19 @@ function _loadRepertoireBatch() {
   }
 }
 
+// ══════════════════════════════════════════════
+//  PRESENTATION DECK
+//  Renders the repertoire as a click-through slide deck.
+//  Each slide fades in with staggered child elements.
+// ══════════════════════════════════════════════
+
+let _repDeckIdx = 0;
+let _repDeckSlides = [];
+let _repDeckContext = null;   // { p, rep, insights, agg, persName }
+let _repDeckAnimating = false;
+let _repDeckKeyHandler = null;
+let _repDeckClickHandler = null;
+
 async function renderRepertoirePage() {
   // Repertoire is fully self-contained: read ONLY from the dedicated
   // ce-repertoire-batch localStorage key, never from the global history
@@ -400,33 +430,9 @@ async function renderRepertoirePage() {
   // card, streaks, insights, or any other persistent stat.
   const { history, agg } = _loadRepertoireBatch();
 
-  const heroEmoji = document.getElementById('repHeroEmoji');
-  const heroTitle = document.getElementById('repHeroTitle');
-  const heroSub = document.getElementById('repHeroSub');
-  const headerSub = document.getElementById('repHeaderSub');
-  const insSection = document.getElementById('repInsightsSection');
-  const insGrid = document.getElementById('repInsightsGrid');
-  const whiteSection = document.getElementById('repWhiteSection');
-  const blackSection = document.getElementById('repBlackSection');
-  const whiteCards = document.getElementById('repWhiteCards');
-  const blackCards = document.getElementById('repBlackCards');
-  const crosslinks   = document.getElementById('repCrosslinks');
-  const analysisCta  = document.getElementById('repAnalysisCta');
-  const nar1 = document.getElementById('repNarrative1');
-  const nar2 = document.getElementById('repNarrative2');
-  const nar3 = document.getElementById('repNarrative3');
-  const nar4 = document.getElementById('repNarrative4');
-  const div2 = document.getElementById('repDivider2');
-  const div3 = document.getElementById('repDivider3');
-  const div4 = document.getElementById('repDivider4');
-
-  // Hide all narratives initially
-  [nar1, nar2, nar3, nar4].forEach(n => { if (n) n.style.display = 'none'; });
-
   if (!agg) {
     // No repertoire built yet → send the user straight to the same
-    // username-input page that the landing-page CTA uses, instead of
-    // showing a dead-end "analyze games to unlock" screen.
+    // username-input page that the landing-page CTA uses.
     showPage('repInput');
     if (typeof initRepInput === 'function') initRepInput();
     return;
@@ -440,134 +446,341 @@ async function renderRepertoirePage() {
   const insights = buildPersonalInsights(stats, agg);
   const persName = p.name.replace('The ', '');
 
-  // Hero - tint the hero block with the personality color (very subtle)
-  const heroTintEl = document.querySelector('.rep-hero');
-  if (heroTintEl) heroTintEl.style.setProperty('--rep-hero-tint', p.color);
-  if (heroEmoji) {
-    heroEmoji.textContent = p.emoji;
-    // The placeholder pawn glyph uses `rep-hero-emoji-text` to render as
-    // a faded purple chess symbol. Strip it so the real personality
-    // emoji displays at full opacity in its native colour.
-    heroEmoji.classList.remove('rep-hero-emoji-text');
-  }
-  if (heroTitle) heroTitle.innerHTML = `Openings for <span style="color:${p.color}">${persName}</span> Players`;
-  if (heroSub) heroSub.textContent = `Based on ${agg.totalGames} analyzed game${agg.totalGames !== 1 ? 's' : ''}, here's the repertoire that fits how you actually play.`;
-  if (headerSub) headerSub.textContent = `Matched to your ${persName} personality`;
+  _repDeckContext = { p, rep, insights, agg, persName, stats };
+  _repDeckSlides = _buildRepSlides(_repDeckContext);
 
-  // Show narrative #1
-  if (nar1 && insights.length > 0) {
-    nar1.style.display = '';
-    const narText1 = document.getElementById('repNarText1');
-    const narSub1 = document.getElementById('repNarSub1');
-    if (narText1) narText1.textContent = `Here's what your games reveal about you`;
-    if (narSub1) narSub1.textContent = `Patterns from ${agg.totalGames} analyzed game${agg.totalGames !== 1 ? 's' : ''}, distilled into insights.`;
+  // Tint the deck page with the personality color
+  const deckPage = document.getElementById('pageRepertoire');
+  if (deckPage) {
+    deckPage.style.setProperty('--rep-pers-color', p.color);
+    deckPage.style.setProperty('--rep-pers-color-dark', p.colorDark);
+    deckPage.setAttribute('data-pers', p.id);
   }
 
-  // Personal insights
-  if (insSection && insGrid && insights.length > 0) {
-    insSection.style.display = '';
-    insGrid.innerHTML = insights.map(t => `<div class="rep-insight-card">${t}</div>`).join('');
-  } else if (insSection) {
-    insSection.style.display = 'none';
+  // Build the slides DOM
+  const slidesEl = document.getElementById('repDeckSlides');
+  if (slidesEl) {
+    slidesEl.innerHTML = _repDeckSlides.map((s, i) =>
+      `<div class="rep-slide" data-slide-idx="${i}" data-slide-id="${s.id}">${s.html}</div>`
+    ).join('');
   }
 
-  // Narrative #2 → white
-  if (div2) div2.style.display = '';
-  if (nar2) {
-    nar2.style.display = '';
-    const narText2 = document.getElementById('repNarText2');
-    const narSub2 = document.getElementById('repNarSub2');
-    if (narText2) narText2.textContent = `Your weapons with the white pieces`;
-    if (narSub2) narSub2.textContent = `As a ${persName}, these openings amplify your natural strengths.`;
+  // Build the dots
+  const dotsEl = document.getElementById('repDeckDots');
+  if (dotsEl) {
+    dotsEl.innerHTML = _repDeckSlides.map((_, i) =>
+      `<button class="rep-deck-dot" data-dot="${i}" onclick="repDeckGo(${i})" aria-label="Go to slide ${i + 1}"></button>`
+    ).join('');
   }
 
-  // White openings
-  if (whiteSection && whiteCards) {
-    whiteSection.style.display = '';
-    whiteCards.innerHTML = rep.white.map(o => _renderOpeningCard(o, p.color)).join('');
-  }
+  // Attach keyboard + click handlers
+  _attachRepDeckHandlers();
 
-  // Narrative #3 → black
-  if (div3) div3.style.display = '';
-  if (nar3) {
-    nar3.style.display = '';
-    const narText3 = document.getElementById('repNarText3');
-    const narSub3 = document.getElementById('repNarSub3');
-    if (narText3) narText3.textContent = `And when your opponent starts…`;
-    if (narSub3) narSub3.textContent = `One defense against 1.e4, one against 1.d4. You're covered.`;
-  }
-
-  // Black openings (with "vs" badges)
-  if (blackSection && blackCards) {
-    blackSection.style.display = '';
-    blackCards.innerHTML = rep.black.map(o => _renderOpeningCard(o, p.color)).join('');
-  }
-
-  // Narrative #4 → CTA
-  if (div4) div4.style.display = '';
-  if (nar4) nar4.style.display = '';
-
-  // Deep analysis CTA + cross-links
-  if (analysisCta) analysisCta.style.display = '';
-  if (crosslinks)  crosslinks.style.display  = '';
-
-  // Re-trigger hero entrance animation
-  const heroEl = document.getElementById('repHero');
-  if (heroEl) {
-    heroEl.style.animation = 'none';
-    heroEl.offsetHeight; // force reflow
-    heroEl.style.animation = '';
-  }
-
-  // Initialize scroll-driven reveal
-  _initRepScrollObserver();
+  // Start on the first slide
+  _repDeckIdx = 0;
+  _repDeckAnimating = false;
+  _repDeckActivate(0, { initial: true });
 }
 
-function _renderOpeningCard(o, accentColor) {
-  return `<div class="rep-card" style="--rep-accent:${accentColor}">
-    <div class="rep-card-top">
-      <div class="rep-card-name">${o.name}</div>
-      <span class="rep-card-eco">${o.eco}</span>
-    </div>
-    <div class="rep-card-why">${o.why}</div>
-    <div class="rep-card-idea">
-      <span class="rep-card-idea-label">Key idea:</span> ${o.keyIdea}
-    </div>
-  </div>`;
-}
+// ── Slide factory ─────────────────────────────────────────────
+function _buildRepSlides(ctx) {
+  const { p, rep, insights, persName, agg } = ctx;
+  const slides = [];
 
-// ── Scroll-driven IntersectionObserver ───────────────────────
-let _repObserver = null;
-
-function _initRepScrollObserver() {
-  // Disconnect any previous observer
-  if (_repObserver) _repObserver.disconnect();
-
-  const page = document.getElementById('pageRepertoire');
-  const wrap = document.getElementById('repPageWrap');
-  if (!wrap || !page) return;
-
-  const sections = wrap.querySelectorAll('.rep-scroll-section');
-  if (!sections.length) return;
-
-  // Reset all to hidden
-  sections.forEach(el => el.classList.remove('rep-visible'));
-
-  // Use the app-page as the scroll root (it has overflow-y: auto)
-  _repObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('rep-visible');
-        _repObserver.unobserve(entry.target); // only animate once
-      }
-    }
-  }, {
-    root: page,
-    rootMargin: '0px 0px -60px 0px',
-    threshold: 0.15
+  // Slide 0: Personality reveal — uses the EXACT same DOM/classes as the
+  // post-game personality reveal page so it inherits the dark "certificate"
+  // styling (gold-bordered card, gradient name, spotlight + rays).
+  slides.push({
+    id: 'persona',
+    isPersona: true,
+    html: `
+      <div class="pers-reveal rep-deck-pers-reveal" data-pers="${p.id}" style="background: ${p.gradient}">
+        <div class="pers-spotlight" aria-hidden="true"></div>
+        <div class="pers-rays" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="pers-content rep-deck-pers-content" data-pers="${p.id}">
+          <div class="pers-subtitle pers-stagger" data-delay="0">Chess personality matched</div>
+          <div class="pers-emoji pers-stagger" data-delay="120">${p.emoji}</div>
+          <h1 class="pers-name pers-stagger" data-delay="320">${p.name}</h1>
+          <div class="pers-tagline pers-stagger" data-delay="520">${p.tagline}</div>
+          <p class="pers-description pers-stagger" data-delay="680">${p.description}</p>
+          <div class="pers-traits pers-stagger" data-delay="820">
+            ${p.traits.map(t => `<span class="pers-trait">${t}</span>`).join('')}
+          </div>
+          <div class="pers-famous pers-stagger" data-delay="940">Think: ${p.famous}</div>
+        </div>
+      </div>`
   });
 
-  sections.forEach(el => _repObserver.observe(el));
+  // Slide 1: Insights (only when we have any)
+  if (insights && insights.length > 0) {
+    slides.push({
+      id: 'insights',
+      html: `
+        <div class="rep-slide-inner">
+          <div class="rep-slide-eyebrow rep-fx" data-fx="0">What your games revealed</div>
+          <h2 class="rep-slide-title rep-fx" data-fx="1">A portrait of your play</h2>
+          <p class="rep-slide-sub rep-fx" data-fx="2">
+            Patterns pulled from your ${agg.totalGames} game${agg.totalGames !== 1 ? 's' : ''},
+            distilled into signals we match against opening theory.
+          </p>
+          <div class="rep-slide-insights">
+            ${insights.map((t, i) =>
+              `<div class="rep-slide-insight rep-fx" data-fx="${3 + i}">${t}</div>`
+            ).join('')}
+          </div>
+        </div>`
+    });
+  }
+
+  // Slide: White transition
+  slides.push({
+    id: 'white-intro',
+    html: `
+      <div class="rep-slide-inner rep-slide-center">
+        <span class="rep-slide-piece rep-fx rep-fx-piece" data-fx="0">&#9817;</span>
+        <div class="rep-slide-eyebrow rep-fx" data-fx="1">As White</div>
+        <h2 class="rep-slide-title rep-fx" data-fx="2">Your weapons with the first move</h2>
+        <p class="rep-slide-sub rep-fx" data-fx="3">
+          As ${persName}, these two openings amplify your natural strengths from move one.
+        </p>
+      </div>`
+  });
+
+  // Slides: one per white opening
+  rep.white.forEach((o, i) => {
+    slides.push({
+      id: 'white-' + i,
+      html: _renderOpeningSlideHTML(o, i, rep.white.length, 'White', '&#9817;')
+    });
+  });
+
+  // Slide: Black transition (uses the same outlined pawn glyph as White
+  // for visual consistency — only the colour differs.)
+  slides.push({
+    id: 'black-intro',
+    html: `
+      <div class="rep-slide-inner rep-slide-center">
+        <span class="rep-slide-piece rep-slide-piece-dark rep-fx rep-fx-piece" data-fx="0">&#9817;</span>
+        <div class="rep-slide-eyebrow rep-fx" data-fx="1">As Black</div>
+        <h2 class="rep-slide-title rep-fx" data-fx="2">And when your opponent starts&hellip;</h2>
+        <p class="rep-slide-sub rep-fx" data-fx="3">
+          One defence against 1.e4, one against 1.d4 &mdash; you're covered either way.
+        </p>
+      </div>`
+  });
+
+  // Slides: one per black opening
+  rep.black.forEach((o, i) => {
+    slides.push({
+      id: 'black-' + i,
+      html: _renderOpeningSlideHTML(o, i, rep.black.length, 'Black', '&#9817;', o.vs)
+    });
+  });
+
+  // Final slide: CTA + cross-links
+  slides.push({
+    id: 'cta',
+    html: `
+      <div class="rep-slide-inner">
+        <div class="rep-slide-eyebrow rep-fx" data-fx="0">That's your repertoire</div>
+        <h2 class="rep-slide-title rep-fx" data-fx="1">Ready to play it for real?</h2>
+        <p class="rep-slide-sub rep-fx" data-fx="2">
+          Analyze a live game for move-by-move AI coaching, real engine evals, and
+          feedback built around your ${persName} style.
+        </p>
+        <div class="rep-slide-cta-block rep-fx" data-fx="3">
+          <button class="rep-cta-btn rep-slide-cta-btn" onclick="showPage('gameSelect')">
+            Analyze a game
+          </button>
+          <div class="rep-slide-cta-features">
+            <span>Eval bar &amp; engine</span>
+            <span>Move explanations</span>
+            <span>AI Coach plan</span>
+          </div>
+        </div>
+        <div class="rep-slide-crosslinks rep-fx" data-fx="4">
+          <div class="rep-crosslink" onclick="showPage('profile'); renderFullProfile(); openInsights();">
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9819;</span>
+            <div>
+              <div class="rep-crosslink-name">Game Insights</div>
+              <div class="rep-crosslink-desc">Turning points &amp; best openings</div>
+            </div>
+          </div>
+          <div class="rep-crosslink" onclick="openCoachPage()">
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9812;</span>
+            <div>
+              <div class="rep-crosslink-name">AI Coach</div>
+              <div class="rep-crosslink-desc">Personalized training plan</div>
+            </div>
+          </div>
+          <div class="rep-crosslink" onclick="repDeckGo(0)">
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#10227;</span>
+            <div>
+              <div class="rep-crosslink-name">Replay presentation</div>
+              <div class="rep-crosslink-desc">Walk through the slides again</div>
+            </div>
+          </div>
+        </div>
+      </div>`
+  });
+
+  return slides;
+}
+
+function _renderOpeningSlideHTML(o, i, total, colorLabel, pieceGlyph, vsLabel) {
+  const darkClass = colorLabel === 'Black' ? ' rep-slide-piece-dark' : '';
+  const vsBadge = vsLabel
+    ? `<span class="rep-slide-vs">vs 1.${vsLabel}</span>`
+    : '';
+  return `
+    <div class="rep-slide-inner rep-slide-opening rep-slide-center">
+      <div class="rep-slide-opening-head rep-fx" data-fx="0">
+        <span class="rep-slide-piece-inline${darkClass}">${pieceGlyph}</span>
+        <span class="rep-slide-opening-color">${colorLabel}</span>
+        <span class="rep-slide-opening-count">${i + 1} of ${total}</span>
+        ${vsBadge}
+      </div>
+      <div class="rep-slide-opening-eco rep-fx" data-fx="1">${o.eco}</div>
+      <h2 class="rep-slide-opening-name rep-fx" data-fx="2">${o.name}</h2>
+      <div class="rep-slide-opening-why rep-fx" data-fx="3">${o.why}</div>
+      <div class="rep-slide-opening-idea rep-fx" data-fx="4">
+        <span class="rep-slide-opening-idea-label">Key idea</span>
+        <span class="rep-slide-opening-idea-text">${o.keyIdea}</span>
+      </div>
+    </div>`;
+}
+
+// ── Slide activation / transitions ────────────────────────────
+function _repDeckActivate(idx, opts) {
+  opts = opts || {};
+  const slidesEl = document.getElementById('repDeckSlides');
+  if (!slidesEl) return;
+  const slides = slidesEl.querySelectorAll('.rep-slide');
+  if (!slides.length) return;
+
+  idx = Math.max(0, Math.min(slides.length - 1, idx));
+  const prevIdx = _repDeckIdx;
+  const direction = idx >= prevIdx ? 'fwd' : 'back';
+
+  slides.forEach((el, i) => {
+    el.classList.remove('rep-slide-active', 'rep-slide-exit', 'rep-slide-exit-back');
+    if (i === idx) {
+      el.classList.add('rep-slide-active');
+      el.setAttribute('data-direction', direction);
+      // Restart child fade animations by toggling class
+      const fxEls = el.querySelectorAll('.rep-fx');
+      fxEls.forEach(fx => {
+        fx.classList.remove('rep-fx-in');
+        // force reflow
+        void fx.offsetWidth;
+        const delay = parseInt(fx.getAttribute('data-fx'), 10) || 0;
+        fx.style.animationDelay = (80 + delay * 140) + 'ms';
+        fx.classList.add('rep-fx-in');
+      });
+      // Persona slide: replicate post-game reveal stagger animation.
+      // Restart .pers-stagger animations and apply --delay from data-delay.
+      const persStagger = el.querySelectorAll('.pers-stagger');
+      persStagger.forEach(ps => {
+        ps.style.animation = 'none';
+        void ps.offsetHeight;
+        ps.style.animation = '';
+        const d = ps.dataset.delay || '0';
+        ps.style.setProperty('--delay', d);
+      });
+    } else if (i === prevIdx && !opts.initial) {
+      // Play exit animation for previous slide
+      el.classList.add(direction === 'fwd' ? 'rep-slide-exit' : 'rep-slide-exit-back');
+    }
+  });
+
+  _repDeckIdx = idx;
+  _repDeckUpdateChrome();
+}
+
+function _repDeckUpdateChrome() {
+  const total = _repDeckSlides.length;
+  const counter = document.getElementById('repDeckCounter');
+  if (counter) counter.textContent = `${_repDeckIdx + 1} / ${total}`;
+
+  const dots = document.querySelectorAll('#repDeckDots .rep-deck-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('rep-deck-dot-active', i === _repDeckIdx);
+    d.classList.toggle('rep-deck-dot-visited', i < _repDeckIdx);
+  });
+
+  const prevBtn = document.getElementById('repDeckPrev');
+  const nextBtn = document.getElementById('repDeckNext');
+  if (prevBtn) prevBtn.disabled = _repDeckIdx === 0;
+  if (nextBtn) nextBtn.disabled = _repDeckIdx >= total - 1;
+
+  const skipBtn = document.getElementById('repDeckSkipBtn');
+  if (skipBtn) skipBtn.style.display = _repDeckIdx >= total - 1 ? 'none' : '';
+
+  // Fade out the "click to continue" hint after the first advance
+  const hint = document.getElementById('repDeckHint');
+  if (hint) hint.classList.toggle('rep-deck-hint-hide', _repDeckIdx > 0);
+}
+
+function repDeckGo(idx) {
+  if (_repDeckAnimating) return;
+  if (!_repDeckSlides.length) return;
+  if (idx < 0 || idx >= _repDeckSlides.length) return;
+  _repDeckAnimating = true;
+  _repDeckActivate(idx);
+  setTimeout(() => { _repDeckAnimating = false; }, 420);
+}
+
+function repDeckSkipToEnd() {
+  if (!_repDeckSlides.length) return;
+  repDeckGo(_repDeckSlides.length - 1);
+}
+
+function _attachRepDeckHandlers() {
+  // Remove any existing handlers to avoid double-binding
+  if (_repDeckKeyHandler) {
+    document.removeEventListener('keydown', _repDeckKeyHandler, true);
+  }
+  if (_repDeckClickHandler) {
+    const prevStage = document.getElementById('repDeckStage');
+    if (prevStage) prevStage.removeEventListener('click', _repDeckClickHandler);
+  }
+
+  _repDeckKeyHandler = function(e) {
+    // Only act when the repertoire page is visible
+    const deckPage = document.getElementById('pageRepertoire');
+    if (!deckPage || deckPage.style.display === 'none') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const keys = ['ArrowRight', 'ArrowLeft', ' ', 'Enter', 'PageDown', 'PageUp', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    // Intercept before the analysis-page arrow handler (registered in
+    // navigation.js) can call goTo() against an empty board.
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter' || e.key === 'PageDown') {
+      repDeckGo(_repDeckIdx + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      repDeckGo(_repDeckIdx - 1);
+    } else if (e.key === 'Home') {
+      repDeckGo(0);
+    } else if (e.key === 'End') {
+      repDeckGo(_repDeckSlides.length - 1);
+    }
+  };
+  // Capture phase so this fires before the global navigation handler.
+  document.addEventListener('keydown', _repDeckKeyHandler, true);
+
+  const stage = document.getElementById('repDeckStage');
+  if (stage) {
+    _repDeckClickHandler = function(e) {
+      // Ignore clicks on interactive elements inside the slide
+      if (e.target.closest('button, a, .rep-crosslink, .rep-deck-dot')) return;
+      repDeckGo(_repDeckIdx + 1);
+    };
+    stage.addEventListener('click', _repDeckClickHandler);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -747,7 +960,7 @@ async function startRepertoireFlow() {
 
       parsedGames.push({ game: g, pgnStats, isWhite, result });
       _repLoadProgress(22 + Math.round(((i + 1) / batch.length) * 18));
-      await _sleep(180 + Math.random() * 120); // staggered for visual effect
+      await _sleep(180 + Math.random() * 120);
     }
 
     _repLoadStep(1, 'done', `${batch.length} games parsed`);
@@ -778,20 +991,11 @@ async function startRepertoireFlow() {
     _repLoadProgress(62);
     await _sleep(200);
 
-    // ── Step 3: Detect personality ──
-    // IMPORTANT: this scoring is REPERTOIRE-ONLY. We deliberately do NOT
-    // write the analysed games into the global history DB, because the
-    // user only uploaded them to get an opening repertoire — they should
-    // not flow into personality stats, the DNA card, streaks, insights,
-    // or any other persistent stat. Everything stays local to this batch
-    // and is persisted to its own localStorage key further down.
+    // ── Step 3: Detect personality (REPERTOIRE-ONLY, never written to history DB) ──
     _repLoadStep(3, 'active', 'Scoring personality traits…');
     _repLoadProgress(66);
     await _sleep(400);
 
-    // Local accumulator for the batch's personality scores. Mirrors the
-    // shape produced by getAggregatePersonality() so the rest of the
-    // repertoire flow can consume it unchanged.
     const _repTotals = {};
     PERSONALITY_LIST.forEach(p => _repTotals[p.id] = 0);
     const _repBatchEntries = [];
@@ -823,7 +1027,6 @@ async function startRepertoireFlow() {
       const personalityResult = determinePersonality(gameScores, emptyQ);
       _repLastResult = personalityResult;
 
-      // Accumulate locally — DO NOT write to history DB.
       for (const s of personalityResult.scores) {
         _repTotals[s.personality.id] = (_repTotals[s.personality.id] || 0) + s.pct;
       }
@@ -843,8 +1046,6 @@ async function startRepertoireFlow() {
       await _sleep(200 + Math.random() * 150);
     }
 
-    // Build the aggregate locally from the batch — same shape as
-    // getAggregatePersonality() so downstream code is unaffected.
     let agg = null;
     if (parsedGames.length > 0) {
       const sorted = Object.entries(_repTotals)
@@ -860,8 +1061,6 @@ async function startRepertoireFlow() {
       };
     }
 
-    // Persist the repertoire-only result so renderRepertoirePage can
-    // read it back without touching the global history DB.
     try {
       const repPayload = {
         version: 1,
@@ -876,7 +1075,6 @@ async function startRepertoireFlow() {
         entries: _repBatchEntries
       };
       localStorage.setItem('ce-repertoire-batch', JSON.stringify(repPayload));
-      // Keep the legacy "is generated?" sentinel happy.
       if (agg) localStorage.setItem('ce-repertoire-personality', agg.primary.id);
     } catch (e) { console.warn('repertoire batch persist failed', e); }
     _repLoadStep(3, 'done', agg ? `Primary: ${agg.primary.emoji} ${agg.primary.name}` : 'Done');
@@ -899,11 +1097,9 @@ async function startRepertoireFlow() {
     _repLoadStep(4, 'done', 'Repertoire ready!');
     _repLoadProgress(100);
 
-    // Brief pause to show 100%
     document.getElementById('repLoadTitle').textContent = 'Your repertoire is ready!';
     await _sleep(700);
 
-    // Navigate to repertoire page
     showPage('repertoire');
     await renderRepertoirePage();
 
@@ -914,3 +1110,5 @@ async function startRepertoireFlow() {
     err2.style.display = '';
   }
 }
+
+   

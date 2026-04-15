@@ -996,7 +996,7 @@
 .hero-see-more-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 120px;
+  margin-top: 48px;
   margin-bottom: 56px;
 }
 @media (max-width: 960px) {
@@ -1779,7 +1779,8 @@
 .rep-hero .rep-hero-emoji {
   font-size: 3.6rem !important;
   margin: 0 auto 8px !important;
-  filter: drop-shadow(0 8px 24px rgba(212, 162, 76,0.35));
+  filter: url(#brand-duotone) drop-shadow(0 8px 24px rgba(212, 162, 76,0.35));
+  -webkit-filter: url(#brand-duotone) drop-shadow(0 8px 24px rgba(212, 162, 76,0.35));
 }
 .rep-hero .rep-hero-title {
   font-size: clamp(1.6rem, 3vw, 2.1rem) !important;

@@ -494,18 +494,6 @@
 .ins-coach-result p { margin: 0 0 0.6em; }
 .ins-coach-result p:last-child { margin-bottom: 0; }
 
-/* ── Section card wrapping each heading + its content ── */
-.coach-section {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 18px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.coach-section p { margin: 0; }
-
 /* ── Section heading inside card ── */
 .coach-heading {
   display: flex;
@@ -536,12 +524,6 @@
   border-radius: 10px;
   font-size: 0.9rem;
   line-height: 1.6;
-}
-.coach-bullet {
-  color: #8b5cf6;
-  font-size: 0.5rem;
-  margin-top: 0.55em;
-  flex-shrink: 0;
 }
 .coach-numbered { gap: 12px; }
 .coach-num {
@@ -1018,11 +1000,27 @@
   color: var(--text-dim);
   letter-spacing: 0.02em;
 }
-.coach-congrats {
-  display: inline-block;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--accent);
+.coach-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.coach-progress-label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+/* ── Task completion pulse ── */
+@keyframes coachTaskPulse {
+  0%  { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tk-color) 50%, transparent); }
+  70% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--tk-color) 0%, transparent); }
+  100%{ box-shadow: 0 0 0 0 transparent; }
+}
+.coach-task-just-done {
+  animation: coachTaskPulse 0.55s ease-out;
 }
 
 /* ── Task 3: Pre-move questions ── */

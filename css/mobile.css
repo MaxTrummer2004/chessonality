@@ -65,7 +65,7 @@
   }
 
   /* Touch-momentum scroll on every scroll container */
-  .move-list, .moves-panel, .pers-carousel,
+  .move-list, .moves-panel,
   .gs-game-list, .prof-history, .prof-collection-grid,
   .mobile-stat-row, .mobile-stack-scroll,
   .modal, .choice-modal,
@@ -2165,7 +2165,7 @@
     color: var(--text-dim) !important;
     padding: 6px 12px !important;
     border-radius: var(--radius-pill) !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 14px !important;
   }
   .founder-badge .fb-dot {
     background: var(--accent) !important;
@@ -2184,7 +2184,7 @@
     line-height: 1.04 !important;
     letter-spacing: -0.035em !important;
     text-align: left !important;
-    margin: 0 0 18px !important;
+    margin: 0 0 12px !important;
   }
   .landing-title-cro .lt-mobile > span {
     color: var(--accent) !important;
@@ -2200,11 +2200,11 @@
     line-height: 1.55 !important;
     color: var(--text-dim) !important;
     text-align: left !important;
-    margin: 0 0 28px !important;
+    margin: 0 0 20px !important;
   }
   .landing-hero-text {
-    padding-top: 28px !important;
-    padding-bottom: 28px !important;
+    padding-top: 0 !important;
+    padding-bottom: 20px !important;
   }
 
 
@@ -2730,3 +2730,4 @@
     background: none !important;
   }
 }
+   

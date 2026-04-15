@@ -1415,7 +1415,7 @@ let _cpoLastHtml = '';  // stored so "Present again" can replay without args
 
 // Injects a "▶ Present again" button above rendered rich content
 function _injectReplayBtn(html) {
-  return `<button class="aic-replay-btn" onclick="launchCoachPresentation(_cpoLastHtml)">&#9654;&nbsp;Present again</button>${html}`;
+  return `<button class="aic-replay-btn" onclick="launchCoachPresentation(_cpoLastHtml)">Present again</button>${html}`;
 }
 
 // Parse rendered rich HTML into an array of slide objects:

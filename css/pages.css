@@ -197,14 +197,6 @@
   padding-bottom: 72px;             /* room for the scroll hint */
 }
 
-/* Carousel pinned near top, absolutely so it doesn't affect hero centering */
-.landing-fold .pers-carousel {
-  position: absolute;
-  top: 20px;
-  left: 0;
-  right: 0;
-}
-
 /* ── Floating scroll-down hint ── */
 .landing-scroll-hint {
   position: absolute;
@@ -1247,7 +1239,6 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   .landing-title { font-size: 2.2rem; }
   .landing-sub { max-width: 100%; }
   .landing-card { padding: 24px 20px; }
-  .pers-carousel { width: calc(100% - 48px); padding: 0 38px; }
   .gs-wrap { padding: 24px 16px 40px; }
   .gs-platform-row { flex-direction: column; }
   .gs-username-row { flex-direction: column; }

@@ -313,16 +313,4 @@ async function renderProfileHistoryList() {
 // ==============================================================
 //  ENGINE TOGGLE
 // ==============================================================
-function onEngineReady(status) {
-  // Engine toggle removed from UI - always use default engine
-  // Keep function signature so engine.js callbacks don't break
-}
-
-function switchEngine(mode) {
-  // Engine switching disabled - default engine always used
-}
-
-function setActiveToggle(mode) {
-  // Engine toggle buttons removed from UI
-}
-
+function onEngineRea

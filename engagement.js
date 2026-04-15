@@ -276,12 +276,6 @@ function showMilestone(ms) {
   overlay.style.display = 'flex';
 }
 
-function closeMilestone() {
-  const overlay = document.getElementById('milestoneOverlay');
-  if (overlay) overlay.style.display = 'none';
-}
-
-
 // ── 5. AI COACH PREVIEW (for free/new users) ─────────────────
 
 function renderCoachPreviewText(history, agg) {
