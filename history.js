@@ -237,12 +237,10 @@ async function renderFullProfile() {
   // History
   renderProfileHistoryList();
 
-  // Show Insights CTA button if we have enough data
+  // Insights CTA is part of the always-visible feature row; locked state
+  // is handled by renderProfileFeatureRow via the prof-feat-locked class.
   const insightsCta = document.getElementById('profInsightsCta');
-  if (insightsCta) {
-    const withPers = history.filter(e => e.personality && PERSONALITIES[e.personality]);
-    insightsCta.style.display = withPers.length >= 1 ? '' : 'none';
-  }
+  if (insightsCta) insightsCta.style.display = '';
 
   // Engagement features (collection, streak, sparkline, coach preview)
   if (typeof renderEngagementFeatures === 'function') {
@@ -313,4 +311,16 @@ async function renderProfileHistoryList() {
 // ==============================================================
 //  ENGINE TOGGLE
 // ==============================================================
-function onEngineRea
+function onEngineReady(status) {
+  // Engine toggle removed from UI - always use default engine
+  // Keep function signature so engine.js callbacks don't break
+}
+
+function switchEngine(mode) {
+  // Engine switching disabled - default engine always used
+}
+
+function setActiveToggle(mode) {
+  // Engine toggle buttons removed from UI
+}
+

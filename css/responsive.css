@@ -611,6 +611,7 @@
   .container {
     height: auto;
     min-height: calc(100vh - 58px);
+    min-height: calc(100dvh - 58px);
     overflow: visible;
     padding: 12px 14px 32px;
   }

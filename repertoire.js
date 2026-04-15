@@ -303,24 +303,24 @@ function buildPersonalInsights(stats, agg) {
 function renderProfileFeatureRow(history, agg) {
   const row = document.getElementById('profFeatureRow');
   if (!row) return;
-  const shouldShow = history.length >= 1;
-  row.style.display = shouldShow ? '' : 'none';
+  const hasGames = history.length >= 1;
 
-  // Reveal-system fix: the row starts as display:none, so the
-  // IntersectionObserver registered the [data-reveal] children while
-  // they had no layout box. When we flip display back on, the cards
-  // can stay stuck at opacity:0 (especially on desktop where mobile.css's
-  // `display: flex !important` override doesn't apply). Force them
-  // visible immediately and stagger them in.
-  if (shouldShow) {
-    const cards = row.querySelectorAll(':scope > [data-reveal]');
-    const step = parseInt(row.dataset.revealStagger || '80', 10) || 80;
-    const base = parseInt(row.dataset.revealBase || '0', 10) || 0;
-    cards.forEach((el, i) => {
-      el.style.setProperty('--reveal-delay', (base + i * step) + 'ms');
-      el.classList.add('is-visible');
-    });
-  }
+  // Always visible now — toggle a "locked" affordance per card when empty.
+  row.style.display = '';
+  row.classList.toggle('prof-feature-row-locked', !hasGames);
+
+  const hint = document.getElementById('profFeaturesHint');
+  if (hint) hint.style.display = hasGames ? 'none' : '';
+
+  // Force-reveal the cards (reveal observer may have skipped them while hidden)
+  const cards = row.querySelectorAll(':scope > [data-reveal]');
+  const step = parseInt(row.dataset.revealStagger || '80', 10) || 80;
+  const base = parseInt(row.dataset.revealBase || '0', 10) || 0;
+  cards.forEach((el, i) => {
+    el.style.setProperty('--reveal-delay', (base + i * step) + 'ms');
+    el.classList.add('is-visible');
+    el.classList.toggle('prof-feat-locked', !hasGames);
+  });
 
   // Feature card status indicators
   const repStatus = document.getElementById('profFeatRepStatus');

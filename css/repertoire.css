@@ -18,6 +18,7 @@
       color-mix(in srgb, var(--rep-pers-color) 18%, transparent) 0%, transparent 70%),
     var(--bg);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 .rep-deck-header {
   display: grid;
@@ -811,11 +812,48 @@
 
 
 /* ── Profile: Feature CTA row (3 cards) ── */
+.prof-features-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 8px 0 14px;
+  flex-wrap: wrap;
+}
+.prof-features-header .prof-section-title { margin-bottom: 0; }
+.prof-features-hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
 .prof-feature-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 20px;
+}
+/* Locked (first-time, no history yet) affordance */
+.prof-feat-locked {
+  opacity: 0.62;
+  filter: saturate(0.7);
+  position: relative;
+}
+.prof-feat-locked::after {
+  content: "Unlocks after 1 game";
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface2, rgba(0,0,0,0.08));
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+.prof-feat-locked:hover {
+  transform: none;
+  box-shadow: none;
 }
 .prof-feat-card {
   display: flex;

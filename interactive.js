@@ -400,6 +400,14 @@
     initPressFeedback();
     // Reveal anything already in the DOM on first paint
     observeReveals(document);
+    // Returning users: surface a profile shortcut on the landing header.
+    // First-time visitors (no prior page state) keep a single-CTA landing.
+    try {
+      if (localStorage.getItem('ce-current-page')) {
+        const pb = document.getElementById('landingProfileBtn');
+        if (pb) pb.style.display = '';
+      }
+    } catch (_) {}
   }
 
   if (document.readyState === 'loading') {

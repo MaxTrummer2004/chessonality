@@ -52,7 +52,8 @@
    PAGE SYSTEM
 ══════════════════════════════════════════════ */
 .app-page {
-  height: 100vh;
+  height: 100vh;               /* fallback for browsers without dvh support */
+  height: 100dvh;              /* matches visible viewport on mobile (excludes address bar) */
   overflow-y: auto;            /* each page scrolls internally, not the browser window */
   overflow-x: hidden;
   animation: none;
@@ -67,6 +68,7 @@
 ══════════════════════════════════════════════ */
 .hl-overlay-inner {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
   padding: 40px 20px;
   animation: fadeIn 0.3s ease;
@@ -187,7 +189,8 @@
 
 /* ── Above-fold wrapper: exactly one viewport tall ── */
 .landing-fold {
-  min-height: calc(100vh - 58px);   /* full viewport minus sticky header */
+  min-height: calc(100vh - 58px);   /* fallback */
+  min-height: calc(100dvh - 58px);  /* full viewport minus sticky header; dvh avoids iOS address-bar clipping */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -654,6 +657,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 /* Wrap: always centers its content */
 .hero-input-wrap {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -920,6 +924,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 ══════════════════════════════════════════════ */
 #pageLoading {
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   display: flex; align-items: center; justify-content: center;
   position: relative; overflow: hidden;
@@ -948,7 +953,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 }
 
 .loading-wrap {
-  width: 100%; height: 100vh;
+  width: 100%; height: 100vh; height: 100dvh;
   display: flex; align-items: center; justify-content: center;
   padding: 0 8vw;
   position: relative; z-index: 1;
@@ -1059,6 +1064,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 /* Full-screen wrapper, content top-padded - never re-centres */
 .rep-loading-wrap {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1369,6 +1375,45 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   color: var(--text-dim);
 }
 .cro-counter-label { font-weight: 500; }
+
+/* Value bullets directly under hero CTA — what you'll get */
+.cro-value-list {
+  list-style: none;
+  margin: 18px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cro-value-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.98rem;
+  color: var(--text);
+  line-height: 1.4;
+  font-weight: 500;
+}
+.cvl-tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+@media (max-width: 760px) {
+  .cro-value-list {
+    margin: 16px auto 4px;
+    max-width: 360px;
+    text-align: left;
+  }
+  .cro-value-list li { font-size: 0.92rem; }
+}
 
 /* Hero visual mockup */
 .hero-visual {
