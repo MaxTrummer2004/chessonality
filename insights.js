@@ -1997,11 +1997,10 @@ function _buildCoachDeckHtml(renderedHtml, tasks) {
 
     slides.push(`
       <div class="rep-slide-inner rep-slide-center coach-deck-slide">
-        <div class="rep-slide-eyebrow rep-fx" data-fx="0">${nar.label}</div>
-        <h2 class="rep-slide-title coach-deck-slide-title rep-fx" data-fx="1">${sec.heading || 'Section'}</h2>
-        ${nar.sub ? `<p class="rep-slide-sub rep-fx" data-fx="2">${nar.sub}</p>` : ''}
-        <div class="rep-slide-opening-divider rep-fx" data-fx="3"></div>
-        <div class="coach-deck-body ${bodyVariant} rep-fx" data-fx="4">${bodyHtml}</div>
+        <h2 class="rep-slide-title coach-deck-slide-title rep-fx" data-fx="0">${sec.heading || 'Section'}</h2>
+        ${nar.sub ? `<p class="rep-slide-sub rep-fx" data-fx="1">${nar.sub}</p>` : ''}
+        <div class="rep-slide-opening-divider rep-fx" data-fx="2"></div>
+        <div class="coach-deck-body ${bodyVariant} rep-fx" data-fx="3">${bodyHtml}</div>
       </div>`);
   });
 

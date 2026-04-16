@@ -224,8 +224,6 @@ function renderProfileSparkline(history) {
 // ── 4. MILESTONE CELEBRATIONS ─────────────────────────────────
 
 const MILESTONES = [
-  { count: 1,  emoji: '\u2658', title: 'First game analyzed', sub: 'Your chess personality journey has begun. Analyze more games to refine your profile.' },
-  { count: 3,  emoji: '\u2656', title: 'Three games in', sub: 'Your personality profile is starting to take shape.' },
   { count: 5,  emoji: '\u2655', title: 'Five games', sub: 'Enough data to see your strongest and weakest traits clearly.' },
   { count: 10, emoji: '\u2657', title: 'Ten games', sub: 'Your profile is now robust enough for focused practice plans.' },
   { count: 20, emoji: '\u2655', title: 'Twenty games', sub: 'You have a full picture of how you play.' },

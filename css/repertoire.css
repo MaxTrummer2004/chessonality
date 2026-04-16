@@ -118,7 +118,8 @@
   max-width: none;
   margin: 0 auto;
   height: calc(100vh - 180px);
-  min-height: 520px;
+  height: calc(100dvh - 180px);
+  min-height: 280px;
   outline: none;
 }
 .rep-deck-slides {
@@ -506,7 +507,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
 }
 .rep-deck-pers-content {
@@ -804,7 +805,7 @@
 
 /* ── Mobile ── */
 @media (max-width: 720px) {
-  .rep-deck-stage { height: calc(100vh - 200px); min-height: 420px; padding: 0 8px; }
+  .rep-deck-stage { height: calc(100vh - 200px); height: calc(100dvh - 200px); min-height: 240px; padding: 0 8px; }
   .rep-slide { padding: 16px 12px; }
   .rep-slide-cta-features { gap: 8px; font-size: 0.78rem; }
   .rep-deck-controls { gap: 12px; padding: 12px 16px 20px; }

@@ -1480,10 +1480,10 @@
      so the mobile browser chrome is accounted for. */
   .rep-deck-stage,
   .coach-deck-stage {
-    min-height: 300px !important;
-    height: calc(100vh - 180px) !important;
-    height: calc(100dvh - 180px) !important;
-    max-height: 580px !important;
+    min-height: 0 !important;
+    height: calc(100vh - 160px) !important;
+    height: calc(100dvh - 160px) !important;
+    max-height: none !important;
   }
   /* Slide inner padding: keep generous bottom so the "Click to continue"
      hint pill (position:absolute; bottom:14px; ~36px tall) never
@@ -1581,6 +1581,27 @@
   .coach-page-loading-step { padding: 14px 16px !important; margin-top: 20px !important; }
   /* Crosslinks less top margin */
   .coach-crosslinks { margin-top: 24px !important; }
+
+  /* Slides scroll when viewport is too short */
+  .rep-slide {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Very short viewports (tab groups, split screen) ── */
+@media (max-width: 640px) and (max-height: 600px) {
+  .rep-deck-stage,
+  .coach-deck-stage {
+    height: calc(100dvh - 120px) !important;
+  }
+  .rep-slide { padding: 8px 10px 44px !important; }
+  .rep-slide-title { font-size: 1.3rem !important; }
+  .rep-slide-sub { font-size: 0.85rem !important; }
+  .coach-deck-body { max-height: 35vh !important; }
+  .rep-deck-pers-content .pers-emoji { font-size: 1.8rem !important; }
+  .rep-deck-pers-content .pers-name { font-size: 1.4rem !important; }
+  .rep-deck-pers-content .pers-description { font-size: 0.75rem !important; }
 }
 
 /* ─────────────────────────────────────────────
@@ -2228,12 +2249,12 @@
 @media (min-width: 600px) and (max-width: 860px) {
   #pageMain .board,
   #pageMain .board-col {
-    width: 520px !important;
-    height: 520px !important;
+    width: min(520px, 80vw) !important;
+    height: min(520px, 70dvh) !important;
   }
   #pageMain .eval-bar-wrap {
-    height: 520px !important;
-    max-height: 520px !important;
+    height: min(520px, 70dvh) !important;
+    max-height: min(520px, 70dvh) !important;
   }
 }
 

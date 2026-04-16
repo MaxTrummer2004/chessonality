@@ -7,6 +7,7 @@
   padding: 16px 24px 24px;
   /* Fit analysis page within viewport (header ~58px) - no scrolling */
   height: calc(100vh - 58px);
+  height: calc(100dvh - 58px);
   overflow: hidden;
   box-sizing: border-box;
 }

@@ -199,6 +199,7 @@
 .ins-canvas {
   width: 100%;
   height: 420px;
+  max-height: 50vh;
   display: block;
   border-radius: 8px;
 }
@@ -383,7 +384,7 @@
   margin-top: 36px;
 }
 .ins-card-chart { padding: 28px 24px 22px; }
-.ins-card-bars  { min-height: 520px; }
+.ins-card-bars  { min-height: 320px; }
 .ins-card-radar { display: flex; flex-direction: column; }
 .ins-radar-wrap {
   display: flex;
@@ -1582,8 +1583,9 @@
   width: 100%;
 }
 .coach-deck-stage {
-  min-height: 520px;
+  min-height: 280px;
   height: calc(100vh - 220px);
+  height: calc(100dvh - 220px);
   max-height: none;
 }
 .coach-deck-badges {
@@ -1596,6 +1598,10 @@
 /* All slide titles inside the coach deck — bigger on desktop */
 .coach-deck-stage .rep-slide-title {
   font-size: clamp(2.4rem, 4.2vw, 3.6rem) !important;
+}
+/* Slides inside coach deck: keep content away from the header */
+.coach-deck-stage .rep-slide {
+  padding-top: 48px;
 }
 /* Eyebrow labels inside coach deck */
 .coach-deck-stage .rep-slide-eyebrow {
@@ -1934,7 +1940,7 @@
   margin-top: 26px;
 }
 .ins-card-radar { padding: 30px 26px 28px; position: relative; }
-.ins-card-bars  { padding: 30px 30px 26px; min-height: 540px; }
+.ins-card-bars  { padding: 30px 30px 26px; min-height: 340px; }
 .ins-radar-wrap { padding: 8px 0 4px; position: relative; z-index: 1; }
 .ins-radar-canvas { max-width: 580px; }
 
@@ -3400,4 +3406,30 @@
   border-radius: 12px;
   font-size: 0.74rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--text-dim) 12%, tran
+  background: color-mix(in srgb, var(--text-dim) 12%, transparent);
+  color: var(--text-dim);
+}
+
+/* ── Short-viewport overrides: phones with Chrome tab groups / split screen ── */
+@media (max-width: 640px) {
+  .ins-canvas {
+    height: 260px;
+    max-height: 40vh;
+  }
+  .ins-card-bars {
+    min-height: 0;
+  }
+}
+@media (max-width: 640px) and (max-height: 600px) {
+  .ins-canvas {
+    height: 200px;
+    max-height: 35vh;
+  }
+  .ins-card-bars {
+    min-height: 0;
+    padding: 16px 14px 14px;
+  }
+  .ins-card-chart {
+    padding: 16px 14px 14px;
+  }
+}
