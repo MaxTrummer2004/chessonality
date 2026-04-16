@@ -884,10 +884,15 @@
    visual card but make it feel lighter next to the text.
 ═══════════════════════════════════════════════════════════════ */
 
-/* Fold with top breathing room so the hero sits vertically centered */
+/* Fold with top breathing room */
 .landing-fold.landing-fold-2col {
-  padding-top: 140px !important;
+  padding-top: 48px !important;
   padding-bottom: 40px !important;
+}
+@media (max-width: 767px) {
+  .landing-fold.landing-fold-2col {
+    padding-top: 10px !important;
+  }
 }
 .landing-hero.landing-hero-2col {
   align-items: center !important;

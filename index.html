@@ -89,7 +89,7 @@
 <link rel="stylesheet" href="css/walkthrough.css">
 <link rel="stylesheet" href="css/esports.css?v=2">
 <link rel="stylesheet" href="css/refresh.css?v=dash1">
-<link rel="stylesheet" href="css/mobile.css?v=polish3">
+<link rel="stylesheet" href="css/mobile.css?v=polish5">
 <link rel="stylesheet" href="css/interactive.css?v=polish2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -293,11 +293,6 @@
 
     <div class="landing-hero landing-hero-2col">
       <div class="landing-hero-text" data-reveal-stagger="80" data-reveal-base="40">
-        <div class="founder-badge" aria-label="Built by a titled player" data-reveal>
-          <span class="fb-dot"></span>
-          <span class="fb-text">Built by a 2400 Chess.com player</span>
-        </div>
-
         <h2 class="landing-title landing-title-cro" data-reveal>
           <span class="lt-desktop">Know your chess.<br>Know what to practice.</span>
           <span class="lt-mobile">Know your chess.<br>Know what to practice.</span>
@@ -2614,10 +2609,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ── Mobile bottom tab bar (visible only at ≤767px via mobile.css) ── -->
 <nav class="mobile-tabbar" aria-label="Primary">
-  <button class="mtab mtab-home" onclick="mobileTabGo('home')" aria-label="Home">
-    <svg class="mtab-icon" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
-    <span>Home</span>
-  </button>
   <button class="mtab mtab-analyze" onclick="mobileTabGo('analyze')" aria-label="Analyze">
     <svg class="mtab-icon" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
     <span>Analyze</span>
@@ -2632,12 +2623,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Mobile bottom tab bar handlers ─────────────────────────────
 function mobileTabGo(tab) {
   switch (tab) {
-    case 'home':
-      showPage('landing');
-      break;
     case 'analyze':
-      // Same entrypoint as the hero CTA — opens the choice modal
-      if (typeof showChoiceModal === 'function') showChoiceModal();
+      showPage('gameSelect');
       break;
     case 'profile':
       showPage('profile');

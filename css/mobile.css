@@ -126,7 +126,7 @@
 
   .mobile-tabbar {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     position: fixed;
     left: 0; right: 0; bottom: 0;
     height: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -162,7 +162,6 @@
     stroke-width: 1.8;
   }
   .mtab[aria-current="page"],
-  body[data-page="landing"]    .mtab-home,
   body[data-page="profile"]    .mtab-profile,
   body[data-page="gameSelect"] .mtab-analyze {
     color: var(--accent, #d4a24c);
@@ -2139,7 +2138,6 @@
   }
   /* Active state: amber color + top bar indicator */
   .mtab[aria-current="page"],
-  body[data-page="landing"]    .mtab-home,
   body[data-page="profile"]    .mtab-profile,
   body[data-page="gameSelect"] .mtab-analyze,
   body[data-page="repInput"]   .mtab-analyze,
@@ -2148,7 +2146,6 @@
     font-weight: 700 !important;
   }
   .mtab[aria-current="page"]::before,
-  body[data-page="landing"]    .mtab-home::before,
   body[data-page="profile"]    .mtab-profile::before,
   body[data-page="gameSelect"] .mtab-analyze::before,
   body[data-page="repInput"]   .mtab-analyze::before,
@@ -2876,4 +2873,24 @@
     animation: tabActivate 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   @keyframes tabActivate {
-    0%   { opacity: 0.8; transform: translateY(2px
+    0%   { opacity: 0.8; transform: translateY(2px); }
+    100% { opacity: 1;   transform: translateY(0);   }
+  }
+} /* end @media (max-width: 767px) */
+
+/* ── FINAL: landing hero spacing on mobile ─── */
+@media (max-width: 767px) {
+  .landing-fold,
+  .landing-fold-2col {
+    min-height: 0 !important;
+    justify-content: flex-start !important;
+    padding-top: 0 !important;
+    padding-bottom: 24px !important;
+  }
+  .landing-fold-2col .landing-hero-text {
+    margin-top: 24px !important;
+  }
+  .cro-counter {
+    display: none !important;
+  }
+}

@@ -194,10 +194,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;          /* hero stays vertically centered */
+  justify-content: flex-start;      /* pin to top */
   position: relative;
-  padding-top: 0;
-  padding-bottom: 72px;             /* room for the scroll hint */
+  padding-top: max(3vh, 20px);
+  padding-bottom: 72px;
 }
 
 /* ── Floating scroll-down hint ── */
@@ -664,7 +664,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   padding: 24px 24px;
   background: var(--bg);
   justify-content: center;
-  padding-bottom: 18vh; /* shift visual center upward */
+  padding-bottom: 24vh; /* shift visual center upward */
 }
 /* When list is showing: align to top so the list has room to scroll */
 .hero-input-wrap.has-games {
@@ -1333,7 +1333,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 
 /* Two-column hero layout */
 .landing-fold-2col {
-  padding: 36px 40px 48px;
+  padding: 16px 40px 48px;
 }
 .landing-hero-2col {
   display: grid;
@@ -1731,6 +1731,13 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 
 /* Responsive: collapse hero to single column */
 @media (max-width: 900px) {
+  .landing-fold,
+  .landing-fold-2col {
+    justify-content: flex-start;
+    padding-top: 24px;
+    padding-bottom: 36px;
+    min-height: 0;
+  }
   .landing-fold-2col { padding: 24px 20px 36px; }
   .landing-hero-2col {
     grid-template-columns: 1fr;
