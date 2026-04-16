@@ -16,68 +16,115 @@
 }
 
 .prof-streak-card {
-  background: var(--surface2);
+  background:
+    radial-gradient(ellipse 100% 100% at 0% 50%,
+      color-mix(in srgb, var(--accent) 8%, transparent),
+      transparent 60%),
+    var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 20px 22px 26px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+/* Warm accent top stripe */
+.prof-streak-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 50%, transparent),
+    var(--accent),
+    color-mix(in srgb, var(--accent-2) 50%, transparent));
+}
+.prof-streak-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow), 0 0 30px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 .prof-streak-flame {
-  font-size: 2rem;
+  font-size: 2.2rem;
   line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(255,107,0,0.4));
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      color-mix(in srgb, var(--accent) 6%, transparent));
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 0 40px color-mix(in srgb, var(--accent) 5%, transparent);
+  flex-shrink: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.prof-streak-card:hover .prof-streak-flame {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 0 50px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 .prof-streak-flame.cold {
   filter: grayscale(1) opacity(0.4);
+  background: var(--surface2);
+  box-shadow: none;
 }
 .prof-streak-info {
   flex: 1; min-width: 60px;
 }
 .prof-streak-count {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.8rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text);
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 .prof-streak-label {
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   color: var(--text-dim);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .prof-streak-dots {
   display: flex;
-  gap: 5px;
+  gap: 7px;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 12px;
 }
 .prof-streak-dot {
-  width: 14px; height: 14px;
-  border-radius: 3px;
+  flex: 1; height: 8px;
+  border-radius: 4px;
   background: var(--surface3);
-  border: 1px solid var(--border);
-  transition: all 0.3s ease;
+  border: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
   position: relative;
 }
 .prof-streak-dot.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: linear-gradient(90deg, var(--accent-deep, var(--accent)), var(--accent));
+  border-color: transparent;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .prof-streak-dot.today {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border: none;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface3));
+}
+.prof-streak-dot.active.today {
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 .prof-streak-dot-label {
   position: absolute;
-  bottom: -14px;
+  bottom: -15px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.55rem;
+  font-size: 0.58rem;
+  font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
 }

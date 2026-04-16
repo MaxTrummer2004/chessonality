@@ -136,12 +136,16 @@ async function analyzeLiveBoardPosition() {
   // Mark as active (compat)
   if (typeof _activeAnalysisView !== 'undefined') _activeAnalysisView = 'position';
 
-  // Hide button group, show loading in output
+  // Hide ALL button groups (mobile + desktop) and show loading
   const output = document.getElementById('aicOutput');
+  ['explainBtn', 'explainBtnDesktop'].forEach(id => {
+    const btn = document.getElementById(id);
+    const grp = btn ? btn.closest('.aic-btn-group') : null;
+    if (grp) grp.style.display = 'none';
+  });
+  // Also hide the move-quick-desc panels while loading
+  document.querySelectorAll('.move-quick-desc').forEach(el => { el.style.display = 'none'; });
   const hint = document.getElementById('aicHint');
-  const explainBtn = document.getElementById('explainBtn');
-  const btnGroup = explainBtn ? explainBtn.closest('.aic-btn-group') : null;
-  if (btnGroup) btnGroup.style.display = 'none';
   if (hint) hint.style.display = 'none';
   if (output) {
     output.style.display = '';
@@ -180,7 +184,29 @@ async function analyzeLiveBoardPosition() {
     };
 
     const prompt = TEMPLATES.position(snap);
-    const reply = await callClaude(prompt, key);
+    let reply = await callClaude(prompt, key);
+
+    // Guard: if the API echoed back the raw prompt (contains internal
+    // template markers), strip it or show a clean fallback instead.
+    const PROMPT_MARKERS = ['SILENT CONSIDERATION', 'DETERMINISTIC POSITIONAL FACTS',
+                            'GROUNDING GUARD', 'TWO-PLY LOOKAHEAD', 'STRICT OUTPUT RULES'];
+    const isEcho = PROMPT_MARKERS.some(m => reply.includes(m));
+    if (isEcho) {
+      // Try to salvage: strip everything before the first real sentence
+      // that doesn't start with an internal header
+      const lines = reply.split('\n').filter(l => {
+        const t = l.trim();
+        return t && !PROMPT_MARKERS.some(m => t.includes(m)) &&
+               !/^(Engine|Chess coach|The student|FORBIDDEN|DO NOT)/.test(t) &&
+               !/^[-=]{3,}/.test(t) && !/^#{1,4}\s/.test(t) &&
+               !/^SILENT/.test(t) && !/^Move \d+:/.test(t) &&
+               !/^Ply \d+:/.test(t) && !/^Result after/.test(t) &&
+               !/^Doubled/.test(t) && !/^Pawn islands/.test(t) &&
+               !/^Passed pawns/.test(t) && !/^Open files/.test(t);
+      });
+      reply = lines.length > 0 ? lines.join('\n') :
+        `This position is ${ev && ev.cp !== undefined ? (Math.abs(ev.cp) < 50 ? 'roughly equal' : ev.cp > 0 ? 'slightly better for White' : 'slightly better for Black') : 'balanced'}. ${ev && ev.bestSAN ? 'The engine suggests ' + ev.bestSAN + ' as the best continuation.' : ''}`;
+    }
 
     // Render as a single Overview slide (same visual style as walkthrough)
     const bodyHtml = marked.parse(reply).replace(/\s*[-–]\s*/g, ', ')
@@ -189,13 +215,20 @@ async function analyzeLiveBoardPosition() {
       <div class="aic-slide active" data-idx="0">
         <div class="aic-slide-header slide-overview">
           <span class="aic-slide-icon">\u2654</span>
-          <span class="aic-slide-label">Position</span>
+          <span class="aic-slide-label">Position Analysis</span>
         </div>
         <div class="aic-slide-body"><div class="aic-slide-text">${bodyHtml}</div></div>
       </div>
     </div>`;
     if (output) output.innerHTML = rich;
   } catch (err) {
-    if (output) output.innerHTML = `<div class="aic-error">Error: ${err.message}</div>`;
+    if (output) output.innerHTML = `<div class="aic-error">Something went wrong: ${err.message || 'Unknown error'}. Try again.</div>`;
+    // Re-show the button groups so the user can retry
+    ['explainBtn', 'explainBtnDesktop'].forEach(id => {
+      const btn = document.getElementById(id);
+      const grp = btn ? btn.closest('.aic-btn-group') : null;
+      if (grp) grp.style.display = '';
+    });
+    document.querySelectorAll('.move-quick-desc').forEach(el => { el.style.display = ''; });
   }
 }

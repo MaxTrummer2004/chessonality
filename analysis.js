@@ -129,7 +129,7 @@ async function runAnalysis() {
 
   const stat = document.getElementById('analysisStatus');
   let note;
-  if (uncached > 0)        note = `\u26A0\uFE0F ${uncached} position(s) unavailable`;
+  if (uncached > 0)        note = `\u26A0\uFE0E ${uncached} position(s) unavailable`;
   else                     note = '';
   if (stat) stat.textContent = note;
 
@@ -207,7 +207,7 @@ function showHighlightsPage(items) {
     const el = document.createElement('div');
     el.className = 'hl-item';
     el.innerHTML = `
-      <div class="hl-icon">${h.icon || '\u2728'}</div>
+      <div class="hl-icon">${h.icon || '\u2658'}</div>
       <div class="hl-item-text">
         <div class="hl-title">${h.title || ''}</div>
         <div class="hl-sub">${h.sub || ''}</div>

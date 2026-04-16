@@ -1677,7 +1677,6 @@
 ═══════════════════════════════════════════════════════════════ */
 
 /* Shared frame treatment — base positioning */
-.prof-primary,
 .rep-hero {
   position: relative !important;
   background: linear-gradient(180deg, rgba(20,22,46,0.78), rgba(12,14,32,0.78)) !important;
@@ -1692,7 +1691,6 @@
 }
 
 /* Gradient border via mask-composite */
-.prof-primary::before,
 .rep-hero::before {
   content: '';
   position: absolute;
@@ -1712,7 +1710,6 @@
 }
 
 /* Inner gold hairline */
-.prof-primary::after,
 .rep-hero::after {
   content: '';
   position: absolute;
@@ -1723,52 +1720,11 @@
   z-index: 1;
 }
 
-/* ── PROFILE: identity card ─────────────────────────────── */
-.prof-primary {
-  padding: 44px 36px 40px !important;
-  min-height: 0 !important;
-}
-.prof-primary-inner {
-  position: relative;
-  z-index: 3;
-  text-align: center;
-}
-.prof-primary-sub {
-  display: inline-block;
-  padding: 5px 14px 6px !important;
-  margin-bottom: 18px !important;
-  background: linear-gradient(135deg, rgba(255,215,140,0.18), rgba(255,215,140,0.06)) !important;
-  border: 1px solid rgba(255,215,140,0.35) !important;
-  border-radius: 999px !important;
-  color: #ffd27a !important;
-  font-size: 0.7rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.22em !important;
-  text-transform: uppercase !important;
-}
-.prof-primary-emoji {
-  font-size: 4.4rem !important;
-  margin: 6px 0 14px !important;
-  filter: drop-shadow(0 8px 24px rgba(212, 162, 76,0.35));
-}
-.prof-primary-name {
-  font-size: 2rem !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.01em !important;
-  margin: 0 0 8px !important;
-  background: linear-gradient(135deg, #ffffff 0%, #f1f2f8 50%, #cfd3e3 100%);
-  -webkit-background-clip: text;
-          background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.prof-primary-tagline {
-  font-size: 0.98rem !important;
-  color: rgba(255,255,255,0.72) !important;
-  font-style: italic;
-  max-width: 480px;
-  margin: 0 auto !important;
-  line-height: 1.5 !important;
-}
+/* ── PROFILE: identity card — inherits from profile.css ── */
+/* prof-primary no longer uses the glassmorphism treatment;
+   it uses the standard surface/border card style defined in
+   profile.css. Only the ::after pseudo is cleared here. */
+.prof-primary::after { display: none; }
 
 /* ── REPERTOIRE: hero card (acts as the page header) ────── */
 .rep-hero {
@@ -1810,13 +1766,11 @@
 
 /* Mobile tightening */
 @media (max-width: 640px) {
-  .prof-primary { padding: 36px 22px 30px !important; border-radius: 18px !important; }
   .rep-hero { padding: 30px 22px 26px !important; border-radius: 18px !important; }
-  .prof-primary::before, .rep-hero::before { border-radius: 18px; }
-  .prof-primary::after, .rep-hero::after {
+  .rep-hero::before { border-radius: 18px; }
+  .rep-hero::after {
     top: 8px; left: 8px; right: 8px; bottom: 8px; border-radius: 12px;
   }
-  .prof-primary-name { font-size: 1.6rem !important; }
   .rep-hero .rep-hero-title { font-size: 1.5rem !important; }
 }
 
@@ -1907,3 +1861,154 @@
     top: 10px; left: 10px; right: 10px; bottom: 10px; border-radius: 12px;
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   ENHANCED POLISH: HOVER STATES, MICRO-INTERACTIONS, CARD LIFT
+═════════════════════════════════════════════════════════════════ */
+
+/* Cards lift slightly on hover with enhanced shadow */
+.showcase-card,
+.ins-card {
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.showcase-card:hover,
+.ins-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(212, 162, 76, 0.16) !important;
+}
+
+/* List items get left accent bar on hover */
+.how-checklist li,
+.showcase-opening,
+.showcase-coach-item {
+  transition:
+    background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    padding-left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 3px solid transparent;
+  padding-left: 12px;
+}
+.how-checklist li:hover,
+.showcase-opening:hover,
+.showcase-coach-item:hover {
+  background-color: rgba(212, 162, 76, 0.06);
+  border-left-color: var(--accent);
+  padding-left: 15px;
+}
+
+/* Quiz/button micro-interactions */
+.quiz-box {
+  transition:
+    all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.quiz-box:hover {
+  transform: scale(1.06) translateY(-2px);
+}
+.quiz-box.selected {
+  animation: quizBoxPulse 0.6s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+@keyframes quizBoxPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1.1); }
+}
+
+/* Progress bars animate on growth */
+.how-progress-bar,
+[class*="progress"] {
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Buttons get smooth all-property transitions */
+.btn-primary,
+.btn-analyze,
+.pers-share-primary,
+.how-tab,
+.gs-tab {
+  transition:
+    all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.btn-primary:hover,
+.btn-analyze:hover,
+.how-tab:hover {
+  transform: translateY(-2px);
+}
+
+/* Showcase grid cards stagger entrance with transform */
+.showcase-card[data-reveal] {
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+/* Chart/radar bars grow from 0 on reveal */
+.hv-trait-fill,
+.mls-trait-fill,
+.showcase-opening,
+[class*="bar-fill"] {
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Toggle/checkbox smooth transitions */
+[type="checkbox"],
+.checkbox,
+.toggle-switch {
+  transition:
+    all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Text stat changes get brief highlight flash */
+.stat-value,
+.trait-value,
+[class*="value-display"] {
+  transition: color 0.3s ease;
+}
+
+/* Buttons maintain smooth all transitions across variants */
+button, [role="button"], .btn {
+  transition:
+    background-color var(--dur-sm) var(--ease-out-expo),
+    border-color var(--dur-sm) var(--ease-out-expo),
+    color var(--dur-sm) var(--ease-out-expo),
+    box-shadow var(--dur-sm) var(--ease-out-expo),
+    transform var(--dur-xs) var(--ease-out-quart);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PERSONALITY REVEAL — readable Copy link / Continue buttons
+   Fix for low-contrast dark-on-dark buttons on reveal screen.
+═══════════════════════════════════════════════════════════════ */
+.pers-reveal .pers-copy-btn,
+.pers-reveal .pers-continue-btn,
+.rep-deck-pers-reveal .pers-copy-btn,
+.rep-deck-pers-reveal .pers-continue-btn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  color: #fdfaf0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+.pers-reveal .pers-copy-btn .pcb-text,
+.pers-reveal .pers-continue-btn,
+.pers-reveal .btn-arrow {
+  color: #fdfaf0 !important;
+  opacity: 1 !important;
+}
+.pers-reveal .pers-copy-btn:hover,
+.pers-reveal .pers-continue-btn:hover,
+.rep-deck-pers-reveal .pers-copy-btn:hover,
+.rep-deck-pers-reveal .pers-continue-btn:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+.pers-reveal .pers-copy-btn.copied {
+  background: rgba(47, 203, 146, 0.28) !important;
+  border-color: rgba(47, 203, 146, 0.7) !important;
+  color: #baf5dc !important;
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

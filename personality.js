@@ -394,6 +394,17 @@ async function savePersonalityToHistory(personalityResult) {
       }));
       await dbSaveHistoryEntry(latest);
     }
+
+    // ── Invalidate feature caches so they regenerate with the new game ──
+    // Repertoire
+    localStorage.removeItem('ce-repertoire-batch');
+    localStorage.removeItem('ce-repertoire-personality');
+    // Coach plan
+    localStorage.removeItem('ce-coach-cache-v2');
+    localStorage.removeItem('ce-coach-cache');
+    localStorage.removeItem('ce-coach-plan');
+    // Also reset the in-memory coach cache if available
+    if (typeof invalidateCoachPlan === 'function') invalidateCoachPlan();
   } catch (err) { console.warn('savePersonalityToHistory failed:', err); }
 }
 

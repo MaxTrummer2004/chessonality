@@ -35,14 +35,30 @@ function switchInsTab(tab) {
 let _insHistory = [];
 let _gi = { history: [], moments: [], openings: [], momentsIdx: 0, expandedOpening: null };
 
-function openInsights() {
+async function openInsights() {
+  // Gate: require at least 2 analyzed games
+  let history = [];
+  try { history = await dbGetHistory(); } catch {}
+  const analyzed = history.filter(e => e && e.personalityScores && e.personalityScores.length > 0);
+  if (analyzed.length < 2) {
+    showPage('profile'); renderFullProfile();
+    return;
+  }
   showPage('insights');
   _activeInsTab = 'moments';
   switchInsTab('moments');
   renderInsightsPage();
 }
 
-function openCoachPage() {
+async function openCoachPage() {
+  // Gate: require at least 3 analyzed games
+  let history = [];
+  try { history = await dbGetHistory(); } catch {}
+  const analyzed = history.filter(e => e && e.personalityScores && e.personalityScores.length > 0);
+  if (analyzed.length < 3) {
+    showPage('profile'); renderFullProfile();
+    return;
+  }
   showPage('coach');
   renderCoachPage();
   // Auto-generate if not cached
@@ -95,12 +111,23 @@ async function renderCoachPage() {
   }
 }
 
+function _coachLoadingHtml(stepText) {
+  return `<div class="coach-page-loading">
+    <div class="coach-page-loading-title">Building your practice plan</div>
+    <div class="coach-page-loading-bar-outer"><div class="coach-page-loading-bar-inner"></div></div>
+    <div class="coach-page-loading-step">
+      <div class="coach-page-loading-spinner"></div>
+      <div class="coach-page-loading-label">${stepText}</div>
+    </div>
+  </div>`;
+}
+
 function resetCoachPagePlan() {
   invalidateCoachPlan();
   const btn = document.getElementById('coachPageBtn');
   const content = document.getElementById('coachPageContent');
-  if (btn) { btn.style.display = ''; btn.disabled = true; btn.innerHTML = '<span class="coach-page-cta-icon">&#9889;</span> Generating...'; }
-  if (content) content.innerHTML = '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Creating your new practice plan...</div></div>';
+  if (btn) { btn.style.display = 'none'; btn.disabled = true; }
+  if (content) content.innerHTML = _coachLoadingHtml('Creating your new practice plan\u2026');
   // Detach deck handlers from the old plan
   if (_coachDeckKeyHandler) {
     document.removeEventListener('keydown', _coachDeckKeyHandler, true);
@@ -115,8 +142,8 @@ async function generateCoachPageAdvice() {
   const content = document.getElementById('coachPageContent');
   const btn = document.getElementById('coachPageBtn');
   // Show loading immediately
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="coach-page-cta-icon">&#9889;</span> Generating...'; }
-  if (content) content.innerHTML = '<div class="coach-page-loading"><div class="coach-page-loading-spinner"></div><div class="coach-page-loading-text">Analyzing your games...</div></div>';
+  if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+  if (content) content.innerHTML = _coachLoadingHtml('Analyzing your games\u2026');
   _coachPageMode = true;
   try {
     await _generateCoachAdviceShared(content, btn);
@@ -128,245 +155,506 @@ async function generateCoachPageAdvice() {
 async function renderInsightsPage() {
   let history = [];
   try { history = await dbGetHistory(); } catch {}
-  // Filter out repertoire-batch entries (same convention as profile history list)
   _gi.history = history.filter(e => e && e.source !== 'repertoire-batch');
-  // Reset cached aggregations on every page entry
-  _gi.moments = [];
-  _gi.openings = [];
-  _gi.momentsIdx = 0;
-  _gi.expandedOpening = null;
-  // Keep _insHistory populated for other consumers (renderCoachPage etc.)
   _insHistory = history.filter(e => e.personality && PERSONALITIES[e.personality]).slice(0, 20);
 
-  // Header subtitle
   const subEl = document.getElementById('insHeaderSub');
   if (subEl) {
     const n = _gi.history.length;
     subEl.textContent = n > 0
-      ? `Lessons drawn from ${n} analyzed game${n !== 1 ? 's' : ''}`
+      ? `Dashboard from ${n} analyzed game${n !== 1 ? 's' : ''}`
       : 'Analyze a game to unlock your insights';
   }
 
-  // Render whichever tab is currently active
-  requestAnimationFrame(() => {
-    if (_activeInsTab === 'openings') giRenderOpeningsPanel();
-    else giRenderMomentsPanel();
-  });
+  requestAnimationFrame(() => giRenderDashboard());
 }
 
-// ── Game Insights: Critical Moments panel ──
-function giRenderMomentsPanel() {
-  const el = document.getElementById('insMomentsContent');
-  if (!el) return;
-  const hist = _gi.history || [];
+// ══════════════════════════════════════════════════════════════
+//  HARDCODED OPENING BOOK — maps first moves to opening names
+// ══════════════════════════════════════════════════════════════
+const _OPENING_BOOK = {
+  '1.e4 e5 2.Nf3 Nc6 3.Bb5': 'Ruy Lopez',
+  '1.e4 e5 2.Nf3 Nc6 3.Bc4': 'Italian Game',
+  '1.e4 e5 2.Nf3 Nc6 3.d4': 'Scotch Game',
+  '1.e4 e5 2.Nf3 Nf6': 'Petrov Defense',
+  '1.e4 e5 2.Nf3 d6': 'Philidor Defense',
+  '1.e4 e5 2.d4': 'Center Game',
+  '1.e4 e5 2.Bc4': 'Bishop\'s Opening',
+  '1.e4 e5 2.f4': 'King\'s Gambit',
+  '1.e4 e5 2.Nc3': 'Vienna Game',
+  '1.e4 c5 2.Nf3 d6': 'Sicilian Najdorf/Classical',
+  '1.e4 c5 2.Nf3 Nc6': 'Sicilian Classical',
+  '1.e4 c5 2.Nf3 e6': 'Sicilian Kan/Taimanov',
+  '1.e4 c5 2.Nc3': 'Closed Sicilian',
+  '1.e4 c5 2.d4': 'Smith-Morra Gambit',
+  '1.e4 c5 2.c3': 'Alapin Sicilian',
+  '1.e4 c5': 'Sicilian Defense',
+  '1.e4 e6 2.d4 d5': 'French Defense',
+  '1.e4 e6': 'French Defense',
+  '1.e4 c6 2.d4 d5': 'Caro-Kann Defense',
+  '1.e4 c6': 'Caro-Kann Defense',
+  '1.e4 d5 2.exd5 Qxd5': 'Scandinavian Defense',
+  '1.e4 d5': 'Scandinavian Defense',
+  '1.e4 Nf6': 'Alekhine Defense',
+  '1.e4 d6 2.d4 Nf6 3.Nc3 g6': 'Pirc Defense',
+  '1.e4 d6': 'Pirc Defense',
+  '1.e4 g6': 'Modern Defense',
+  '1.e4 b6': 'Owen Defense',
+  '1.d4 d5 2.c4 e6': 'Queen\'s Gambit Declined',
+  '1.d4 d5 2.c4 dxc4': 'Queen\'s Gambit Accepted',
+  '1.d4 d5 2.c4 c6': 'Slav Defense',
+  '1.d4 d5 2.c4': 'Queen\'s Gambit',
+  '1.d4 d5 2.Bf4': 'London System',
+  '1.d4 d5 2.Nf3 Nf6 3.Bf4': 'London System',
+  '1.d4 Nf6 2.c4 g6 3.Nc3 Bg7': 'King\'s Indian Defense',
+  '1.d4 Nf6 2.c4 g6': 'King\'s Indian Defense',
+  '1.d4 Nf6 2.c4 e6 3.Nc3 Bb4': 'Nimzo-Indian Defense',
+  '1.d4 Nf6 2.c4 e6 3.Nf3 b6': 'Queen\'s Indian Defense',
+  '1.d4 Nf6 2.c4 e6 3.Nf3 d5': 'Queen\'s Gambit Declined',
+  '1.d4 Nf6 2.c4 e6': 'Indian Defense',
+  '1.d4 Nf6 2.c4 c5': 'Benoni Defense',
+  '1.d4 Nf6 2.Nf3 g6 3.Bf4': 'London System',
+  '1.d4 Nf6 2.Nf3 g6': 'King\'s Indian Attack',
+  '1.d4 Nf6 2.Bg5': 'Trompowsky Attack',
+  '1.d4 Nf6 2.Nf3 e6': 'Indian Game',
+  '1.d4 f5': 'Dutch Defense',
+  '1.d4 d6': 'Old Indian Defense',
+  '1.c4 e5': 'English Opening',
+  '1.c4 c5': 'English Symmetrical',
+  '1.c4 Nf6': 'English Opening',
+  '1.c4': 'English Opening',
+  '1.Nf3 d5 2.g3': 'King\'s Indian Attack',
+  '1.Nf3 Nf6 2.g3': 'King\'s Indian Attack',
+  '1.Nf3': 'Reti Opening',
+  '1.g3': 'King\'s Fianchetto',
+  '1.b3': 'Larsen\'s Opening',
+  '1.f4': 'Bird\'s Opening',
+};
 
-  if (!hist.length) {
-    el.innerHTML = `
-      <section class="ins-empty">
-        <div class="ins-empty-kicker">Critical Moments</div>
-        <h3 class="ins-empty-title">No games yet</h3>
-        <p class="ins-empty-text">Analyze a game from your profile to see the turning points that shaped your result.</p>
-      </section>`;
-    return;
-  }
-
-  const withIssues = hist.filter(e => (e.blunders || 0) + (e.mistakes || 0) > 0);
-  if (!withIssues.length) {
-    el.innerHTML = `
-      <section class="ins-empty">
-        <div class="ins-empty-kicker">Critical Moments</div>
-        <h3 class="ins-empty-title">Nothing to flag — yet</h3>
-        <p class="ins-empty-text">None of your analyzed games contain blunders or mistakes. Play a few more and we'll find your turning points.</p>
-      </section>`;
-    return;
-  }
-
-  // Sort by blunders desc, then mistakes desc
-  const sorted = withIssues.slice().sort((a, b) =>
-    ((b.blunders || 0) * 3 + (b.mistakes || 0)) - ((a.blunders || 0) * 3 + (a.mistakes || 0))
-  );
-
-  const totalBlunders = sorted.reduce((s, e) => s + (e.blunders || 0), 0);
-  const totalMistakes = sorted.reduce((s, e) => s + (e.mistakes || 0), 0);
-
-  const cards = sorted.map((e, i) => {
-    const pc = e.playerColor || 'w';
-    const opp = pc === 'w' ? (e.black || 'Black') : (e.white || 'White');
-    const you = pc === 'w' ? (e.white || 'White') : (e.black || 'Black');
-    let outcome = 'Draw';
-    if (e.result === '1-0') outcome = pc === 'w' ? 'Win' : 'Loss';
-    else if (e.result === '0-1') outcome = pc === 'b' ? 'Win' : 'Loss';
-    else if (e.result === '1/2-1/2') outcome = 'Draw';
-    const outcomeCls = outcome === 'Win' ? 'win' : outcome === 'Loss' ? 'loss' : 'draw';
-    const dateStr = e.date ? new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-    const blunders = e.blunders || 0;
-    const mistakes = e.mistakes || 0;
-    const rankNum = String(i + 1).padStart(2, '0');
-    const sideLabel = pc === 'w' ? 'Played White' : 'Played Black';
-    return `
-      <div class="ins-mg-card" onclick="loadFromHistory(${e.id})">
-        <div class="ins-mg-top">
-          <span class="ins-mg-rank">${rankNum}</span>
-          <span class="ins-mg-outcome ${outcomeCls}">${outcome}</span>
-        </div>
-        <div class="ins-mg-matchup">
-          <span class="ins-mg-you">${_escapeHtml(you)}</span>
-          <span class="ins-mg-vs">vs</span>
-          <span class="ins-mg-opp">${_escapeHtml(opp)}</span>
-        </div>
-        <div class="ins-mg-side">${sideLabel}${dateStr ? ` &middot; ${dateStr}` : ''}</div>
-        <div class="ins-mg-stats">
-          ${blunders > 0 ? `<span class="ins-mg-stat ins-mg-blunder"><strong>${blunders}</strong> ${blunders === 1 ? 'blunder' : 'blunders'}</span>` : ''}
-          ${mistakes > 0 ? `<span class="ins-mg-stat ins-mg-mistake"><strong>${mistakes}</strong> ${mistakes === 1 ? 'mistake' : 'mistakes'}</span>` : ''}
-        </div>
-        <div class="ins-mg-foot">
-          <span class="ins-mg-cta">Review this game &rarr;</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const gameWord = sorted.length === 1 ? 'game' : 'games';
-  const intro = `
-    <div class="ins-section-head">
-      <div class="ins-section-kicker">Critical Moments</div>
-      <h2 class="ins-section-title">The games that turned on a single move</h2>
-      <p class="ins-section-sub">
-        <strong>${sorted.length}</strong> ${gameWord} with room to grow &middot;
-        <strong>${totalBlunders}</strong> blunder${totalBlunders === 1 ? '' : 's'} &middot;
-        <strong>${totalMistakes}</strong> mistake${totalMistakes === 1 ? '' : 's'} flagged.
-      </p>
-    </div>`;
-
-  el.innerHTML = intro + `<div class="ins-mg-list">${cards}</div>`;
-}
-
-// ── Game Insights: Openings panel ──
-function giRenderOpeningsPanel() {
-  const el = document.getElementById('insOpeningsContent');
-  if (!el) return;
-  const hist = _gi.history || [];
-
-  if (!hist.length) {
-    el.innerHTML = `
-      <section class="ins-empty">
-        <div class="ins-empty-kicker">Openings</div>
-        <h3 class="ins-empty-title">No games yet</h3>
-        <p class="ins-empty-text">Analyze a game from your profile to start tracking how your openings perform.</p>
-      </section>`;
-    return;
-  }
-
-  // Aggregate by opening signature (parsed from PGN)
-  const byOpening = {};
-  for (const e of hist) {
-    const sig = _giOpeningSignature(e.pgn);
-    if (!sig) continue;
-    const key = sig.name;
-    if (!byOpening[key]) byOpening[key] = { name: sig.name, moves: sig.moves, games: 0, wins: 0, losses: 0, draws: 0, asWhite: 0, asBlack: 0, ids: [] };
-    const rec = byOpening[key];
-    rec.games++;
-    rec.ids.push(e.id);
-    if (e.playerColor === 'w') rec.asWhite++; else rec.asBlack++;
-    const pc = e.playerColor || 'w';
-    if (e.result === '1-0') { if (pc === 'w') rec.wins++; else rec.losses++; }
-    else if (e.result === '0-1') { if (pc === 'b') rec.wins++; else rec.losses++; }
-    else if (e.result === '1/2-1/2') rec.draws++;
-  }
-
-  const list = Object.values(byOpening).sort((a, b) => b.games - a.games);
-
-  if (!list.length) {
-    el.innerHTML = `
-      <section class="ins-empty">
-        <div class="ins-empty-kicker">Openings</div>
-        <h3 class="ins-empty-title">Openings could not be identified</h3>
-        <p class="ins-empty-text">Your saved games don't have opening tags we can aggregate. Try importing from Lichess or Chess.com.</p>
-      </section>`;
-    return;
-  }
-
-  const totalGames = list.reduce((s, o) => s + o.games, 0);
-  const totalWins  = list.reduce((s, o) => s + o.wins, 0);
-  const overallWR  = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
-
-  const cards = list.map(o => {
-    const winRate = o.games > 0 ? Math.round((o.wins / o.games) * 100) : 0;
-    const winPct  = o.games > 0 ? (o.wins  / o.games) * 100 : 0;
-    const drawPct = o.games > 0 ? (o.draws / o.games) * 100 : 0;
-    const lossPct = o.games > 0 ? (o.losses/ o.games) * 100 : 0;
-    const colorSide = o.asWhite >= o.asBlack ? 'Mostly White' : 'Mostly Black';
-    const wrClass = winRate >= 60 ? 'hot' : (winRate <= 35 ? 'cold' : '');
-    return `
-      <div class="ins-og-card">
-        <div class="ins-og-top">
-          <div class="ins-og-titlebox">
-            <div class="ins-og-kicker">Opening</div>
-            <h3 class="ins-og-name">${_escapeHtml(o.name)}</h3>
-            ${o.moves ? `<div class="ins-og-moves">${_escapeHtml(o.moves)}</div>` : ''}
-          </div>
-          <div class="ins-og-winratebox ${wrClass}">
-            <div class="ins-og-winrate">${winRate}<span class="ins-og-pct">%</span></div>
-            <div class="ins-og-winrate-label">Win rate</div>
-          </div>
-        </div>
-        <div class="ins-og-bar" aria-hidden="true">
-          <div class="ins-og-bar-seg ins-og-bar-win"  style="width:${winPct}%"></div>
-          <div class="ins-og-bar-seg ins-og-bar-draw" style="width:${drawPct}%"></div>
-          <div class="ins-og-bar-seg ins-og-bar-loss" style="width:${lossPct}%"></div>
-        </div>
-        <div class="ins-og-foot">
-          <span class="ins-og-count">${o.games} game${o.games === 1 ? '' : 's'}</span>
-          <span class="ins-og-wl"><strong>${o.wins}</strong>W &middot; <strong>${o.draws}</strong>D &middot; <strong>${o.losses}</strong>L</span>
-          <span class="ins-og-side">${colorSide}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const intro = `
-    <div class="ins-section-head">
-      <div class="ins-section-kicker">Openings</div>
-      <h2 class="ins-section-title">How your repertoire is actually performing</h2>
-      <p class="ins-section-sub">
-        <strong>${list.length}</strong> opening${list.length === 1 ? '' : 's'} across
-        <strong>${totalGames}</strong> game${totalGames === 1 ? '' : 's'} &middot;
-        <strong>${overallWR}%</strong> overall win rate.
-      </p>
-    </div>`;
-
-  el.innerHTML = intro + `<div class="ins-og-list">${cards}</div>`;
-}
-
-function _giOpeningSignature(pgn) {
+function _lookupOpening(pgn) {
   if (!pgn) return null;
-  // Prefer the PGN Opening header when present
-  const openingTag = /\[Opening\s+"([^"]+)"\]/i.exec(pgn);
-  const ecoTag     = /\[ECO\s+"([^"]+)"\]/i.exec(pgn);
-  let movePreview = '';
+  // Try PGN header first
+  const tag = /\[Opening\s+"([^"]+)"\]/i.exec(pgn);
+  if (tag) return tag[1];
+  // Parse first moves and match against book
+  let moves = [];
   try {
     const g = new Chess();
     if (g.load_pgn(pgn) || g.load_pgn(pgn, { sloppy: true })) {
-      const moves = g.history().slice(0, 6);
-      if (moves.length) {
-        const parts = [];
-        for (let i = 0; i < moves.length; i += 2) {
-          const mn = (i / 2) + 1;
-          parts.push(`${mn}.${moves[i]}${moves[i + 1] ? ' ' + moves[i + 1] : ''}`);
-        }
-        movePreview = parts.join(' ');
-      }
+      moves = g.history();
     }
   } catch {}
-  if (openingTag) {
-    return { name: openingTag[1] + (ecoTag ? ` (${ecoTag[1]})` : ''), moves: movePreview };
+  if (!moves.length) return null;
+  // Build move strings and try longest match first
+  const parts = [];
+  for (let i = 0; i < Math.min(moves.length, 8); i++) {
+    if (i % 2 === 0) parts.push(`${(i/2)+1}.${moves[i]}`);
+    else parts[parts.length - 1] += ` ${moves[i]}`;
   }
-  if (movePreview) {
-    return { name: movePreview, moves: '' };
+  for (let len = parts.length; len >= 1; len--) {
+    const key = parts.slice(0, len).join(' ');
+    if (_OPENING_BOOK[key]) return _OPENING_BOOK[key];
   }
-  return null;
+  // Fallback: show first 3 moves as name
+  return parts.slice(0, 3).join(' ');
 }
 
+// ══════════════════════════════════════════════════════════════
+//  STATS ENGINE — pure computation, no LLM
+// ══════════════════════════════════════════════════════════════
+function _computeStats(hist) {
+  const s = {
+    total: hist.length, wins: 0, losses: 0, draws: 0,
+    winRate: 0, asWhite: 0, asBlack: 0,
+    totalBlunders: 0, totalMistakes: 0,
+    avgBlunders: 0, avgMistakes: 0,
+    avgMoves: 0, avgBookDepth: 0,
+    openings: {}, // name → { games, wins, losses, draws }
+    personalities: {}, // id → count
+    resultStreak: { type: null, count: 0 },
+    blunderPieces: {}, // piece → count (from PGN analysis)
+    mateCount: 0, resignCount: 0, timeoutCount: 0,
+    avgOppRating: 0, ratingCount: 0,
+    resultTimeline: [], // [{result, date}] chronological
+  };
+  if (!hist.length) return s;
+
+  let totalMoves = 0, totalBook = 0;
+  let streak = { type: null, count: 0 };
+
+  for (const e of hist) {
+    const pc = e.playerColor || 'w';
+    if (pc === 'w') s.asWhite++; else s.asBlack++;
+
+    // Result
+    let res = 'draw';
+    if (e.result === '1-0') res = pc === 'w' ? 'win' : 'loss';
+    else if (e.result === '0-1') res = pc === 'b' ? 'win' : 'loss';
+    else if (e.result === '1/2-1/2') res = 'draw';
+    if (res === 'win') s.wins++;
+    else if (res === 'loss') s.losses++;
+    else s.draws++;
+
+    // Timeline
+    s.resultTimeline.push({ result: res, date: e.date || null });
+
+    // Streak (from most recent)
+    if (streak.type === null) { streak.type = res; streak.count = 1; }
+    else if (res === streak.type) streak.count++;
+
+    // Termination type guessing from PGN
+    if (e.pgn) {
+      const term = /\[Termination\s+"([^"]+)"\]/i.exec(e.pgn);
+      if (term) {
+        const t = term[1].toLowerCase();
+        if (t.includes('checkmate')) s.mateCount++;
+        else if (t.includes('resign')) s.resignCount++;
+        else if (t.includes('time')) s.timeoutCount++;
+      } else {
+        // Heuristic: if result is decisive, check last move for #
+        if (e.result !== '1/2-1/2' && e.result !== '*') {
+          try {
+            const g = new Chess();
+            if (g.load_pgn(e.pgn) || g.load_pgn(e.pgn, { sloppy: true })) {
+              const h = g.history();
+              if (h.length && h[h.length - 1].includes('#')) s.mateCount++;
+            }
+          } catch {}
+        }
+      }
+    }
+
+    // Blunders & mistakes
+    s.totalBlunders += (e.blunders || 0);
+    s.totalMistakes += (e.mistakes || 0);
+    totalMoves += (e.totalMoves || 0);
+    totalBook += (e.bookDepth || 0);
+
+    // Opening
+    const opName = _lookupOpening(e.pgn);
+    if (opName) {
+      if (!s.openings[opName]) s.openings[opName] = { games: 0, wins: 0, losses: 0, draws: 0 };
+      s.openings[opName].games++;
+      if (res === 'win') s.openings[opName].wins++;
+      else if (res === 'loss') s.openings[opName].losses++;
+      else s.openings[opName].draws++;
+    }
+
+    // Personality
+    if (e.personality) {
+      s.personalities[e.personality] = (s.personalities[e.personality] || 0) + 1;
+    }
+
+    // Opponent rating from PGN headers
+    const oppRatingField = pc === 'w' ? 'BlackElo' : 'WhiteElo';
+    if (e.pgn) {
+      const rMatch = new RegExp(`\\[${oppRatingField}\\s+"(\\d+)"\\]`).exec(e.pgn);
+      if (rMatch) { s.avgOppRating += parseInt(rMatch[1], 10); s.ratingCount++; }
+    }
+
+    // Blundered pieces — parse PGN for blunder-tagged captures
+    if (e.pgn) {
+      try {
+        const g = new Chess();
+        if (g.load_pgn(e.pgn) || g.load_pgn(e.pgn, { sloppy: true })) {
+          const moves = g.history({ verbose: true });
+          // We use the stored evals if available; otherwise skip
+        }
+      } catch {}
+    }
+  }
+
+  s.winRate = s.total ? Math.round((s.wins / s.total) * 100) : 0;
+  s.avgBlunders = s.total ? +(s.totalBlunders / s.total).toFixed(1) : 0;
+  s.avgMistakes = s.total ? +(s.totalMistakes / s.total).toFixed(1) : 0;
+  s.avgMoves = s.total ? Math.round(totalMoves / s.total) : 0;
+  s.avgBookDepth = s.total ? +(totalBook / s.total).toFixed(1) : 0;
+  s.resultStreak = streak;
+  if (s.ratingCount) s.avgOppRating = Math.round(s.avgOppRating / s.ratingCount);
+
+  return s;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DASHBOARD RENDERER
+// ══════════════════════════════════════════════════════════════
+function giRenderDashboard() {
+  const el = document.getElementById('insDashboard');
+  if (!el) return;
+  const hist = _gi.history || [];
+
+  if (!hist.length) {
+    el.innerHTML = `<div class="gid-empty">
+      <div class="gid-empty-icon">📊</div>
+      <h3 class="gid-empty-title">No data yet</h3>
+      <p class="gid-empty-sub">Analyze at least two games to see your dashboard.</p>
+    </div>`;
+    return;
+  }
+
+  const s = _computeStats(hist);
+  el.innerHTML = _buildDashboardHtml(s, hist);
+
+  // Draw canvas charts after DOM update
+  requestAnimationFrame(() => {
+    _drawWinDonut('gidDonutCanvas', s);
+    _drawResultTimeline('gidTimelineCanvas', s.resultTimeline);
+  });
+}
+
+function _buildDashboardHtml(s, hist) {
+  // ── Hero stats row ──
+  const lossRate = s.total ? Math.round((s.losses / s.total) * 100) : 0;
+  const drawRate = s.total ? Math.round((s.draws / s.total) * 100) : 0;
+
+  const hero = `
+  <div class="gid-hero">
+    <div class="gid-hero-stat gid-stat-accent">
+      <div class="gid-hero-val">${s.winRate}<span class="gid-hero-pct">%</span></div>
+      <div class="gid-hero-label">Win Rate</div>
+    </div>
+    <div class="gid-hero-stat">
+      <div class="gid-hero-val">${s.total}</div>
+      <div class="gid-hero-label">Games</div>
+    </div>
+    <div class="gid-hero-stat">
+      <div class="gid-hero-val">${s.avgBlunders}</div>
+      <div class="gid-hero-label">Avg Blunders</div>
+    </div>
+    <div class="gid-hero-stat">
+      <div class="gid-hero-val">${s.avgMistakes}</div>
+      <div class="gid-hero-label">Avg Mistakes</div>
+    </div>
+    ${s.ratingCount ? `<div class="gid-hero-stat">
+      <div class="gid-hero-val">${s.avgOppRating}</div>
+      <div class="gid-hero-label">Avg Opp Rating</div>
+    </div>` : ''}
+  </div>`;
+
+  // ── Win/Loss donut + record ──
+  const donut = `
+  <div class="gid-card gid-card-donut">
+    <div class="gid-card-title">Results Breakdown</div>
+    <div class="gid-donut-wrap">
+      <canvas id="gidDonutCanvas" width="180" height="180"></canvas>
+      <div class="gid-donut-legend">
+        <div class="gid-legend-row"><span class="gid-legend-dot" style="background:var(--accent)"></span> Wins <strong>${s.wins}</strong></div>
+        <div class="gid-legend-row"><span class="gid-legend-dot" style="background:var(--blunder)"></span> Losses <strong>${s.losses}</strong></div>
+        <div class="gid-legend-row"><span class="gid-legend-dot" style="background:var(--text-dim)"></span> Draws <strong>${s.draws}</strong></div>
+      </div>
+    </div>
+    <div class="gid-donut-bar">
+      <div class="gid-bar-seg gid-bar-win" style="width:${s.winRate}%"></div>
+      <div class="gid-bar-seg gid-bar-draw" style="width:${drawRate}%"></div>
+      <div class="gid-bar-seg gid-bar-loss" style="width:${lossRate}%"></div>
+    </div>
+  </div>`;
+
+  // ── Result timeline ──
+  const timeline = `
+  <div class="gid-card gid-card-timeline">
+    <div class="gid-card-title">Recent Results</div>
+    <div class="gid-timeline-wrap">
+      <canvas id="gidTimelineCanvas"></canvas>
+    </div>
+    <div class="gid-timeline-legend">
+      <span class="gid-tl-leg"><span class="gid-tl-swatch" style="background:var(--accent)"></span>Win</span>
+      <span class="gid-tl-leg"><span class="gid-tl-swatch" style="background:var(--blunder)"></span>Loss</span>
+      <span class="gid-tl-leg"><span class="gid-tl-swatch" style="background:var(--text-dim)"></span>Draw</span>
+    </div>
+  </div>`;
+
+  // ── Quick facts row ──
+  const facts = `
+  <div class="gid-facts">
+    <div class="gid-fact"><span class="gid-fact-icon">♔</span><span class="gid-fact-val">${s.asWhite}</span><span class="gid-fact-label">as White</span></div>
+    <div class="gid-fact"><span class="gid-fact-icon">♚</span><span class="gid-fact-val">${s.asBlack}</span><span class="gid-fact-label">as Black</span></div>
+    <div class="gid-fact"><span class="gid-fact-icon">♟</span><span class="gid-fact-val">${s.avgMoves}</span><span class="gid-fact-label">Avg Moves</span></div>
+    <div class="gid-fact"><span class="gid-fact-icon">📖</span><span class="gid-fact-val">${s.avgBookDepth}</span><span class="gid-fact-label">Avg Book Depth</span></div>
+    ${s.mateCount ? `<div class="gid-fact"><span class="gid-fact-icon">💀</span><span class="gid-fact-val">${s.mateCount}</span><span class="gid-fact-label">Checkmates</span></div>` : ''}
+    ${s.resultStreak.count >= 2 ? `<div class="gid-fact gid-fact-streak"><span class="gid-fact-icon">${s.resultStreak.type === 'win' ? '🔥' : s.resultStreak.type === 'loss' ? '❄️' : '➖'}</span><span class="gid-fact-val">${s.resultStreak.count}</span><span class="gid-fact-label">${s.resultStreak.type} streak</span></div>` : ''}
+  </div>`;
+
+  // ── Blunders & Mistakes summary ──
+  const errorCard = `
+  <div class="gid-card gid-card-errors">
+    <div class="gid-card-title">Accuracy Overview</div>
+    <div class="gid-error-bars">
+      <div class="gid-error-row">
+        <span class="gid-error-label">Blunders</span>
+        <div class="gid-error-track"><div class="gid-error-fill gid-fill-blunder" style="width:${Math.min(100, s.avgBlunders * 20)}%"></div></div>
+        <span class="gid-error-val">${s.avgBlunders}/game</span>
+      </div>
+      <div class="gid-error-row">
+        <span class="gid-error-label">Mistakes</span>
+        <div class="gid-error-track"><div class="gid-error-fill gid-fill-mistake" style="width:${Math.min(100, s.avgMistakes * 15)}%"></div></div>
+        <span class="gid-error-val">${s.avgMistakes}/game</span>
+      </div>
+    </div>
+    <div class="gid-error-totals">
+      <span>Total: <strong>${s.totalBlunders}</strong> blunders, <strong>${s.totalMistakes}</strong> mistakes across ${s.total} games</span>
+    </div>
+  </div>`;
+
+  // ── Opening win rates ──
+  const opArr = Object.entries(s.openings)
+    .map(([name, o]) => ({ name, ...o, winRate: o.games ? Math.round((o.wins / o.games) * 100) : 0 }))
+    .sort((a, b) => b.games - a.games)
+    .slice(0, 8);
+
+  let openingsHtml = '';
+  if (opArr.length) {
+    const opRows = opArr.map(o => {
+      const winPct = o.games ? (o.wins / o.games) * 100 : 0;
+      const drawPct = o.games ? (o.draws / o.games) * 100 : 0;
+      const lossPct = o.games ? (o.losses / o.games) * 100 : 0;
+      const wrCls = o.winRate >= 60 ? 'gid-wr-hot' : o.winRate <= 35 ? 'gid-wr-cold' : '';
+      return `<div class="gid-op-row">
+        <div class="gid-op-name">${_escapeHtml(o.name)}</div>
+        <div class="gid-op-bar">
+          <div class="gid-bar-seg gid-bar-win" style="width:${winPct}%"></div>
+          <div class="gid-bar-seg gid-bar-draw" style="width:${drawPct}%"></div>
+          <div class="gid-bar-seg gid-bar-loss" style="width:${lossPct}%"></div>
+        </div>
+        <div class="gid-op-meta">
+          <span class="gid-op-wr ${wrCls}">${o.winRate}%</span>
+          <span class="gid-op-count">${o.games}g</span>
+        </div>
+      </div>`;
+    }).join('');
+    openingsHtml = `
+    <div class="gid-card gid-card-openings">
+      <div class="gid-card-title">Opening Performance</div>
+      <div class="gid-op-list">${opRows}</div>
+    </div>`;
+  }
+
+  return hero + `<div class="gid-grid">${donut}${timeline}</div>` + facts + `<div class="gid-grid">${errorCard}${openingsHtml}</div>`;
+}
+
+// ── Canvas: Win/Loss donut ──
+function _drawWinDonut(canvasId, s) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  c.width = 180 * dpr; c.height = 180 * dpr;
+  c.style.width = '180px'; c.style.height = '180px';
+  ctx.scale(dpr, dpr);
+  const cx = 90, cy = 90, r = 68, lw = 22;
+  const cs = getComputedStyle(document.documentElement);
+  const accentColor = cs.getPropertyValue('--accent').trim() || '#d4a24c';
+  const blunderColor = cs.getPropertyValue('--blunder').trim() || '#c8412e';
+  const dimColor = cs.getPropertyValue('--text-dim').trim() || '#a59c84';
+  const data = [
+    { val: s.wins, color: accentColor },
+    { val: s.draws, color: dimColor },
+    { val: s.losses, color: blunderColor },
+  ];
+  const total = data.reduce((a, d) => a + d.val, 0) || 1;
+  let angle = -Math.PI / 2;
+  for (const d of data) {
+    const sweep = (d.val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, angle, angle + sweep);
+    ctx.lineWidth = lw;
+    ctx.strokeStyle = d.color;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    angle += sweep;
+  }
+  // Center text
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 28px "Space Grotesk", sans-serif';
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1c1816';
+  ctx.fillText(`${s.winRate}%`, cx, cy - 6);
+  ctx.font = '500 11px "Space Grotesk", sans-serif';
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || '#888';
+  ctx.fillText('win rate', cx, cy + 14);
+}
+
+// ── Canvas: Result timeline (vertical bars) ──
+function _drawResultTimeline(canvasId, timeline) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const wrap = c.parentElement;
+  const ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = wrap.clientWidth || 400;
+  const h = wrap.clientHeight || 160;
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  c.width = w * dpr; c.height = h * dpr;
+  ctx.scale(dpr, dpr);
+
+  const cs = getComputedStyle(document.documentElement);
+  const accentColor = cs.getPropertyValue('--accent').trim() || '#d4a24c';
+  const blunderColor = cs.getPropertyValue('--blunder').trim() || '#c8412e';
+  const dimColor = cs.getPropertyValue('--text-dim').trim() || '#a59c84';
+  const borderColor = cs.getPropertyValue('--border').trim() || '#e5e5e5';
+  const colors = { win: accentColor, loss: blunderColor, draw: dimColor };
+
+  const items = timeline.slice(-20);
+  if (!items.length) return;
+
+  const pad = 8;
+  const barGap = 6;
+  const totalBarSpace = w - pad * 2;
+  const barW = Math.min(28, (totalBarSpace - barGap * (items.length - 1)) / items.length);
+  const totalW = items.length * barW + (items.length - 1) * barGap;
+  const startX = (w - totalW) / 2;
+  const maxBarH = h - 32;
+  const baseY = h - 12;
+  const barRadius = Math.min(6, barW / 2);
+
+  // Heights: win = full, loss = 40%, draw = 65%
+  const heightFrac = { win: 1.0, loss: 0.4, draw: 0.65 };
+
+  items.forEach((item, i) => {
+    const x = startX + i * (barW + barGap);
+    const frac = heightFrac[item.result] || 0.65;
+    const barH = Math.max(8, maxBarH * frac);
+    const y = baseY - barH;
+    const col = colors[item.result] || dimColor;
+
+    // Bar with rounded top
+    ctx.beginPath();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x, y + barRadius);
+    ctx.arcTo(x, y, x + barRadius, y, barRadius);
+    ctx.arcTo(x + barW, y, x + barW, y + barRadius, barRadius);
+    ctx.lineTo(x + barW, baseY);
+    ctx.closePath();
+    ctx.fillStyle = col;
+    ctx.fill();
+
+    // Subtle inner glow for wins
+    if (item.result === 'win') {
+      const grad = ctx.createLinearGradient(x, y, x, baseY);
+      grad.addColorStop(0, 'rgba(255,255,255,0.25)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    // Game number label below
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = '500 9px "Space Grotesk", sans-serif';
+    ctx.fillStyle = dimColor;
+    ctx.fillText(String(i + 1), x + barW / 2, baseY + 2);
+  });
+}
+
+// Keep old functions as no-ops so nothing breaks
+function giRenderMomentsPanel() { giRenderDashboard(); }
+function giRenderOpeningsPanel() { giRenderDashboard(); }
+
+function _giOpeningSignature(pgn) {
+  const name = _lookupOpening(pgn);
+  return name ? { name, moves: '' } : null;
+}
+
+// (legacy panels removed — dashboard replaces them)
 function _escapeHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

@@ -1616,3 +1616,151 @@
 
 /* ══════════════════════════════════════════════
 
+
+/* ══════════════════════════════════════════════════════════════
+   MOVE QUICK DESCRIPTION — hardcoded, always-available summary
+   of the currently selected move. Sits above the Explain button.
+═══════════════════════════════════════════════════════════════ */
+.move-quick-desc {
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 0 12px 0;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  animation: mqdFadeIn 260ms ease-out both;
+}
+.move-quick-desc.is-empty { display: none; }
+
+@keyframes mqdFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Desktop: the description sits inside the AI coach panel, above the
+   Explain button group. Keep spacing tight. */
+.ai-coach-panel > .move-quick-desc {
+  margin: 0 0 14px 0;
+}
+
+/* Mobile explain bar sits near the bottom of the screen; give the
+   description a matching floating-card feel. */
+#moveQuickDescMobile {
+  margin: 12px 16px 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+@media (max-width: 860px) {
+  #moveQuickDescDesktop { display: none; }
+}
+@media (min-width: 861px) {
+  #moveQuickDescMobile { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOVE QUICK DESCRIPTION — desktop layout refinement
+   Make the description + Explain button feel like a single
+   cohesive block, centered vertically in the coach panel.
+═══════════════════════════════════════════════════════════════ */
+
+/* Panel becomes a centered column so the description + button
+   stack together rather than hugging the top/bottom edges. */
+.ai-coach-panel {
+  justify-content: center;
+  padding: 20px 18px;
+  gap: 14px;
+}
+.ai-coach-panel::before {
+  /* Keep the top accent bar; ensure it stays visible above the padding */
+  z-index: 2;
+}
+
+/* The description: inline with the panel, generous padding, softer look */
+.ai-coach-panel > .move-quick-desc,
+#moveQuickDescDesktop {
+  margin: 0;
+  padding: 16px 18px;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-left-width: 3px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* Neutralise the old flex:1 stretch so the button sits right under
+   the description instead of floating away from it. */
+.ai-coach-panel .aic-btn-group {
+  flex: 0 0 auto;
+  padding: 0;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Make the Explain button feel prominent, not lonely */
+.ai-coach-panel .aic-btn-group .btn-explain {
+  width: 100%;
+  min-height: 48px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 12px;
+}
+
+/* Hint sits inline under the button with subtle spacing */
+.ai-coach-panel .aic-btn-group .aic-hint {
+  padding: 2px 4px 0;
+  font-size: 0.78rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DRAG & DROP — Lichess-style piece dragging
+═══════════════════════════════════════════════════════════════ */
+
+/* Prevent native touch scrolling while the pointer is on the board
+   so a drag gesture doesn't scroll the page on touch devices. */
+#board {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#board .piece-img {
+  cursor: grab;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+#board .piece-img:active { cursor: grabbing; }
+
+/* Square the pointer is currently hovering during a drag (must be a
+   legal destination). Ring + subtle tint. */
+.square.drag-hover {
+  position: relative;
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.9),
+              inset 0 0 0 5px rgba(46, 125, 50, 0.55);
+}
+.square.drag-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(76, 175, 80, 0.14);
+  pointer-events: none;
+}
+
+/* Origin square while dragging — dimmed to reinforce that the piece is lifted */
+.square.drag-origin {
+  background-blend-mode: multiply;
+  box-shadow: inset 0 0 0 2px rgba(212, 162, 76, 0.55);
+}
+
+/* The floating piece clone that follows the cursor */
+.dragging-piece {
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.45));
+  transition: none !important;
+}

@@ -1,7 +1,7 @@
 /* ============================================================
-   claude-api.js - Claude Haiku integration
-   Template system keeps every API call small:
-     ~150-250 input tokens, capped at 300 output tokens.
+   claude-api.js - Claude API integration (Haiku + Sonnet)
+   Move/position analysis → Haiku  (fast, ~300 output tokens)
+   Improvement plans + coach → Sonnet (stronger, ~1000 tokens)
    No conversation history - each call is fully self-contained.
    ============================================================ */
 
@@ -47,6 +47,11 @@ const GROUNDING_GUARD = `STRICT RULES (violations are never acceptable):
    (b) Or does the opponent immediately recapture an equal-value piece? If YES → call it a "trade", "exchange", or "recapture", NEVER a material gain.
    (c) Or does the opponent recapture a MORE valuable piece? If YES → the capturing side actually LOSES material, call it "loses a [piece]" or "blunders material".
    If the EFFECTIVE Material balance says "equal", a capture is ALWAYS a trade, never a win. If it says one side is up, that side won material. Never call an even trade a "win" and never call a material loss a "gain".
+9b-ii. EVAL-AWARE TRADE JUDGEMENT (MANDATORY whenever the played move is a capture or exchange): You MUST read the EVALUATION CONTEXT block before judging a trade. A trade is ONLY a mistake when the trading side was equal or worse before the move. If the EVALUATION CONTEXT says the mover was "CLEARLY WINNING" or "WINNING DECISIVELY" before the move, trades/exchanges are STRATEGICALLY CORRECT - they simplify toward a won endgame by removing opponent counterplay. In that case:
+   - NEVER write phrases like "only wins the exchange of rooks", "merely trades pieces", "leaves the opponent's king safe to defend", or "doesn't press the advantage". A winning side WANTS to simplify.
+   - NEVER recommend a more aggressive alternative that "keeps pressure" when trading toward a won endgame was the clean conversion.
+   - The correct framing for a trade in a winning position is: "simplifies toward a won endgame", "removes the opponent's most active defender", or "trades down into an easy win".
+   Conversely, if the mover was equal or worse before the move, trading into an equal endgame can legitimately be criticized for surrendering winning chances.
 10. SECTION STRUCTURE: Use the 3 required ## section headers: Overview, Structure, Best Move - in that exact order. Never skip a section. Never merge sections. Never add a 4th section.
 11. All three sections: prose only, 1-3 sentences each. NEVER use numbered lists, bullet points, or move-by-move sequences. No bold text.`.trim();
 
@@ -66,12 +71,14 @@ Max 230 characters. What move was played, and in one clause whether it was the r
 
 ## Structure
 Max 230 characters. Pick EXACTLY ONE of these 10 concepts from the FACTS block and describe it: doubled/tripled pawns, isolated pawns, passed pawns, bishop pair, open files, castling rights, king safety, material balance, piece activity, or space. Use the deterministic facts. NEVER invent any other positional concept (no weak squares, no outposts, no color complexes). Pick the one most relevant to the move just played.
+STRICT NO-JUDGEMENT RULE: This section describes the position AS IT IS. It is NOT the place to judge the played move, to say the move was good or bad, or to link the concept back to the move's quality. FORBIDDEN PHRASES (never write these or anything like them in Structure): "which is a problem your move did nothing to address", "your move failed to solve this", "this is a weakness your move ignored", "your move made this worse", "this creates problems for you", "your move does not address this". If a sentence implies the move was good or bad, DELETE it - save move judgements for the Best Move section. Describe only what IS on the board.
 GROUNDING REQUIREMENT: Before writing this section, silently read the engine's TOP 4 moves list. If the concept you are about to describe contradicts what those 4 moves imply about the position (e.g. you want to say "Black's king is exposed" but all 4 engine moves are quiet positional moves for White), pick a different concept that IS consistent with the top 4. Do NOT mention the top-4 moves themselves in this section unless absolutely necessary - they are grounding only.
 
 ## Best Move
 Max 230 characters. MANDATORY COMPARISON: This section must explicitly compare the engine's #1 move with the move the player actually played. Structure your sentence as "the engine preferred X, which [benefit] — whereas your move [consequence]" or equivalent. Never describe the best move in isolation; it must always be framed against what was played. If the played move IS the engine's #1, say so and explain what it achieves better than the other candidates.
+EVAL-CONTEXT MANDATE: Before selecting the benefit, you MUST read the EVALUATION CONTEXT block. If the mover was already CLEARLY WINNING or WINNING DECISIVELY before the move and remains winning after, do NOT describe the played move as failing to "press the advantage", "keep pressure", or "leaving the opponent safe to defend". In a winning position, clean simplifying trades are CORRECT play; do not manufacture a criticism. If the played move IS the engine's #1 or a near-top choice in a winning position, the Best Move section should validate the simplification, not invent a better alternative.
 Pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn - verify via the EFFECTIVE Material balance, not single captures), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
-CAPTURE SANITY CHECK: if you are about to claim the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If the balance is equal, call it a "trade" not a "win".
+CAPTURE SANITY CHECK: if you are about to claim the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If the balance is equal, call it a "trade" not a "win". When the mover is already winning, a trade's benefit is "simplifies toward a won endgame" - not "wins material".
 You MUST silently compare the played move against ALL 4 top engine moves before writing - this prevents you from claiming "the engine preferred X" when X is wrong. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) for the concrete consequence.
 TWO-PLY LOOKAHEAD (REQUIRED): Before naming the best move's benefit, silently walk AT LEAST the first 2 plies of the BEST-MOVE LOOKAHEAD (the engine's #1 move PLUS the expected reply). Your stated benefit must be the consequence visible AFTER those 2 plies, not after only move 1. If move 1 captures a piece but move 2 recaptures it, do NOT call the best move a "material win" - it is a trade. If move 1 looks quiet but move 2 reveals a won piece or mate, state that deeper consequence instead. The judgement is based on the position 2 plies deep, not on a single-move snapshot.
 NAME ONLY MOVE #1: even though you silently considered all 4, you may only write the name of move #1. Do NOT name moves #2-#4 in your output.
@@ -86,8 +93,9 @@ AUDIENCE: Complete beginner. Use simple, everyday language. NEVER list move sequ
 
 ## Best Move
 Max 280 characters. MANDATORY COMPARISON: This section must explicitly compare the engine's #1 move with the move the player actually played. Frame it as "the engine preferred X because [benefit] — whereas your move [consequence]" or equivalent. Never describe the best move in isolation. If the played move IS the engine's #1, say so and explain what it achieves.
+EVAL-CONTEXT MANDATE: Before selecting the benefit, you MUST read the EVALUATION CONTEXT block. If the mover was already CLEARLY WINNING or WINNING DECISIVELY before the move and remains winning after, do NOT describe the played move as failing to "press the advantage", "keep pressure", or "leaving the opponent safe to defend". In a winning position, clean simplifying trades are CORRECT play; do not manufacture a criticism. If the played move IS the engine's #1 or a near-top choice in a winning position, validate the simplification - do not invent a better alternative.
 Pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn - verify via the EFFECTIVE Material balance, not single captures), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
-CAPTURE SANITY CHECK: if claiming the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If equal, it is a "trade", not a "win".
+CAPTURE SANITY CHECK: if claiming the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If equal, it is a "trade", not a "win". When the mover is already winning, a trade's benefit is "simplifies toward a won endgame" - not "wins material".
 You MUST silently compare the played move against ALL 4 top engine moves before writing. NAME ONLY MOVE #1 in your output - moves #2-#4 are silent grounding.
 TWO-PLY LOOKAHEAD (REQUIRED): Before naming the best move's benefit, silently walk AT LEAST the first 2 plies of the BEST-MOVE LOOKAHEAD (the engine's #1 move PLUS the expected reply). Your stated benefit must be the consequence visible AFTER those 2 plies, not after move 1 alone. If move 1 captures a piece but move 2 recaptures it, do NOT call it a "material win" - it is a trade. If move 1 looks quiet but move 2 reveals a won piece or forced mate, state that deeper consequence instead. Judge 2 plies deep, never off a single-move snapshot.
 CRITICAL PRONOUN RULE: If this is the STUDENT'S OWN move, write "you could have played X". If this is the OPPONENT'S move, write "your opponent could have played X" - NEVER "you should have played X" for opponent's turn.
@@ -326,14 +334,20 @@ function kingSafetyNotes(fen) {
     const bHasCastled = !castleStr.includes('k') && !castleStr.includes('q') && bkSq !== 'e8';
     const wShield = shield(wkSq, 'w');
     const bShield = shield(bkSq, 'b');
+    // If both kings are still on their starting squares, pawn shield
+    // counts are meaningless early-game noise — omit them.
+    const bothOnStart = (wkSq === 'e1' && bkSq === 'e8');
     const describe = (sq, castled, shield, color) => {
       let s = `${color} king on ${sq}, `;
       if (castled) s += 'has castled';
       else if ((color === 'White' && sq === 'e1') || (color === 'Black' && sq === 'e8')) s += 'still on starting square (uncastled)';
       else s += 'has moved without castling';
-      s += `, pawn shield: ${shield} pawns nearby`;
-      if (shield <= 1 && !castled) s += ' (exposed)';
-      else if (shield >= 2 && castled) s += ' (safe)';
+      // Only report pawn shield once a king has moved or castled
+      if (!bothOnStart) {
+        s += `, pawn shield: ${shield} pawns nearby`;
+        if (shield <= 1 && !castled) s += ' (exposed)';
+        else if (shield >= 2 && castled) s += ' (safe)';
+      }
       return s;
     };
     return `King safety (DO NOT contradict): ${describe(wkSq, wHasCastled, wShield, 'White')}. ${describe(bkSq, bHasCastled, bShield, 'Black')}.`;
@@ -589,6 +603,79 @@ PRIORITY HIERARCHY for the Best Move section: (1) checkmate, (2) winning materia
 *** END BEST-MOVE LOOKAHEAD ***`;
 }
 
+// ── Evaluation context: parse d.eb / d.ea (already-formatted fmtEval strings) ──
+// Emits a deterministic "who is winning" verdict for before and after the move,
+// plus explicit guidance so Claude doesn't criticize clean simplifying trades
+// when the mover is already clearly winning. The eval convention is White-relative
+// (positive = White ahead), so we flip it to the mover's perspective here.
+function evalContextBlock(d) {
+  if (!d || (!d.eb && !d.ea)) return '';
+  const mover = d.mover || 'w';
+  const moverName = colorName(mover);
+  const oppName = colorName(mover === 'w' ? 'b' : 'w');
+
+  // Parse an fmtEval string: "+2.3", "-1.8", "Forced mate in 5 for White", or "?".
+  const parseEval = (s) => {
+    if (!s || s === '?') return null;
+    const mateMatch = /mate in (\d+) for (White|Black)/i.exec(s);
+    if (mateMatch) return { mate: true, side: mateMatch[2], n: +mateMatch[1] };
+    const num = parseFloat(s);
+    return isNaN(num) ? null : { mate: false, cp: num };
+  };
+
+  // Classify in the MOVER's favour (positive = mover ahead).
+  const classify = (ev) => {
+    if (!ev) return null;
+    if (ev.mate) {
+      const matingSide = ev.side === 'White' ? 'w' : 'b';
+      if (matingSide === mover) return `${moverName} has a FORCED MATE in ${ev.n}`;
+      return `${oppName} has a FORCED MATE in ${ev.n} - ${moverName} is LOST`;
+    }
+    const fromMover = mover === 'w' ? ev.cp : -ev.cp;
+    if (fromMover >=  4.0) return `${moverName} WINNING DECISIVELY`;
+    if (fromMover >=  2.0) return `${moverName} CLEARLY WINNING`;
+    if (fromMover >=  1.0) return `${moverName} has a MODERATE ADVANTAGE`;
+    if (fromMover >  -1.0) return `POSITION ROUGHLY EQUAL`;
+    if (fromMover >  -2.0) return `${moverName} SLIGHTLY WORSE`;
+    if (fromMover >  -4.0) return `${moverName} CLEARLY LOSING`;
+    return `${moverName} LOSING DECISIVELY`;
+  };
+
+  const evB = parseEval(d.eb);
+  const evA = parseEval(d.ea);
+  const vBefore = classify(evB);
+  const vAfter  = classify(evA);
+  if (!vBefore && !vAfter) return '';
+
+  const moverWinning = (ev) => ev && (
+    (ev.mate && ((ev.side === 'White' ? 'w' : 'b') === mover)) ||
+    (!ev.mate && ((mover === 'w' ? ev.cp : -ev.cp) >= 2.0))
+  );
+  const winningBefore = moverWinning(evB);
+  const winningAfter  = moverWinning(evA);
+
+  let guidance = '';
+  if (winningBefore && winningAfter) {
+    guidance = `
+WINNING-SIDE GUIDANCE: ${moverName} was already winning BEFORE this move and is STILL winning AFTER it. In this context:
+  - Trades, exchanges, and simplifications are STRATEGICALLY CORRECT - they reduce opponent counterplay and steer toward a won endgame.
+  - FORBIDDEN framings for the played move in this position: "only wins the exchange of rooks", "merely trades pieces", "leaves the opponent's king safe to defend", "doesn't press the advantage", "fails to keep pressure".
+  - Do NOT invent a more aggressive "better move" when the played move cleanly simplifies toward conversion.
+  - The correct framing for a trade here is: "simplifies toward a won endgame", "removes the opponent's most active defender", or "trades down into an easy win".`;
+  } else if (!winningBefore && winningAfter) {
+    guidance = `
+TURNING-POINT GUIDANCE: ${moverName} flipped the evaluation in their favour with this move.`;
+  } else if (winningBefore && !winningAfter) {
+    guidance = `
+ADVANTAGE-LOST GUIDANCE: ${moverName} was winning before this move but is no longer winning after. Note this transition plainly.`;
+  }
+
+  return `\n*** EVALUATION CONTEXT (DO NOT contradict) ***
+Before the move: ${vBefore || 'unknown'} (raw eval ${d.eb || '?'}, White-relative)
+After the move:  ${vAfter  || 'unknown'} (raw eval ${d.ea || '?'}, White-relative)${guidance}
+*** END EVALUATION CONTEXT ***`;
+}
+
 // Perspective header for move templates: tells Claude who played the move and
 // which pronouns to use, preventing "your rook" on the opponent's piece.
 function perspectiveHeader(d) {
@@ -772,6 +859,12 @@ ${factsLines.join('\n')}
   // when describing what the engine's best move would have achieved.
   const lookaheadStr = bestMoveLookahead(d.fen, d.bestLineSAN || '');
 
+  // ── EVALUATION CONTEXT (deterministic who-is-winning verdict) ──
+  // Prevents Claude from criticizing clean simplifying trades when the mover
+  // is already winning, and generally grounds every move-quality judgement in
+  // the actual eval rather than single-move surface features.
+  const evalCtxStr = evalContextBlock(d);
+
   // ── Best continuation AFTER the move ──
   // Each half-move annotated in plain English so Claude reads facts, not notation.
   const continuationStr = d.continuation
@@ -779,7 +872,7 @@ ${factsLines.join('\n')}
     : '';
 
   return `${before}${pawnBefore}${threatBeforeStr}
-Move played: ${colorName(d.mover)}'s ${pieceName} from ${d.from || '?'} → ${d.to || '?'}${captureStr}${epStr}${promoStr}.${checkStr}${bestStr}${topMovesStr}
+Move played: ${colorName(d.mover)}'s ${pieceName} from ${d.from || '?'} → ${d.to || '?'}${captureStr}${epStr}${promoStr}.${checkStr}${bestStr}${topMovesStr}${evalCtxStr}
 Position AFTER the move:
 ${after}${threatAfterStr}${obsBlock}${lookaheadStr}${continuationStr}`;
 }
@@ -1051,7 +1144,7 @@ function _getLicenseKey() {
   return localStorage.getItem('cp-license-key') || '';
 }
 
-async function _callProxy(endpoint, prompt) {
+async function _callProxy(endpoint, prompt, model) {
   const proxyBase = _getApiBase();
   const licenseKey = _getLicenseKey();
 
@@ -1060,10 +1153,13 @@ async function _callProxy(endpoint, prompt) {
     const headers = { 'Content-Type': 'application/json' };
     if (licenseKey) headers['X-License-Key'] = licenseKey;
 
+    const payload = { prompt };
+    if (model) payload.model = model;
+
     const res = await fetch(proxyBase + endpoint, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify(payload)
     });
 
     const data = await res.json().catch(() => ({}));
@@ -1092,7 +1188,7 @@ async function _callProxy(endpoint, prompt) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: model || 'claude-haiku-4-5-20251001',
         max_tokens: isLong ? 1000 : 300,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1108,12 +1204,14 @@ async function _callProxy(endpoint, prompt) {
 }
 
 // ---- Public API call functions ----
+// callClaude: high-volume move/position analysis — Haiku (fast, cheap)
 async function callClaude(prompt, _apiKey) {
   return _callProxy('/api/claude', prompt);
 }
 
+// callClaudeLong: improvement plans + coach insights — Sonnet (stronger reasoning)
 async function callClaudeLong(prompt, _apiKey) {
-  return _callProxy('/api/claude-long', prompt);
+  return _callProxy('/api/claude-long', prompt, 'claude-sonnet-4-5-20250514');
 }
 
 // ---- License key verification (calls worker) ----

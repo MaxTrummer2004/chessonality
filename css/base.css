@@ -45,6 +45,25 @@
   unicode-range: U+1F000-1FAFF;
 }
 
+/* ── Force text-style rendering for chess-piece icons ──
+   &#9823; (U+265F black pawn) and some other BMP chess glyphs default to
+   emoji presentation on Windows/Android, which ignores CSS `color` and
+   `font-size`. The *-icon-text / *-emoji-text classes expect a monochrome
+   text glyph that picks up --accent, so force text presentation. */
+.showcase-icon-text,
+.choice-card-icon-text,
+.hero-input-icon-text,
+.prof-feat-icon-text,
+.rep-crosslink-icon-text,
+.paywall-emoji-text,
+.cta-icon-text,
+.aeo-icon-text,
+.brand-logo,
+.loading-brand,
+.gs-icon {
+  font-variant-emoji: text;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── Colour tokens ── */

@@ -907,24 +907,7 @@
 .prof-feat-sub {
   color: var(--text-dim) !important;
 }
-.prof-primary {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-}
-.prof-primary-name {
-  font-family: var(--font-display) !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.02em !important;
-}
-.prof-primary-sub {
-  font-family: var(--font-body) !important;
-  font-size: 0.7rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.16em !important;
-  text-transform: uppercase;
-  color: var(--text-muted) !important;
-}
+/* prof-primary styles now live in profile.css — no overrides needed */
 
 
 /* ════════════════════════════════════════════════
@@ -1156,6 +1139,212 @@
 #pageInsights .ins-page-wrap {
   max-width: 980px;
   padding: 0 28px;
+}
+
+/* ════════════════════════════════════════════════
+   INSIGHTS DASHBOARD — data science cards
+   ──────────────────────────────────────────────── */
+
+/* Summary stat row (4 big numbers) */
+.ins-dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.ins-dash-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.ins-dash-stat::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.ins-dash-stat:hover {
+  border-color: var(--border-hi);
+  box-shadow: var(--shadow);
+}
+.ins-dash-stat-good::before { background: var(--good); }
+.ins-dash-stat-bad::before { background: var(--blunder); }
+.ins-dash-stat-val {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.ins-dash-stat-unit {
+  font-size: 1.1rem;
+  font-weight: 500;
+  opacity: 0.5;
+  margin-left: 1px;
+}
+.ins-dash-stat-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Two-column grid for paired cards */
+.ins-dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) {
+  .ins-dash-grid { grid-template-columns: 1fr; }
+}
+
+/* Individual dashboard card */
+.ins-dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 22px 18px;
+  transition: border-color var(--transition);
+}
+.ins-dash-card:hover { border-color: var(--border-hi); }
+.ins-dash-card-full { grid-column: 1 / -1; margin-bottom: 16px; }
+.ins-dash-card-title {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+/* Horizontal bar row */
+.ins-dash-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ins-dash-bar-row:last-child { margin-bottom: 0; }
+.ins-dash-bar-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 105px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.ins-dash-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ins-dash-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ins-dash-bar-val {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Results distribution bar */
+.ins-dash-result-bar {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 32px;
+  margin-bottom: 12px;
+}
+.ins-dash-result-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  transition: flex 0.4s ease;
+}
+.ins-dash-result-seg span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.ins-dash-result-win  { background: var(--good); }
+.ins-dash-result-draw { background: var(--text-muted); }
+.ins-dash-result-loss { background: var(--blunder); }
+
+.ins-dash-result-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.ins-dash-legend-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+.ins-dash-legend-win  { background: var(--good); }
+.ins-dash-legend-draw { background: var(--text-muted); }
+.ins-dash-legend-loss { background: var(--blunder); }
+
+/* Tactical patterns grid */
+.ins-dash-tactics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0;
+}
+.ins-dash-tactic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+.ins-dash-tactic-row:last-child { border-bottom: none; }
+.ins-dash-tactic-row:hover { background: var(--surface2); }
+.ins-dash-tactic-icon {
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+  opacity: 0.7;
+}
+.ins-dash-tactic-label {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.ins-dash-tactic-val {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 24px;
+  text-align: right;
+  letter-spacing: -0.02em;
 }
 
 /* ── Section intro (kicker + headline + sub) ── */
@@ -1507,14 +1696,21 @@
   white-space: nowrap;
 }
 #pageInsights .ins-og-moves {
-  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace !important;
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', ui-monospace, monospace !important;
   font-size: 0.78rem !important;
   color: var(--text-dim) !important;
   margin-bottom: 0 !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+}
+/* When the opening name is actually a move sequence fallback, use monospace */
+#pageInsights .ins-og-name-moves {
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', ui-monospace, monospace !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
 }
 
 .ins-og-winratebox {
@@ -1621,6 +1817,15 @@
   #pageInsights .ins-mg-card { padding: 22px 22px 18px !important; }
   #pageInsights .ins-mg-you { font-size: 1.15rem !important; }
 
+  /* Dashboard mobile */
+  .ins-dash-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .ins-dash-stat { padding: 16px 12px; }
+  .ins-dash-stat-val { font-size: 1.6rem; }
+  .ins-dash-grid { grid-template-columns: 1fr !important; }
+  .ins-dash-card { padding: 18px 16px 14px; }
+  .ins-dash-bar-label { min-width: 90px; font-size: 0.78rem; }
+  .ins-dash-tactics-grid { grid-template-columns: 1fr !important; }
+
   #pageInsights .ins-og-card { padding: 22px 22px 18px !important; }
   .ins-og-top { gap: 14px; }
   .ins-og-winratebox { min-width: 78px; padding-left: 14px; }
@@ -1712,4 +1917,104 @@
     justify-content: flex-start !important;
   }
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+
+
+/* ════════════════════════════════════════════════
+   14. INTERACTIVE POLISH LAYER
+   ────────────────────────────────────────────────
+   Motion, hover, and reveal refinements applied on
+   top of existing component CSS. All rules here are
+   gated behind `@media (hover: hover)` where they
+   would otherwise interfere with touch interaction,
+   and behind `@media (prefers-reduced-motion)` where
+   they would introduce movement.
+   ──────────────────────────────────────────────── */
+
+/* ── Universal card hover-lift ──
+   One ruleset for every "card-like" surface so interactivity feels
+   consistent everywhere. Kept subtle (-3px) and gated behind a fine
+   pointer so touch devices don't show a ghosted hover state. */
+@media (hover: hover) and (pointer: fine) {
+  .showcase-card,
+  .cro-diff-col,
+  .mpc-card,
+  .mdiff-row,
+  .how-tab,
+  .ins-mg-card,
+  .ins-og-card,
+  .prof-feat-card,
+  .prof-streak-card,
+  .prof-collection,
+  .gs-game-card {
+    transition:
+      transform var(--dur-sm) var(--ease-out-expo),
+      box-shadow var(--dur-sm) var(--ease-out-expo),
+      border-color var(--dur-sm) var(--ease-out-expo),
+      background-color var(--dur-sm) var(--ease-out-expo) !important;
+    will-change: transform;
+  }
+  .showcase-card:hover,
+  .cro-diff-col:hover,
+  .mpc-card:hover,
+  .mdiff-row:hover,
+  .how-tab:hover:not(.active),
+  .ins-mg-card:hover,
+  .ins-og-card:hover,
+  .prof-streak-card:hover,
+  .prof-collection:hover,
+  .gs-game-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+  /* Feature cards already lift via base.css — reinforce a deeper shadow */
+  .prof-feat-card:hover {
+    box-shadow: var(--shadow-lg) !important;
+    border-color: var(--border-hi) !important;
+  }
+}
+
+/* ── Buttons: richer feedback ──
+   Every primary button should have a springy hover + pressed state,
+   not just the landing CTA. */
+.btn-primary,
+.pers-share-primary,
+.pss-btn,
+.psb-btn,
+.hl-btn,
+.rep-cta-btn,
+.coach-page-cta,
+.gs-tab,
+.ins-pill,
+.prof-filter-pill,
+.prof-tab,
+.hero-input-go,
+.hero-plat-btn {
+  transition:
+    background var(--dur-sm) var(--ease-out-expo),
+    color var(--dur-sm) var(--ease-out-expo),
+    border-color var(--dur-sm) var(--ease-out-expo),
+    box-shadow var(--dur-sm) var(--ease-out-expo),
+    transform var(--dur-xs) var(--ease-out-quart) !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover,
+  .pers-share-primary:hover,
+  .hl-btn:hover,
+  .rep-cta-btn:hover,
+  .coach-page-cta:hover {
+    transform: translateY(-1px);
+  }
+}
+.btn-primary:active,
+.pers-share-primary:active,
+.hl-btn:active,
+.rep-cta-btn:active,
+.coach-page-cta:active,
+.gs-tab:active,
+.ins-pill:active,
+.prof-tab:active,
+.hero-plat-btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* ── Progress bars: grow from current to fi

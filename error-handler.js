@@ -55,7 +55,7 @@
     const t = ensureToast();
     t.innerHTML = '';
     const icon = document.createElement('span');
-    icon.textContent = opts.icon || '\u26A0\uFE0F';
+    icon.textContent = opts.icon || '\u26A0\uFE0E';
     icon.style.fontSize = '18px';
     icon.style.flex = '0 0 auto';
     t.appendChild(icon);

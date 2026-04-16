@@ -396,36 +396,119 @@
   align-items: start;
 }
 
-/* Primary personality card */
+/* Primary personality card — premium dark card with personality glow */
 .prof-primary {
-  border-radius: 20px; overflow: hidden;
-  transition: background 0.3s ease;
-  box-shadow: var(--shadow-lg);
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%,
+      color-mix(in srgb, var(--card-pers-color, var(--accent)) 14%, transparent),
+      transparent 70%),
+    linear-gradient(180deg, #1a1a22 0%, #13131a 100%);
+  border: 1px solid color-mix(in srgb, var(--card-pers-color, var(--border-hi)) 25%, var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  box-shadow:
+    var(--shadow-sm),
+    0 0 40px color-mix(in srgb, var(--card-pers-color, var(--accent)) 6%, transparent);
   margin-bottom: 0;
 }
+[data-theme="light"] .prof-primary {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%,
+      color-mix(in srgb, var(--card-pers-color, var(--accent)) 10%, transparent),
+      transparent 70%),
+    linear-gradient(180deg, #f8f5ef 0%, #f0ece3 100%);
+}
+.prof-primary:hover {
+  border-color: color-mix(in srgb, var(--card-pers-color, var(--border-hi)) 45%, var(--border));
+  box-shadow:
+    var(--shadow),
+    0 0 60px color-mix(in srgb, var(--card-pers-color, var(--accent)) 12%, transparent);
+}
+/* Personality-coloured top accent stripe — wider glow */
+.prof-primary::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--card-pers-color, var(--accent)) 40%, transparent),
+    var(--card-pers-color, var(--accent)),
+    color-mix(in srgb, var(--card-pers-color, var(--accent)) 40%, transparent));
+  transition: opacity 0.3s ease;
+}
+/* Subtle animated shimmer on hover */
+.prof-primary::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; right: 0;
+  width: 200%; height: 100%;
+  background: linear-gradient(105deg,
+    transparent 40%,
+    color-mix(in srgb, var(--card-pers-color, var(--accent)) 4%, transparent) 50%,
+    transparent 60%);
+  transition: transform 0.8s ease;
+  pointer-events: none;
+}
+.prof-primary:hover::after {
+  transform: translateX(40%);
+}
+/* Stretch to match breakdown height */
+.prof-top-grid .prof-primary {
+  align-self: stretch;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .prof-primary-inner {
-  padding: 34px 24px; text-align: center;
+  padding: 28px 24px; text-align: center;
+  position: relative; z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .prof-primary-sub {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.75rem; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 14px;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--card-pers-color, var(--accent)) 60%, var(--text-muted));
+  margin-bottom: 16px;
 }
+/* Emoji with personality-tinted glow ring — larger */
 .prof-primary-emoji {
-  font-size: 4.2rem; line-height: 1;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  font-size: 3.4rem; line-height: 1;
+  width: 80px; height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-pers-color, var(--accent)) 12%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--card-pers-color, var(--accent)) 15%, transparent),
+    0 0 30px color-mix(in srgb, var(--card-pers-color, var(--accent)) 14%, transparent),
+    0 0 60px color-mix(in srgb, var(--card-pers-color, var(--accent)) 6%, transparent);
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+.prof-primary:hover .prof-primary-emoji {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--card-pers-color, var(--accent)) 22%, transparent),
+    0 0 40px color-mix(in srgb, var(--card-pers-color, var(--accent)) 20%, transparent),
+    0 0 80px color-mix(in srgb, var(--card-pers-color, var(--accent)) 10%, transparent);
 }
 .prof-primary-name {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 2.1rem; font-weight: 700; color: #fff;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.65rem; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
   margin-bottom: 6px;
 }
+[data-theme="dark"] .prof-primary .prof-primary-name {
+  color: #fdfaf5;
+}
 .prof-primary-tagline {
-  font-size: 1rem; color: rgba(255,255,255,0.6);
-  font-style: italic;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--card-pers-color, var(--accent)) 30%, var(--text-dim));
+  font-style: italic; line-height: 1.45;
 }
 
 /* Sections */
@@ -976,18 +1059,4 @@
 [data-theme="light"] .sync-tab-row { background: #f1f5f9; }
 [data-theme="light"] .sync-tab { color: #64748b; }
 [data-theme="light"] .sync-tab.active { background: #ffffff; color: #0f172a; }
-[data-theme="light"] .sync-secondary-btn {
-  color: #475569;
-  border-color: rgba(15, 23, 42, 0.2);
-}
-[data-theme="light"] .sync-secondary-btn:hover {
-  background: rgba(15, 23, 42, 0.05);
-  color: #0f172a;
-}
-[data-theme="light"] .sync-modal-close { color: #475569; }
-[data-theme="light"] .sync-modal-close:hover {
-  background: rgba(15, 23, 42, 0.08);
-  color: #0f172a;
-}
-[data-theme="light"] .sync-legal { color: #64748b; }
-
+[data-theme="light"] .sync-secondary-bt

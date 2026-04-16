@@ -482,6 +482,365 @@
   border-radius: var(--radius);
 }
 
+/* ══════════════════════════════════════════════
+   GAME INSIGHTS DASHBOARD
+══════════════════════════════════════════════ */
+
+.ins-dashboard-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+.ins-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Empty state ── */
+.gid-empty {
+  text-align: center;
+  padding: 80px 24px;
+  color: var(--text-dim);
+}
+.gid-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+.gid-empty-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.gid-empty-sub {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ── Hero stats row ── */
+.gid-hero {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.gid-hero-stat {
+  flex: 1;
+  min-width: 120px;
+  max-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.gid-hero-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+}
+.gid-stat-accent {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+.gid-hero-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.gid-stat-accent .gid-hero-val {
+  color: var(--accent);
+}
+.gid-hero-pct {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.gid-hero-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* ── Card grid ── */
+.gid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.gid-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  transition: box-shadow 0.18s;
+}
+.gid-card:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+}
+.gid-card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+/* ── Donut card ── */
+.gid-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+.gid-donut-wrap canvas {
+  flex-shrink: 0;
+}
+.gid-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gid-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 500;
+}
+.gid-legend-row strong {
+  font-weight: 700;
+  margin-left: auto;
+  min-width: 24px;
+  text-align: right;
+}
+.gid-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gid-donut-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface2);
+}
+.gid-bar-seg {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+/* ── Bar segment colors (site palette) ── */
+.gid-bar-win  { background: var(--accent); }
+.gid-bar-draw { background: var(--text-dim); }
+.gid-bar-loss { background: var(--blunder); }
+
+/* ── Timeline card ── */
+.gid-card-timeline {
+  display: flex;
+  flex-direction: column;
+}
+.gid-timeline-wrap {
+  flex: 1;
+  min-height: 160px;
+  position: relative;
+}
+.gid-timeline-wrap canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.gid-timeline-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+}
+.gid-tl-leg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.gid-tl-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Quick facts row ── */
+.gid-facts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.gid-fact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 90px;
+  padding: 16px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: center;
+  flex: 1;
+  max-width: 140px;
+}
+.gid-fact-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.gid-fact-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.gid-fact-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+.gid-fact-streak {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+/* ── Accuracy / error bars card ── */
+.gid-error-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.gid-error-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gid-error-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 72px;
+}
+.gid-error-track {
+  flex: 1;
+  height: 10px;
+  background: var(--surface2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.gid-error-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.gid-fill-blunder {
+  background: linear-gradient(90deg, var(--blunder), #d9604f);
+}
+.gid-fill-mistake {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.gid-error-val {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 64px;
+  text-align: right;
+}
+.gid-error-totals {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.gid-error-totals strong {
+  color: var(--text);
+}
+
+/* ── Opening performance card ── */
+.gid-op-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gid-op-row {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.gid-op-row:last-child {
+  border-bottom: none;
+}
+.gid-op-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gid-op-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface2);
+}
+.gid-op-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+  justify-content: flex-end;
+}
+.gid-op-wr {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.gid-wr-hot {
+  color: var(--accent);
+}
+.gid-wr-cold {
+  color: var(--blunder);
+}
+.gid-op-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
 /* ── Responsive polish ── */
 @media (max-width: 900px) {
   .analysis-pers-card { flex-wrap: wrap; }
@@ -511,5 +870,92 @@
   .gs-left-col  { grid-column: 1; grid-row: auto; }
   .gs-right-col { grid-column: 1; grid-row: auto; margin-top: 24px; }
   .gs-game-list { max-height: 60vh; }
+}
+
+/* ── Dashboard mobile ── */
+@media (max-width: 640px) {
+  .ins-dashboard-wrap {
+    padding: 20px 14px 40px;
+  }
+  .ins-dashboard {
+    gap: 16px;
+  }
+  .gid-hero {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .gid-hero-stat {
+    min-width: 0;
+    max-width: none;
+    padding: 12px 6px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .gid-hero-val {
+    font-size: 1.25rem;
+  }
+  .gid-hero-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.3px;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .gid-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .gid-card {
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+  .gid-donut-wrap {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .gid-donut-legend {
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .gid-facts {
+    gap: 8px;
+  }
+  .gid-fact {
+    min-width: 75px;
+    padding: 12px 8px;
+    border-radius: 10px;
+  }
+  .gid-fact-val {
+    font-size: 1.05rem;
+  }
+  .gid-fact-icon {
+    font-size: 1.1rem;
+  }
+  .gid-op-row {
+    grid-template-columns: 1fr 80px auto;
+    gap: 8px;
+    padding: 8px 0;
+  }
+  .gid-op-name {
+    font-size: 0.78rem;
+  }
+  .gid-op-meta {
+    min-width: 60px;
+    gap: 6px;
+  }
+  .gid-error-row {
+    gap: 8px;
+  }
+  .gid-error-label {
+    min-width: 56px;
+    font-size: 0.78rem;
+  }
+  .gid-error-val {
+    min-width: 52px;
+    font-size: 0.75rem;
+  }
 }
 

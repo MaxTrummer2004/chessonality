@@ -303,71 +303,301 @@ function buildPersonalInsights(stats, agg) {
 function renderProfileFeatureRow(history, agg) {
   const row = document.getElementById('profFeatureRow');
   if (!row) return;
-  const hasGames = history.length >= 1;
 
-  // Always visible now — toggle a "locked" affordance per card when empty.
+  // Count only fully-analyzed games (those with personalityScores)
+  const analyzed = history.filter(e => e && e.personalityScores && e.personalityScores.length > 0);
+  const analyzedCount = analyzed.length;
+
+  // Thresholds
+  const INSIGHTS_MIN = 2;   // Game Insights requires 2 analyzed games
+  const REP_MIN      = 3;   // Repertoire requires 3 analyzed games
+  const COACH_MIN    = 3;   // AI Coach requires 3 analyzed games
+
+  const insightsReady = analyzedCount >= INSIGHTS_MIN;
+  const repReady      = analyzedCount >= REP_MIN;
+  const coachReady    = analyzedCount >= COACH_MIN;
+
+  // Always visible — no row-level lock
   row.style.display = '';
-  row.classList.toggle('prof-feature-row-locked', !hasGames);
+  row.classList.remove('prof-feature-row-locked');
 
   const hint = document.getElementById('profFeaturesHint');
-  if (hint) hint.style.display = hasGames ? 'none' : '';
+  if (hint) hint.style.display = analyzedCount >= 1 ? 'none' : '';
 
-  // Force-reveal the cards (reveal observer may have skipped them while hidden)
+  // Force-reveal the cards
   const cards = row.querySelectorAll(':scope > [data-reveal]');
   const step = parseInt(row.dataset.revealStagger || '80', 10) || 80;
   const base = parseInt(row.dataset.revealBase || '0', 10) || 0;
+
+  // Map each card to its own lock state
+  const lockMap = [repReady, coachReady, insightsReady]; // order: rep, coach, insights
   cards.forEach((el, i) => {
     el.style.setProperty('--reveal-delay', (base + i * step) + 'ms');
     el.classList.add('is-visible');
-    el.classList.toggle('prof-feat-locked', !hasGames);
+    el.classList.toggle('prof-feat-locked', !lockMap[i]);
   });
 
   // Feature card status indicators
-  const repStatus = document.getElementById('profFeatRepStatus');
-  const dnaStatus = document.getElementById('profFeatDnaStatus');
+  const repStatus   = document.getElementById('profFeatRepStatus');
+  const dnaStatus   = document.getElementById('profFeatDnaStatus');
   const coachStatus = document.getElementById('profFeatCoachStatus');
 
-  // Repertoire: check if generated (either the new batch payload or
-  // the legacy sentinel key — both are written by startRepertoireFlow)
-  const repData = localStorage.getItem('ce-repertoire-batch')
-               || localStorage.getItem('ce-repertoire-personality');
+  // ═══ REPERTOIRE ═══
   if (repStatus) {
-    repStatus.innerHTML = repData
-      ? '<span class="pfs-ready">Repertoire generated</span>'
-      : '<span class="pfs-new">Ready to generate</span>';
-  }
-
-  // DNA: always available once you have games
-  if (dnaStatus) {
-    dnaStatus.innerHTML = history.length >= 3
-      ? `<span class="pfs-ready">${history.length} games tracked</span>`
-      : `<span class="pfs-new">${3 - history.length} more game${3 - history.length === 1 ? '' : 's'} needed</span>`;
-  }
-
-  // Coach: check if plan cached. The actual coach cache is stored under
-  // 'ce-coach-cache-v2' (see _COACH_CACHE_STORAGE_KEY in insights.js).
-  // We check both the v2 key and the legacy 'ce-coach-plan' for safety.
-  let coachCached = null;
-  try {
-    const raw = localStorage.getItem('ce-coach-cache-v2');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.html) coachCached = true;
+    if (!repReady) {
+      const need = REP_MIN - analyzedCount;
+      repStatus.innerHTML = `<span class="pfs-new">${need} more game${need === 1 ? '' : 's'} needed</span>`;
+    } else {
+      const repData = localStorage.getItem('ce-repertoire-batch')
+                   || localStorage.getItem('ce-repertoire-personality');
+      repStatus.innerHTML = repData
+        ? '<span class="pfs-ready">Repertoire generated</span>'
+        : '<span class="pfs-new">Ready to generate</span>';
     }
-  } catch {}
-  if (!coachCached) coachCached = localStorage.getItem('ce-coach-plan');
+  }
+
+  // ═══ INSIGHTS ═══
+  if (dnaStatus) {
+    if (!insightsReady) {
+      const need = INSIGHTS_MIN - analyzedCount;
+      dnaStatus.innerHTML = `<span class="pfs-new">${need} more game${need === 1 ? '' : 's'} needed</span>`;
+    } else {
+      dnaStatus.innerHTML = `<span class="pfs-ready">${analyzedCount} games tracked</span>`;
+    }
+  }
+
+  // ═══ COACH ═══
   if (coachStatus) {
-    coachStatus.innerHTML = coachCached
-      ? '<span class="pfs-ready">Plan generated</span>'
-      : '<span class="pfs-new">Generate your plan</span>';
+    if (!coachReady) {
+      const need = COACH_MIN - analyzedCount;
+      coachStatus.innerHTML = `<span class="pfs-new">${need} more game${need === 1 ? '' : 's'} needed</span>`;
+    } else {
+      let coachCached = null;
+      try {
+        const raw = localStorage.getItem('ce-coach-cache-v2');
+        if (raw) { const p = JSON.parse(raw); if (p && p.html) coachCached = true; }
+      } catch {}
+      if (!coachCached) coachCached = localStorage.getItem('ce-coach-plan');
+      coachStatus.innerHTML = coachCached
+        ? '<span class="pfs-ready">Plan generated</span>'
+        : '<span class="pfs-new">Generate your plan</span>';
+    }
   }
 }
 
 // ── Open the dedicated Repertoire page ────────────────────────
 
 async function openRepertoire() {
-  showPage('repertoire');
-  await renderRepertoirePage();
+  // Always rebuild from analyzed game history (never from stale localStorage).
+  // Show the loading screen while processing.
+  await _buildRepertoireFromHistory();
+}
+
+// ── Build repertoire from already-analyzed games ────────────
+// Reads history entries that have personalityScores (= analyzed via
+// full game analysis). Requires at least 3 such games.
+// Shows the loading page with step-by-step progress, builds the
+// ce-repertoire-batch payload, then launches the deck.
+async function _buildRepertoireFromHistory() {
+  let history = [];
+  try { history = await dbGetHistory(); } catch {}
+  // Only use games that went through full analysis (have personality data)
+  const analyzed = history.filter(e => e && e.personalityScores && e.personalityScores.length > 0);
+
+  if (analyzed.length < 3) {
+    // Not enough games — show rep input page with a friendly message
+    showPage('repInput');
+    if (typeof initRepInput === 'function') initRepInput();
+    const errEl = document.getElementById('repInputError');
+    if (errEl) {
+      const need = 3 - analyzed.length;
+      errEl.textContent = analyzed.length === 0
+        ? 'Analyze at least 3 games first to get opening recommendations.'
+        : `You've analyzed ${analyzed.length} game${analyzed.length > 1 ? 's' : ''} so far — analyze ${need} more to unlock your repertoire.`;
+      errEl.style.display = '';
+    }
+    return;
+  }
+
+  // ── Show loading screen ──
+  showPage('repLoading');
+  _repLoadProgress(0);
+  document.getElementById('repLoadTitle').textContent = 'Building your repertoire\u2026';
+  document.getElementById('repLoadFeed').innerHTML = '';
+
+  // Update step labels for the history-based flow
+  const stepLabels = [
+    'Loading your analyzed games',
+    'Reading game stats',
+    'Analyzing play patterns',
+    'Detecting your personality',
+    'Matching ideal openings'
+  ];
+  for (let i = 0; i < 5; i++) {
+    _repLoadStep(i, 'pending', '');
+    const label = document.querySelector('#repLs' + i + ' .rep-ls-label');
+    if (label) label.textContent = stepLabels[i];
+  }
+
+  try {
+    // ── Step 0: Load analyzed games ──
+    _repLoadStep(0, 'active', `Found ${analyzed.length} analyzed game${analyzed.length === 1 ? '' : 's'}\u2026`);
+    _repLoadProgress(10);
+    await _sleep(400);
+    _repLoadStep(0, 'done', `${analyzed.length} game${analyzed.length === 1 ? '' : 's'} loaded`);
+    _repLoadProgress(20);
+    await _sleep(250);
+
+    // ── Step 1: Read game stats + populate feed ──
+    _repLoadStep(1, 'active', 'Reading move data\u2026');
+    _repLoadProgress(25);
+
+    let totalWins = 0, totalLosses = 0, whiteGames = 0, blackGames = 0;
+    let totalMoves = 0;
+    for (let i = 0; i < analyzed.length; i++) {
+      const e = analyzed[i];
+      // Feed
+      const isWhite = (e.playerColor === 'w');
+      const opponent = isWhite ? e.black : e.white;
+      const colorIcon = isWhite ? '&#9812;' : '&#9818;';
+      let resultCls = 'draw', resultText = 'Draw';
+      if ((e.result === '1-0' && isWhite) || (e.result === '0-1' && !isWhite))
+        { resultCls = 'win'; resultText = 'Win'; totalWins++; }
+      else if ((e.result === '0-1' && isWhite) || (e.result === '1-0' && !isWhite))
+        { resultCls = 'loss'; resultText = 'Loss'; totalLosses++; }
+      if (isWhite) whiteGames++; else blackGames++;
+      totalMoves += e.totalMoves || 0;
+
+      const feed = document.getElementById('repLoadFeed');
+      if (feed) {
+        const html = `<div class="rep-feed-item">
+          <span class="feed-color">${colorIcon}</span>
+          <span>vs ${opponent || '?'}</span>
+          <span class="feed-result feed-result-${resultCls}">${resultText}</span>
+        </div>`;
+        feed.insertAdjacentHTML('beforeend', html);
+        while (feed.children.length > 6) feed.removeChild(feed.firstChild);
+      }
+
+      _repLoadStep(1, 'active', `Game ${i + 1} / ${analyzed.length}`);
+      _repLoadProgress(25 + Math.round(((i + 1) / analyzed.length) * 15));
+      await _sleep(150 + Math.random() * 100);
+    }
+    const avgMoves = Math.round(totalMoves / analyzed.length);
+    _repLoadStep(1, 'done', `${analyzed.length} games parsed`);
+    _repLoadProgress(42);
+    await _sleep(250);
+
+    // ── Step 2: Analyze play patterns ──
+    _repLoadStep(2, 'active', 'Calculating win rates & style metrics\u2026');
+    _repLoadProgress(48);
+    await _sleep(500);
+    _repLoadStep(2, 'active', `${totalWins}W / ${totalLosses}L, avg ${avgMoves} moves`);
+    _repLoadProgress(58);
+    await _sleep(600);
+    _repLoadStep(2, 'done', `${totalWins}W / ${totalLosses}L, avg ${avgMoves} moves`);
+    _repLoadProgress(62);
+    await _sleep(200);
+
+    // ── Step 3: Aggregate personality from existing scores ──
+    _repLoadStep(3, 'active', 'Scoring personality traits\u2026');
+    _repLoadProgress(66);
+    await _sleep(400);
+
+    const totals = {};
+    PERSONALITY_LIST.forEach(p => totals[p.id] = 0);
+    const batchEntries = [];
+
+    for (let i = 0; i < analyzed.length; i++) {
+      const e = analyzed[i];
+      for (const s of e.personalityScores) {
+        totals[s.id] = (totals[s.id] || 0) + (s.pct || 0);
+      }
+      batchEntries.push({
+        playerColor: e.playerColor || 'w',
+        result: e.result || '*',
+        totalMoves: e.totalMoves || 30,
+        opening: e.opening || '',
+        opponent: e.playerColor === 'w' ? e.black : e.white,
+        bookDepth: e.bookDepth || 0,
+        mistakes: e.mistakes || 0,
+        blunders: e.blunders || 0
+      });
+
+      const topPers = Object.entries(totals)
+        .filter(([_, v]) => v > 0)
+        .sort((a, b) => b[1] - a[1])[0];
+      if (topPers) {
+        const tp = PERSONALITIES[topPers[0]];
+        if (tp) _repLoadStep(3, 'active', `Game ${i + 1}: ${tp.emoji} ${tp.name}`);
+      }
+      _repLoadProgress(66 + Math.round(((i + 1) / analyzed.length) * 18));
+      await _sleep(180 + Math.random() * 120);
+    }
+
+    const sorted = Object.entries(totals)
+      .map(([id, total]) => ({
+        personality: PERSONALITIES[id],
+        pct: Math.round(total / analyzed.length)
+      }))
+      .filter(b => b.personality)
+      .sort((a, b) => b.pct - a.pct);
+
+    const agg = {
+      primary: sorted[0].personality,
+      totalGames: analyzed.length,
+      breakdown: sorted
+    };
+
+    // Save to localStorage (same format the deck renderer expects)
+    try {
+      const repPayload = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        username: 'history',
+        platform: 'analyzed',
+        totalGames: analyzed.length,
+        primaryId: agg.primary.id,
+        breakdown: sorted.map(b => ({ id: b.personality.id, pct: b.pct })),
+        entries: batchEntries
+      };
+      localStorage.setItem('ce-repertoire-batch', JSON.stringify(repPayload));
+      localStorage.setItem('ce-repertoire-personality', agg.primary.id);
+    } catch (e) { console.warn('repertoire batch persist failed', e); }
+
+    _repLoadStep(3, 'done', `Primary: ${agg.primary.emoji} ${agg.primary.name}`);
+    _repLoadProgress(86);
+    await _sleep(300);
+
+    // ── Step 4: Match ideal openings ──
+    _repLoadStep(4, 'active', 'Finding your perfect openings\u2026');
+    _repLoadProgress(90);
+    await _sleep(600);
+
+    const rep = REPERTOIRE_DATA[agg.primary.id];
+    if (rep) {
+      _repLoadStep(4, 'active', `White: ${rep.white[0].name.split('(')[0].trim()}, Black: ${rep.black[0].name.split('(')[0].trim()}`);
+    }
+    _repLoadProgress(96);
+    await _sleep(500);
+    _repLoadStep(4, 'done', 'Repertoire ready!');
+    _repLoadProgress(100);
+
+    document.getElementById('repLoadTitle').textContent = 'Your repertoire is ready!';
+    await _sleep(700);
+
+    showPage('repertoire');
+    await renderRepertoirePage();
+  } catch (err) {
+    console.error('Repertoire build failed:', err);
+    showPage('repInput');
+    if (typeof initRepInput === 'function') initRepInput();
+    const errEl = document.getElementById('repInputError');
+    if (errEl) {
+      errEl.textContent = err.message || 'Something went wrong. Please try again.';
+      errEl.style.display = '';
+    }
+  }
 }
 
 // Read the repertoire-only batch (saved by startRepertoireFlow) and

@@ -33,6 +33,9 @@
   border-bottom: 2px solid rgba(255,255,255,0.08);
   margin: 0 0 20px;
   padding: 0 4px;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 .prof-tab {
   flex: 1;
@@ -1047,6 +1050,52 @@
   animation: coachTaskPulse 0.55s ease-out;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   SLIDE DECK POLISH: Coach slides with stagger & transitions
+════════════════════════════════════════════════════════════════ */
+
+/* Coach slide container and card transitions */
+.coach-slide,
+.coach-card,
+[class*="coach-task"] {
+  transition:
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slide entry animation */
+.coach-slide[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.coach-slide[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Coach navigation buttons smooth transitions */
+.coach-nav-btn,
+[class*="coach-btn"] {
+  transition:
+    all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.coach-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(212, 162, 76, 0.2);
+}
+
+/* Task list items stagger with delay */
+.coach-task-item {
+  transition:
+    all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.coach-task-item:nth-child(1) { --reveal-delay: 0ms; }
+.coach-task-item:nth-child(2) { --reveal-delay: 80ms; }
+.coach-task-item:nth-child(3) { --reveal-delay: 160ms; }
+.coach-task-item:nth-child(4) { --reveal-delay: 240ms; }
+.coach-task-item:nth-child(5) { --reveal-delay: 320ms; }
+
 /* ── Task 3: Pre-move questions ── */
 .coach-task-questions {
   margin-top: 18px;
@@ -1460,6 +1509,73 @@
 .coach-page-body:has(.coach-deck-wrap) .coach-page-cta {
   display: none;
 }
+
+/* ── Coach loading screen (matches game-analysis loading style) ── */
+.coach-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+.coach-page-loading-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  margin-bottom: 32px;
+}
+.coach-page-loading-bar-outer {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface2);
+  border-radius: 100px;
+  height: 8px;
+  position: relative;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.coach-page-loading-bar-inner {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #fff));
+  animation: coachBarSlide 1.8s ease-in-out infinite;
+}
+@keyframes coachBarSlide {
+  0%   { left: -40%; }
+  100% { left: 100%; }
+}
+.coach-page-loading-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 36px;
+  padding: 18px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+.coach-page-loading-spinner {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.9s linear infinite;
+}
+.coach-page-loading-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
 .coach-deck-wrap {
   display: flex;
   flex-direction: column;
@@ -1468,7 +1584,7 @@
 .coach-deck-stage {
   min-height: 520px;
   height: calc(100vh - 220px);
-  max-height: 760px;
+  max-height: none;
 }
 .coach-deck-badges {
   display: inline-flex;
@@ -1477,20 +1593,38 @@
   gap: 8px;
   margin-top: 8px;
 }
-.coach-deck-slide-title {
-  font-size: clamp(1.6rem, 2.6vw, 2.2rem) !important;
+/* All slide titles inside the coach deck — bigger on desktop */
+.coach-deck-stage .rep-slide-title {
+  font-size: clamp(2.4rem, 4.2vw, 3.6rem) !important;
+}
+/* Eyebrow labels inside coach deck */
+.coach-deck-stage .rep-slide-eyebrow {
+  font-size: 0.95rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 10px;
+}
+/* Subtitles inside coach deck */
+.coach-deck-stage .rep-slide-sub {
+  font-size: 1.22rem;
+  max-width: 840px;
+  line-height: 1.65;
+}
+/* Slide inner wrapper — wider in coach deck */
+.coach-deck-stage .rep-slide-inner {
+  max-width: 960px;
+  gap: 26px;
 }
 /* Section body scrolls inside the slide so long plans stay readable */
 .coach-deck-body {
   width: 100%;
-  max-width: 780px;
+  max-width: 920px;
   margin: 0 auto;
   text-align: left;
   overflow-y: auto;
-  max-height: 52vh;
+  max-height: 60vh;
   padding: 4px 6px;
-  font-size: 0.96rem;
-  line-height: 1.6;
+  font-size: 1.08rem;
+  line-height: 1.65;
   color: var(--text);
 }
 .coach-deck-body > * { margin-top: 10px; }
@@ -1508,35 +1642,84 @@
 }
 
 /* ── Narrative body (first slide: "Your Profile") ──
-   A clean, elevated white card with generous padding and
-   soft shadow, centered on the slide. */
+   Large quote-style card with accent left border,
+   soft surface background, generous type. */
 .coach-deck-body-narrative {
-  background: #ffffff;
-  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-  border-radius: 16px;
-  padding: 28px 36px;
+  max-width: 780px;
+  padding: 40px 48px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
   box-shadow:
-    0 1px 2px rgba(15, 15, 40, 0.04),
-    0 14px 40px rgba(15, 15, 40, 0.08);
-  max-width: 720px;
-  font-size: 1.05rem;
-  line-height: 1.7;
+    0 2px 6px rgba(15, 15, 40, 0.04),
+    0 16px 48px -16px rgba(15, 15, 40, 0.10);
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  line-height: 1.85;
   color: var(--text);
   position: relative;
+  text-align: left;
+}
+/* opening quotation mark */
+.coach-deck-body-narrative::before {
+  content: '\201C';
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  font-family: 'Fraunces', serif;
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.25;
+  pointer-events: none;
 }
 [data-theme="dark"] .coach-deck-body-narrative {
-  background: color-mix(in srgb, var(--surface) 94%, #000);
-  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--surface) 80%, #000);
+  border-color: var(--border);
+  border-left-color: var(--accent);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.25),
-    0 14px 40px rgba(0, 0, 0, 0.35);
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 16px 48px -16px rgba(0, 0, 0, 0.4);
 }
 .coach-deck-body-narrative p {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 .coach-deck-body-narrative p:last-child { margin-bottom: 0; }
 .coach-deck-body-narrative strong {
-  font-weight: 600;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* Typewriter cursor: a blinking pipe appended to the last character */
+.coach-tw-cursor {
+  display: inline;
+  font-weight: 300;
+  color: var(--accent);
+  animation: coachTwBlink 0.72s steps(1) infinite;
+}
+@keyframes coachTwBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+/* After typing finishes the cursor fades out */
+.coach-tw-cursor.coach-tw-done {
+  animation: coachTwFadeOut 0.6s ease forwards;
+}
+@keyframes coachTwFadeOut {
+  to { opacity: 0; }
+}
+
+/* Lists in narrative body */
+.coach-deck-body-narrative ul,
+.coach-deck-body-narrative ol {
+  margin: 0 0 18px;
+  padding-left: 24px;
+  font-size: 1.14rem;
+  text-align: left;
+}
+.coach-deck-body-narrative li {
+  margin-bottom: 8px;
 }
 
 /* ── Task body (slides 2–5) ──
@@ -1560,7 +1743,7 @@
     0 1px 2px rgba(15, 15, 40, 0.04),
     0 18px 48px rgba(15, 15, 40, 0.10);
   border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-  padding: 28px 32px;
+  padding: 34px 40px;
 }
 [data-theme="dark"] .coach-deck-body-task .coach-task {
   background: color-mix(in srgb, var(--surface) 94%, #000);
@@ -1576,12 +1759,12 @@
   margin-bottom: 14px;
 }
 .coach-deck-body-task .coach-task-title {
-  font-size: 1.15rem;
+  font-size: 1.28rem;
   line-height: 1.35;
 }
 .coach-deck-body-task .coach-task-desc {
-  font-size: 0.98rem;
-  line-height: 1.55;
+  font-size: 1.08rem;
+  line-height: 1.6;
   margin-top: 6px;
 }
 .coach-deck-body-task .coach-task-study,
@@ -1637,13 +1820,13 @@
 .ins-header-title {
   font-size: 1.95rem;
   letter-spacing: -0.035em;
-  background: linear-gradient(135deg, var(--text) 28%, var(--dna-violet) 100%);
+  background: linear-gradient(135deg, var(--text) 28%, var(--accent, #d4a24c) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 [data-theme="light"] .ins-header-title {
-  background: linear-gradient(135deg, #14142a 28%, var(--dna-violet-deep) 100%) !important;
+  background: linear-gradient(135deg, #14142a 28%, var(--accent, #b8860b) 100%) !important;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3217,54 +3400,4 @@
   border-radius: 12px;
   font-size: 0.74rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--text-dim) 12%, transparent);
-  color: var(--text);
-}
-.ins-og-moves {
-  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
-  font-size: 0.82rem;
-  color: var(--text-dim);
-  margin-bottom: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ins-og-bar {
-  display: flex;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--text-dim) 12%, transparent);
-  margin-bottom: 12px;
-}
-[data-theme="light"] .ins-og-bar { background: rgba(20, 20, 60, 0.08); }
-.ins-og-bar-seg { height: 100%; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-.ins-og-bar-win  { background: linear-gradient(90deg, #22c55e, #16a34a); }
-.ins-og-bar-draw { background: linear-gradient(90deg, #94a3b8, #64748b); }
-.ins-og-bar-loss { background: linear-gradient(90deg, #ef4444, #dc2626); }
-.ins-og-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 0.82rem;
-  color: var(--text-dim);
-}
-.ins-og-wl strong { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
-.ins-og-side { font-weight: 600; }
-.ins-og-winrate {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-weight: 800;
-  font-size: 1.05rem;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 760px) {
-  .ins-mg-list { grid-template-columns: 1fr; gap: 14px; }
-  .ins-mg-card { padding: 18px 18px; border-radius: 16px; }
-  .ins-og-card { padding: 18px 18px 16px; border-radius: 16px; }
-  .ins-og-footer { gap: 10px; }
-  .ins-og-winrate { font-size: 1rem; }
-}
+  background: color-mix(in srgb, var(--text-dim) 12%, tran

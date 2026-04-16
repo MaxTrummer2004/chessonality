@@ -260,7 +260,7 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   grid-template-columns: unset;
   gap: 0;
   padding: 0 40px;
-  margin-top: 60px;
+  margin-top: 32px;
 }
 .landing-hero-center .landing-title { margin-bottom: 16px; }
 .landing-hero-center .landing-sub   { max-width: 600px; margin-bottom: 36px; text-align: center; font-size: 1.2rem; }
@@ -661,23 +661,23 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28px 24px 0;
+  padding: 24px 24px;
   background: var(--bg);
-  justify-content: flex-start;
-  padding-top: max(7vh, 28px);
+  justify-content: center;
+  padding-bottom: 18vh; /* shift visual center upward */
 }
-/* When list is showing: less top padding so list sits higher */
+/* When list is showing: align to top so the list has room to scroll */
 .hero-input-wrap.has-games {
+  justify-content: flex-start;
   padding-top: max(4vh, 24px);
 }
-/* Back button */
+/* Back button — compact centered pill above the card */
 .hero-input-wrap .gs-back {
-  align-self: flex-start;
-  margin-bottom: 20px;
-  max-width: 640px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+  align-self: center;
+  margin-bottom: 14px;
+  width: auto;
+  padding: 8px 20px;
+  font-size: 0.82rem;
 }
 /* Input card stays pinned - never re-centred once list loads */
 .hero-input-zone {
@@ -698,8 +698,8 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
   background: var(--surface);
   border: 1px solid var(--border-hi);
   border-radius: 28px;
-  padding: 48px 44px 40px;
-  max-width: 540px;
+  padding: 56px 60px 48px;
+  max-width: 680px;
   width: 100%;
   text-align: center;
   position: relative;
@@ -734,16 +734,19 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 }
 .hero-input-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .hero-input-sub {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: var(--text-dim);
-  line-height: 1.55;
-  margin-bottom: 28px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
   max-width: 420px;
   margin-left: auto; margin-right: auto;
 }
@@ -901,11 +904,16 @@ body.consent-dismissed .landing-scroll-hint { bottom: 22px; }
 }
 
 @media (max-width: 600px) {
-  .hero-input-card {
-    padding: 32px 20px 28px;
-    border-radius: 20px;
+  .hero-input-wrap {
+    padding: 16px 16px;
   }
-  .hero-input-title { font-size: 1.3rem; }
+  .hero-input-card {
+    padding: 36px 22px 30px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+  .hero-input-title { font-size: 1.5rem; }
+  .hero-input-sub { font-size: 0.95rem; }
   .hero-input-field { flex-direction: column; }
   .hero-input-go { width: 100%; }
   .hero-input-platforms { flex-direction: column; align-items: stretch; }

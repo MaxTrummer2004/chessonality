@@ -197,16 +197,18 @@ async function renderFullProfile() {
   const primaryInner = document.getElementById('profPrimaryInner');
   if (agg) {
     const p = agg.primary;
-    document.getElementById('profPrimary').style.background = p.gradient;
-    document.getElementById('profPrimary').setAttribute('data-pers', p.id);
+    const card = document.getElementById('profPrimary');
+    card.style.setProperty('--card-pers-color', p.color);
+    card.setAttribute('data-pers', p.id);
     document.getElementById('profPrimaryEmoji').textContent = p.emoji;
     document.getElementById('profPrimaryName').textContent = p.name;
     document.getElementById('profPrimaryTagline').textContent = p.tagline;
     // Set global personality color for lasers
     document.documentElement.style.setProperty('--pers-color', p.color);
   } else {
-    document.getElementById('profPrimary').style.background = 'var(--surface2)';
-    document.getElementById('profPrimary').removeAttribute('data-pers');
+    const card = document.getElementById('profPrimary');
+    card.style.removeProperty('--card-pers-color');
+    card.removeAttribute('data-pers');
     document.getElementById('profPrimaryEmoji').textContent = '?';
     document.getElementById('profPrimaryName').textContent = 'Analyze games to discover';
     document.getElementById('profPrimaryTagline').textContent = 'your chess personality';
@@ -322,5 +324,4 @@ function switchEngine(mode) {
 
 function setActiveToggle(mode) {
   // Engine toggle buttons removed from UI
-}
-
+}

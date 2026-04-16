@@ -73,24 +73,24 @@
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/panels.css">
 <link rel="stylesheet" href="css/modals.css">
-<link rel="stylesheet" href="css/pages.css">
-<link rel="stylesheet" href="css/profile.css">
-<link rel="stylesheet" href="css/analysis.css">
+<link rel="stylesheet" href="css/pages.css?v=2">
+<link rel="stylesheet" href="css/profile.css?v=5">
+<link rel="stylesheet" href="css/analysis.css?v=mqd3">
 <link rel="stylesheet" href="css/try-move.css">
 <link rel="stylesheet" href="css/breakdown.css">
 <link rel="stylesheet" href="css/personality.css">
 <link rel="stylesheet" href="css/insights.css">
-<link rel="stylesheet" href="css/coach.css?v=deck3">
-<link rel="stylesheet" href="css/engagement.css">
-<link rel="stylesheet" href="css/repertoire.css?v=deck10">
+<link rel="stylesheet" href="css/coach.css?v=deck7">
+<link rel="stylesheet" href="css/engagement.css?v=2">
+<link rel="stylesheet" href="css/repertoire.css?v=deck12">
 <link rel="stylesheet" href="css/onboarding.css">
-<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/responsive.css?v=2">
 <link rel="stylesheet" href="css/paywall.css">
 <link rel="stylesheet" href="css/walkthrough.css">
-<link rel="stylesheet" href="css/esports.css">
-<link rel="stylesheet" href="css/refresh.css">
-<link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/interactive.css">
+<link rel="stylesheet" href="css/esports.css?v=2">
+<link rel="stylesheet" href="css/refresh.css?v=dash1">
+<link rel="stylesheet" href="css/mobile.css?v=polish3">
+<link rel="stylesheet" href="css/interactive.css?v=polish2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 </head>
@@ -292,33 +292,33 @@
   <div class="landing-fold landing-fold-2col">
 
     <div class="landing-hero landing-hero-2col">
-      <div class="landing-hero-text">
-        <div class="founder-badge" aria-label="Built by a titled player">
+      <div class="landing-hero-text" data-reveal-stagger="80" data-reveal-base="40">
+        <div class="founder-badge" aria-label="Built by a titled player" data-reveal>
           <span class="fb-dot"></span>
           <span class="fb-text">Built by a 2400 Chess.com player</span>
         </div>
 
-        <h2 class="landing-title landing-title-cro">
+        <h2 class="landing-title landing-title-cro" data-reveal>
           <span class="lt-desktop">Know your chess.<br>Know what to practice.</span>
           <span class="lt-mobile">Know your chess.<br>Know what to practice.</span>
         </h2>
-        <p class="landing-sub landing-sub-cro">
+        <p class="landing-sub landing-sub-cro" data-reveal>
           <span class="ls-desktop">Import one game. Get your playing style, move-by-move coaching, and a practice plan in under a minute.</span>
           <span class="ls-mobile">Import one game. Get your style and a plan in under a minute.</span>
         </p>
 
-        <button class="btn-analyze btn-get-started btn-cro-primary" id="heroCtaBtn" onclick="showPage('gameSelect')">
+        <button class="btn-analyze btn-get-started btn-cro-primary" id="heroCtaBtn" onclick="showPage('gameSelect')" data-reveal>
           <span class="cta-desktop">Analyze my last game</span>
           <span class="cta-mobile">Analyze my last game</span>
         </button>
 
-        <ul class="cro-value-list" aria-label="What you'll get">
+        <ul class="cro-value-list" aria-label="What you'll get" data-reveal>
           <li><span class="cvl-tick">&#10003;</span> Your chess personality from 8 archetypes</li>
           <li><span class="cvl-tick">&#10003;</span> Move-by-move AI coaching, in plain English</li>
           <li><span class="cvl-tick">&#10003;</span> A concrete practice plan for the next month</li>
         </ul>
 
-        <div class="cro-counter" id="croCounter">
+        <div class="cro-counter" id="croCounter" data-reveal>
           <span class="cro-counter-num" id="gamesAnalyzedNum">1,247</span>
           <span class="cro-counter-label">players analyzed so far &middot; free, no signup</span>
         </div>
@@ -366,7 +366,7 @@
       </div>
 
       <!-- Hero visual: illustrated mockup of analysis page -->
-      <div class="hero-visual" aria-hidden="true">
+      <div class="hero-visual" aria-hidden="true" data-reveal data-reveal-delay="180">
         <div class="hv-window">
           <div class="hv-window-head">
             <span class="hv-window-title">Your Chess Identity</span>
@@ -482,7 +482,7 @@
       </div>
       <div class="showcase-card showcase-card-repertoire" data-reveal>
         <div class="showcase-card-glow"></div>
-        <div class="showcase-card-icon showcase-icon-text">&#9823;</div>
+        <div class="showcase-card-icon showcase-icon-text">&#9823;&#xFE0E;</div>
         <div class="showcase-card-label">Your Ideal Openings</div>
         <div class="showcase-opening-items">
           <div class="showcase-opening">
@@ -757,37 +757,37 @@
 
   <!-- ── Mobile-only: Personality carousel (2.4 cards visible) ── -->
   <section class="mobile-pers-carousel mobile-only" aria-label="Chess personalities">
-    <h3 class="mobile-pers-carousel-heading">Which one are you?</h3>
-    <div class="mpc-strip">
-      <div class="mpc-card" data-pers="lion"><div class="mpc-card-emoji">🦁</div><div class="mpc-card-name">The Lion</div><div class="mpc-card-tag">Attack. Dominate. Conquer.</div></div>
-      <div class="mpc-card" data-pers="anaconda"><div class="mpc-card-emoji">🐍</div><div class="mpc-card-name">The Anaconda</div><div class="mpc-card-tag">Squeeze. Wait. Win.</div></div>
-      <div class="mpc-card" data-pers="eagle"><div class="mpc-card-emoji">🦅</div><div class="mpc-card-name">The Eagle</div><div class="mpc-card-tag">Tactical. Sharp-eyed.</div></div>
-      <div class="mpc-card" data-pers="fox"><div class="mpc-card-emoji">🦊</div><div class="mpc-card-name">The Fox</div><div class="mpc-card-tag">Creative. Cunning.</div></div>
-      <div class="mpc-card" data-pers="owl"><div class="mpc-card-emoji">🦉</div><div class="mpc-card-name">The Owl</div><div class="mpc-card-tag">Methodical. Patient.</div></div>
-      <div class="mpc-card" data-pers="shark"><div class="mpc-card-emoji">🦈</div><div class="mpc-card-name">The Shark</div><div class="mpc-card-tag">Relentless pressure.</div></div>
-      <div class="mpc-card" data-pers="phoenix"><div class="mpc-card-emoji">🔥</div><div class="mpc-card-name">The Phoenix</div><div class="mpc-card-tag">Rises from any position.</div></div>
-      <div class="mpc-card" data-pers="turtle"><div class="mpc-card-emoji">🐢</div><div class="mpc-card-name">The Turtle</div><div class="mpc-card-tag">Defends. Endures. Wins.</div></div>
+    <h3 class="mobile-pers-carousel-heading" data-reveal>Which one are you?</h3>
+    <div class="mpc-strip" data-reveal-stagger="60" data-reveal-base="60">
+      <div class="mpc-card" data-pers="lion" data-reveal><div class="mpc-card-emoji">🦁</div><div class="mpc-card-name">The Lion</div><div class="mpc-card-tag">Attack. Dominate. Conquer.</div></div>
+      <div class="mpc-card" data-pers="anaconda" data-reveal><div class="mpc-card-emoji">🐍</div><div class="mpc-card-name">The Anaconda</div><div class="mpc-card-tag">Squeeze. Wait. Win.</div></div>
+      <div class="mpc-card" data-pers="eagle" data-reveal><div class="mpc-card-emoji">🦅</div><div class="mpc-card-name">The Eagle</div><div class="mpc-card-tag">Tactical. Sharp-eyed.</div></div>
+      <div class="mpc-card" data-pers="fox" data-reveal><div class="mpc-card-emoji">🦊</div><div class="mpc-card-name">The Fox</div><div class="mpc-card-tag">Creative. Cunning.</div></div>
+      <div class="mpc-card" data-pers="owl" data-reveal><div class="mpc-card-emoji">🦉</div><div class="mpc-card-name">The Owl</div><div class="mpc-card-tag">Methodical. Patient.</div></div>
+      <div class="mpc-card" data-pers="shark" data-reveal><div class="mpc-card-emoji">🦈</div><div class="mpc-card-name">The Shark</div><div class="mpc-card-tag">Relentless pressure.</div></div>
+      <div class="mpc-card" data-pers="phoenix" data-reveal><div class="mpc-card-emoji">🔥</div><div class="mpc-card-name">The Phoenix</div><div class="mpc-card-tag">Rises from any position.</div></div>
+      <div class="mpc-card" data-pers="turtle" data-reveal><div class="mpc-card-emoji">🐢</div><div class="mpc-card-name">The Turtle</div><div class="mpc-card-tag">Defends. Endures. Wins.</div></div>
     </div>
   </section>
 
 <!-- ── Mobile-only: Competitor differentiation (stacked) ── -->
-  <section class="mobile-diff mobile-only" aria-label="Why Chessonality">
-    <h3 class="mobile-diff-heading">Not another chess engine</h3>
-    <div class="mdiff-row">
+  <section class="mobile-diff mobile-only" aria-label="Why Chessonality" data-reveal-stagger="70" data-reveal-base="40">
+    <h3 class="mobile-diff-heading" data-reveal>Not another chess engine</h3>
+    <div class="mdiff-row" data-reveal>
       <div class="mdiff-label">Chess.com Review</div>
       <p class="mdiff-text">Tells you the move. We tell you the pattern.</p>
     </div>
-    <div class="mdiff-row">
+    <div class="mdiff-row" data-reveal>
       <div class="mdiff-label">Personality quizzes</div>
       <p class="mdiff-text">Multiple-choice guesses. We read your real games.</p>
     </div>
-    <div class="mdiff-row">
+    <div class="mdiff-row" data-reveal>
       <div class="mdiff-label">Lichess analysis</div>
       <p class="mdiff-text">Raw engine output. We give you a coaching plan.</p>
     </div>
   </section>
 
-  <footer class="landing-footer">
+  <footer class="landing-footer" data-reveal>
     <span class="lf-copy">&copy; 2025 Chessonality</span>
     <div class="lf-links">
       <button class="lf-link" onclick="showLegal('imprint')">Imprint</button>
@@ -810,7 +810,7 @@
     <p class="choice-modal-sub">Choose your path. You can always explore the other one later.</p>
     <div class="choice-modal-cards">
       <button class="choice-card choice-card-rep" onclick="closeChoiceModal(); startRepFromChoice()">
-        <div class="choice-card-icon choice-card-icon-text">&#9823;</div>
+        <div class="choice-card-icon choice-card-icon-text">&#9823;&#xFE0E;</div>
         <div class="choice-card-badge">NEW</div>
         <h3 class="choice-card-title">Opening Repertoire</h3>
         <p class="choice-card-text">Discover openings that match your personality, with stats from your games and explanations why each one fits you.</p>
@@ -841,7 +841,7 @@
     <button class="gs-back" onclick="goBackToLanding()">&#8592; Back</button>
 
     <!-- Zone 1: Input card - hidden after games load -->
-    <div class="hero-input-zone" id="gsInputZone">
+    <div class="hero-input-zone" id="gsInputZone" data-reveal>
       <div class="hero-input-card hero-input-analyze">
         <div class="hero-input-glow"></div>
         <div class="hero-input-icon hero-input-icon-text">&#9816;</div>
@@ -918,9 +918,9 @@
 <div id="pageRepInput" class="app-page" style="display:none">
   <div class="hero-input-wrap">
     <button class="gs-back" onclick="goBackToLanding()">&#8592; Back</button>
-    <div class="hero-input-card hero-input-rep">
+    <div class="hero-input-card hero-input-rep" data-reveal>
       <div class="hero-input-glow"></div>
-      <div class="hero-input-icon hero-input-icon-text">&#9823;</div>
+      <div class="hero-input-icon hero-input-icon-text">&#9823;&#xFE0E;</div>
       <h2 class="hero-input-title">Find Your Ideal Openings</h2>
       <p class="hero-input-sub">Enter your username and we'll analyze your recent games to recommend a personalized opening repertoire.</p>
       <div class="hero-input-platforms">
@@ -967,14 +967,14 @@
         <div class="rep-load-step" id="repLs0">
           <div class="rep-ls-icon">&#9899;</div>
           <div class="rep-ls-text">
-            <div class="rep-ls-label">Fetching your games</div>
+            <div class="rep-ls-label">Loading your analyzed games</div>
             <div class="rep-ls-detail" id="repLsDetail0"></div>
           </div>
         </div>
         <div class="rep-load-step" id="repLs1">
           <div class="rep-ls-icon">&#9899;</div>
           <div class="rep-ls-text">
-            <div class="rep-ls-label">Parsing moves &amp; openings</div>
+            <div class="rep-ls-label">Reading game stats</div>
             <div class="rep-ls-detail" id="repLsDetail1"></div>
           </div>
         </div>
@@ -1228,6 +1228,7 @@
               <!-- Desktop-only right column: purged from DOM on mobile by inline script at end of body -->
               <div class="moves-right moves-right-desktop" id="movesRightDesktop">
                 <div class="ai-coach-panel" id="aiCoachPanel">
+                  <div class="move-quick-desc" id="moveQuickDescDesktop">Step through the moves to see what happened. Tap Explain for a deeper AI analysis.</div>
                   <div class="aic-btn-group">
                     <button id="explainBtnDesktop" class="btn-explain" onclick="handleExplain()">
                       Explain
@@ -1259,6 +1260,7 @@
 
           <!-- Mobile-only fixed explain bar (lives outside moves-panel so it can be
                truly fixed at the bottom without being clipped by a display:none parent) -->
+          <div class="move-quick-desc" id="moveQuickDescMobile">Step through the moves to see what happened. Tap Explain for a deeper AI analysis.</div>
           <div class="aic-btn-group" id="mobileExplainBar">
             <button id="explainBtn" class="btn-explain" onclick="handleExplain()">
               Explain
@@ -1395,10 +1397,9 @@
       </div>
       <div class="prof-hub-actions">
         <button class="prof-pglos-btn" onclick="openPglos()" title="Learn about all personalities">
-          <span aria-hidden="true">&#128083;</span> Personalities
+          Personalities
         </button>
         <button class="prof-analyze-btn" onclick="showPage('gameSelect')">
-          <span class="prof-analyze-icon" aria-hidden="true">&#9816;</span>
           Analyze a Game
         </button>
       </div>
@@ -1480,26 +1481,26 @@
         <div class="prof-feat-card prof-feat-rep" onclick="openRepertoire()" data-reveal>
           <div class="prof-feat-icon prof-feat-icon-text">&#9817;</div>
           <div class="prof-feat-body">
-            <div class="prof-feat-title">Your Ideal Openings</div>
+            <div class="prof-feat-title">Your Openings</div>
             <div class="prof-feat-sub" id="profFeatRepSub">Personality-matched repertoire with personal stats</div>
+            <div class="prof-feat-status" id="profFeatRepStatus"></div>
           </div>
-          <div class="prof-feat-status" id="profFeatRepStatus"></div>
         </div>
         <div class="prof-feat-card prof-feat-coach" id="profCoachPreview" onclick="openCoachPage()" data-reveal>
           <div class="prof-feat-icon prof-feat-icon-text">&#9812;</div>
           <div class="prof-feat-body">
             <div class="prof-feat-title">AI Coach</div>
             <div class="prof-feat-sub" id="profCoachPreviewText">Personalized training plan</div>
+            <div class="prof-feat-status" id="profFeatCoachStatus"></div>
           </div>
-          <div class="prof-feat-status" id="profFeatCoachStatus"></div>
         </div>
         <div class="prof-feat-card prof-feat-dna" id="profInsightsCta" onclick="openInsights()" data-reveal>
           <div class="prof-feat-icon prof-feat-icon-text">&#9819;</div>
           <div class="prof-feat-body">
             <div class="prof-feat-title">Game Insights</div>
             <div class="prof-feat-sub" id="profFeatDnaSub">Critical moments &amp; opening performance</div>
+            <div class="prof-feat-status" id="profFeatDnaStatus"></div>
           </div>
-          <div class="prof-feat-status" id="profFeatDnaStatus"></div>
         </div>
       </div>
 
@@ -1594,29 +1595,10 @@
     <div style="width:64px"></div><!-- spacer -->
   </header>
 
-  <!-- Tab pills -->
-  <div class="ins-pills-wrap">
-    <div class="ins-pills">
-      <button class="ins-pill active" id="insTabMoments"  onclick="switchInsTab('moments')">Critical Moments</button>
-      <button class="ins-pill"        id="insTabOpenings" onclick="switchInsTab('openings')">Openings</button>
-    </div>
-  </div>
-
-  <!-- ══ PANEL: CRITICAL MOMENTS ══ -->
-  <div id="insTabPanelMoments" class="ins-panel">
-    <div class="ins-page-wrap">
-      <div id="insMomentsContent" class="ins-moments-wrap">
-        <div class="ins-loading"><div class="ins-loading-spinner"></div><div class="ins-loading-text">Scanning your games for turning points…</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ PANEL: OPENINGS ══ -->
-  <div id="insTabPanelOpenings" class="ins-panel" style="display:none">
-    <div class="ins-page-wrap">
-      <div id="insOpeningsContent" class="ins-openings-wrap">
-        <div class="ins-loading"><div class="ins-loading-spinner"></div><div class="ins-loading-text">Aggregating opening performance…</div></div>
-      </div>
+  <!-- ══ SINGLE DASHBOARD ══ -->
+  <div class="ins-dashboard-wrap">
+    <div id="insDashboard" class="ins-dashboard">
+      <div class="ins-loading"><div class="ins-loading-spinner"></div><div class="ins-loading-text">Crunching your game data…</div></div>
     </div>
   </div>
 
@@ -1645,7 +1627,7 @@
     <div class="coach-page-inner">
 
       <!-- Status / empty state -->
-      <div id="coachPageContent" class="coach-page-content">
+      <div id="coachPageContent" class="coach-page-content" data-reveal>
         <div class="coach-page-empty">
           <div class="coach-page-empty-glow"></div>
           <div class="coach-page-empty-icon">&#127942;</div>
@@ -1655,7 +1637,7 @@
       </div>
 
       <!-- CTA button -->
-      <button class="coach-page-cta" id="coachPageBtn" onclick="generateCoachPageAdvice()">
+      <button class="coach-page-cta" id="coachPageBtn" onclick="generateCoachPageAdvice()" data-reveal data-reveal-delay="120">
         <span class="coach-page-cta-icon">&#9889;</span>
         Generate Practice Plan
       </button>
@@ -1665,7 +1647,7 @@
         <div class="rep-crosslinks-title">Go deeper</div>
         <div class="rep-crosslinks-grid" data-reveal-stagger="80" data-reveal-base="60">
           <div class="rep-crosslink" onclick="openRepertoire()" data-reveal>
-            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9823;</span>
+            <span class="rep-crosslink-icon rep-crosslink-icon-text">&#9823;&#xFE0E;</span>
             <div>
               <div class="rep-crosslink-name">Your Ideal Openings</div>
               <div class="rep-crosslink-desc">Personality-matched repertoire with stats</div>
@@ -2046,7 +2028,7 @@
 <div class="modal modal-paywall" id="paywallModal">
   <div class="paywall-inner">
     <div class="paywall-badge">Free limit reached</div>
-    <div class="paywall-emoji paywall-emoji-text">&#9823;</div>
+    <div class="paywall-emoji paywall-emoji-text">&#9823;&#xFE0E;</div>
     <h2 class="paywall-title">Unlock Unlimited Analysis</h2>
     <p class="paywall-sub">You've used your 2 free analyses. Subscribe to keep discovering your chess personality.</p>
 
@@ -2127,11 +2109,13 @@
 <script src="quiz.js"></script>
 <script src="analysis.js"></script>
 <script src="explain.js"></script>
+<script src="move-description.js?v=3"></script>
 <script src="try-move.js"></script>
+<script src="drag-drop.js?v=1"></script>
 <script src="master-games.js"></script>
 <script src="history.js"></script>
 <script src="gameselect.js"></script>
-<script src="insights.js?v=deck3"></script>
+<script src="insights.js?v=dash1"></script>
 <script src="engagement.js"></script>
 <script src="repertoire.js"></script>
 <script src="tour.js"></script>
@@ -2696,4 +2680,4 @@ function mobileTabGo(tab) {
 
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
