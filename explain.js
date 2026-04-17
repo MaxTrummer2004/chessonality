@@ -314,6 +314,156 @@ function renderAicRich(rawHtml, cls, mode) {
 }
 
 // ══════════════════════════════════════════════
+//  JSON RESPONSE PARSING & VALIDATION
+//  Parses Claude's structured JSON, validates fields,
+//  and corrects obvious errors before rendering.
+// ══════════════════════════════════════════════
+
+const _CONCEPT_LABELS = {
+  1: 'Pawn Structure', 2: 'Pawn Structure', 3: 'Pawn Structure',
+  4: 'Bishop Pair', 5: 'Open Files', 6: 'Castling',
+  7: 'King Safety', 8: 'Material', 9: 'Piece Activity', 10: 'Space'
+};
+
+// Try to parse a raw Claude reply as structured JSON.
+// Returns { overview, concept_id, concept_text, best_move, best_move_text } or null.
+function _parseJsonReply(rawText) {
+  if (!rawText || typeof rawText !== 'string') return null;
+  try {
+    // Strip markdown code fences Claude sometimes adds
+    let cleaned = rawText.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    }
+    const obj = JSON.parse(cleaned);
+    if (!obj || typeof obj !== 'object') return null;
+
+    // Full 3-field response (overview + structure + best move)
+    if (obj.overview && obj.concept_text && obj.best_move_text) {
+      const cid = parseInt(obj.concept_id, 10);
+      return {
+        type: 'full',
+        overview: String(obj.overview).slice(0, 300),
+        concept_id: (cid >= 1 && cid <= 10) ? cid : 8,
+        concept_text: String(obj.concept_text).slice(0, 300),
+        best_move: String(obj.best_move || '').replace(/[+#!?]/g, '').trim(),
+        best_move_text: String(obj.best_move_text).slice(0, 300)
+      };
+    }
+
+    // Best-move-only response
+    if (obj.best_move_text) {
+      return {
+        type: 'bestmove',
+        best_move: String(obj.best_move || '').replace(/[+#!?]/g, '').trim(),
+        best_move_text: String(obj.best_move_text).slice(0, 350)
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Validate parsed JSON against board data and fix obvious errors.
+// snap: { best, fenAfter } from the analysis context (optional).
+function _validateAnalysis(parsed, snap) {
+  if (!parsed) return parsed;
+
+  // ── Fix best_move if it doesn't match engine ──
+  if (snap && snap.best && snap.best !== '?') {
+    const strip = s => (s || '').replace(/[+#!?]/g, '').trim();
+    if (strip(parsed.best_move) !== strip(snap.best)) {
+      // Replace wrong best move reference in text too
+      if (parsed.best_move && parsed.best_move_text) {
+        parsed.best_move_text = parsed.best_move_text.replace(
+          new RegExp('\\b' + parsed.best_move.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'g'),
+          snap.best
+        );
+      }
+      parsed.best_move = strip(snap.best);
+    }
+  }
+
+  // ── Validate mentioned pieces exist on board ──
+  if (snap && snap.fenAfter) {
+    try {
+      const g = new Chess(snap.fenAfter);
+      const fields = ['overview', 'concept_text', 'best_move_text'];
+      const pieceRe = /\b(king|queen|rook|bishop|knight|pawn)\s+on\s+([a-h][1-8])\b/gi;
+      for (const field of fields) {
+        if (!parsed[field]) continue;
+        let m;
+        pieceRe.lastIndex = 0;
+        while ((m = pieceRe.exec(parsed[field])) !== null) {
+          const sq = m[2];
+          const piece = g.get(sq);
+          if (!piece) {
+            // Piece doesn't exist on that square - remove the "on X" reference
+            parsed[field] = parsed[field].replace(m[0], m[1]);
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return parsed;
+}
+
+// Build slide deck HTML directly from validated JSON fields.
+// prefix: 'aic' or 'wt'
+function _buildSlideDeckFromJson(parsed, prefix) {
+  prefix = prefix || 'aic';
+
+  function chipify(text) {
+    return (text || '').replace(/\b([KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?|O-O-O|O-O)\b/g,
+      (m) => `<span class="aic-move-chip">${m}</span>`);
+  }
+
+  const slides = [
+    { icon: '\u2654', label: 'Overview', cls: 'slide-overview',
+      bodyHtml: `<div class="${prefix}-slide-text">${chipify(parsed.overview)}</div>` },
+    { icon: '\u2659', label: _CONCEPT_LABELS[parsed.concept_id] || 'Structure', cls: 'slide-structure',
+      bodyHtml: `<div class="${prefix}-slide-text">${chipify(parsed.concept_text)}</div>` },
+    { icon: '\u2655', label: 'Best Move', cls: 'slide-tactics',
+      bodyHtml: `<div class="${prefix}-slide-text">${chipify(parsed.best_move_text)}</div>` }
+  ];
+
+  return _renderSlidesHtml(slides, prefix);
+}
+
+// Shared HTML renderer: takes an array of { icon, label, cls, bodyHtml } and builds the tab+slide markup.
+function _renderSlidesHtml(slides, prefix) {
+  if (!slides.length) return '<div class="aic-sentence">No analysis available.</div>';
+
+  const uid = Math.random().toString(36).slice(2, 7);
+  const deckId = `${prefix}Deck${uid}`;
+
+  let out = `<div class="${prefix}-slide-deck" id="${deckId}" data-slide="0">`;
+
+  // ── Tab bar ──
+  out += `<div class="${prefix}-slide-tabs">`;
+  slides.forEach((s, i) => {
+    out += `<button class="${prefix}-slide-tab ${s.cls}${i === 0 ? ' active' : ''}" data-idx="${i}" onclick="_slideDeckJump(this,${i})">
+      <span class="${prefix}-slide-icon">${s.icon}</span>
+      <span class="${prefix}-slide-label">${s.label}</span>
+    </button>`;
+  });
+  out += `</div>`;
+
+  // ── Slide bodies ──
+  slides.forEach((s, i) => {
+    out += `<div class="${prefix}-slide${i === 0 ? ' active' : ''}" data-idx="${i}">
+      <div class="${prefix}-slide-body">${s.bodyHtml}</div>
+    </div>`;
+  });
+
+  out += `</div>`;
+  return out;
+}
+
+// ══════════════════════════════════════════════
 //  SHARED SLIDE DECK BUILDER
 //  Used by BOTH analysis page and walkthrough.
 //  Overview = 1 slide, Structure = 1 slide,
@@ -357,56 +507,23 @@ function _buildSlideDeck(namedSections, processFn, prefix) {
     }
   }
 
-  if (slides.length === 0) return '<div class="aic-sentence">No analysis available.</div>';
-
-  const uid = Math.random().toString(36).slice(2, 7);
-  const deckId = `${prefix}Deck${uid}`;
-
-  let out = `<div class="${prefix}-slide-deck" id="${deckId}" data-slide="0">`;
-
-  slides.forEach((s, i) => {
-    out += `<div class="${prefix}-slide${i === 0 ? ' active' : ''}" data-idx="${i}">
-      <div class="${prefix}-slide-header ${s.cls}">
-        <span class="${prefix}-slide-icon">${s.icon}</span>
-        <span class="${prefix}-slide-label">${s.label}</span>
-        <span class="${prefix}-slide-counter">${i + 1} / ${slides.length}</span>
-      </div>
-      <div class="${prefix}-slide-body">${s.bodyHtml}</div>
-    </div>`;
-  });
-
-  out += `<div class="${prefix}-slide-nav">
-    <button class="${prefix}-slide-prev" onclick="_slideDeckNav(this,-1)" ${slides.length <= 1 ? 'disabled' : ''}>&#8592;</button>
-    <div class="${prefix}-slide-dots">`;
-  slides.forEach((s, i) => {
-    out += `<span class="${prefix}-slide-dot${i === 0 ? ' active' : ''} ${s.cls}" data-idx="${i}" onclick="_slideDeckJump(this,${i})"></span>`;
-  });
-  out += `</div>
-    <button class="${prefix}-slide-next" onclick="_slideDeckNav(this,1)">&#8594;</button>
-  </div>`;
-  out += `</div>`;
-  return out;
+  return _renderSlidesHtml(slides, prefix);
 }
 
 // ── Unified slide deck navigation (used by both analysis page and walkthrough) ──
 function _slideDeckShowSlide(deck, idx) {
-  const slides = Array.from(deck.children).filter(el => el.hasAttribute('data-idx') && !el.classList.contains('aic-slide-nav') && !el.classList.contains('wt-slide-nav'));
-  const navContainer = deck.querySelector('.aic-slide-dots, .wt-slide-dots');
-  const dots = navContainer ? navContainer.querySelectorAll('[data-idx]') : [];
+  const slides = Array.from(deck.querySelectorAll(':scope > [data-idx]'));
+  const tabBar = deck.querySelector('.aic-slide-tabs, .wt-slide-tabs');
+  const tabs = tabBar ? tabBar.querySelectorAll('[data-idx]') : [];
   const total = slides.length;
   if (idx < 0 || idx >= total) return;
 
   deck.setAttribute('data-slide', idx);
   slides.forEach(s => s.classList.remove('active'));
-  dots.forEach(d => d.classList.remove('active'));
+  tabs.forEach(t => t.classList.remove('active'));
 
   if (slides[idx]) slides[idx].classList.add('active');
-  if (dots[idx]) dots[idx].classList.add('active');
-
-  const prev = deck.querySelector('.aic-slide-prev, .wt-slide-prev');
-  const next = deck.querySelector('.aic-slide-next, .wt-slide-next');
-  if (prev) prev.disabled = idx === 0;
-  if (next) next.disabled = idx === total - 1;
+  if (tabs[idx]) tabs[idx].classList.add('active');
 
   // Auto-scale short walkthrough content (header + body) to fill space
   const activeSlide = slides[idx];
@@ -421,8 +538,9 @@ function _slideDeckShowSlide(deck, idx) {
   }
 }
 
-function _slideDeckNav(btn, dir) {
-  const deck = btn.closest('.aic-slide-deck, .wt-slide-deck');
+function _slideDeckNav(deckOrEl, dir) {
+  const deck = deckOrEl ? (deckOrEl.classList && (deckOrEl.classList.contains('aic-slide-deck') || deckOrEl.classList.contains('wt-slide-deck'))
+    ? deckOrEl : deckOrEl.closest('.aic-slide-deck, .wt-slide-deck')) : null;
   if (!deck) return;
   const cur = parseInt(deck.getAttribute('data-slide') || '0', 10);
   _slideDeckShowSlide(deck, cur + dir);
@@ -770,11 +888,11 @@ function _mpKeyHandler(e) {
   if (e.key === 'Escape') closeMovePresentation();
   if (e.key === 'ArrowRight') {
     const deck = ov.querySelector('.aic-slide-deck');
-    if (deck) _slideDeckNav(deck.querySelector('.aic-slide-next'), 1);
+    if (deck) _slideDeckNav(deck, 1);
   }
   if (e.key === 'ArrowLeft') {
     const deck = ov.querySelector('.aic-slide-deck');
-    if (deck) _slideDeckNav(deck.querySelector('.aic-slide-prev'), -1);
+    if (deck) _slideDeckNav(deck, -1);
   }
 }
 
@@ -1030,7 +1148,9 @@ function updateExplainButtons() {
 
   // Auto-build deck from walkthrough's raw reply cache if we don't have a deck yet
   if (!hasFreeMoves && !_explainCache[deckKey] && _rawReplyCache[currentPly]) {
-    _explainCache[deckKey] = _buildAnalysisSlideDeck(_rawReplyCache[currentPly]);
+    const evB = evals[currentPly - 1];
+    const postFen = positions[currentPly]?.fen;
+    _explainCache[deckKey] = _buildAnalysisSlideDeck(_rawReplyCache[currentPly], { best: evB?.bestSAN, fenAfter: postFen });
   }
 
   const deckDone = !hasFreeMoves && !!_explainCache[deckKey];
@@ -1288,7 +1408,10 @@ async function explainMoveAndAsk() {
     // Cache raw reply for walkthrough to reuse
     _rawReplyCache[currentPly] = reply;
     // Build full 3-slide deck (identical to walkthrough), cache it for both buttons
-    const deckHtml = _buildAnalysisSlideDeck(reply);
+    const evBefore = evals[currentPly - 1];
+    const postFenForValidation = positions[currentPly]?.fen;
+    const deckSnap = { best: evBefore?.bestSAN, fenAfter: postFenForValidation };
+    const deckHtml = _buildAnalysisSlideDeck(reply, deckSnap);
     const deckKey = _explainKey('deck', currentPly);
     _explainCache[deckKey] = deckHtml;
     updateExplainButtons();
@@ -1299,8 +1422,17 @@ async function explainMoveAndAsk() {
 }
 
 // ── Build the full 3-slide deck from a raw Claude reply (identical to walkthrough) ──
-// Returns HTML for the complete slide deck with navigation.
-function _buildAnalysisSlideDeck(rawReply) {
+// Tries JSON first (structured output), falls back to markdown section detection.
+// snap: optional { best, fenAfter } for validation.
+function _buildAnalysisSlideDeck(rawReply, snap) {
+  // ── Try JSON path first ──
+  const parsed = _parseJsonReply(rawReply);
+  if (parsed && parsed.type === 'full') {
+    const validated = _validateAnalysis(parsed, snap);
+    return _buildSlideDeckFromJson(validated, 'aic');
+  }
+
+  // ── Fallback: markdown section detection ──
   let html = marked.parse(rawReply).replace(/\s*[-–]\s*/g, ', ');
 
   function chipify(h) {
@@ -1965,9 +2097,19 @@ function _wtGetResult() {
 }
 
 // ── Walkthrough slide renderer ──────────────────────────────────────
-// Reuses the shared _buildSlideDeck with 'wt' prefix.
-function _renderWtSlides(rawHtml) {
-  rawHtml = rawHtml.replace(/\s*[-–]\s*/g, ', ');
+// Tries JSON first (from raw reply), falls back to markdown section detection.
+// rawReply: the raw text from Claude (NOT pre-parsed with marked).
+// snap: optional { best, fenAfter } for validation.
+function _renderWtSlides(rawReply, snap) {
+  // ── Try JSON path first ──
+  const parsed = _parseJsonReply(rawReply);
+  if (parsed && parsed.type === 'full') {
+    const validated = _validateAnalysis(parsed, snap);
+    return _buildSlideDeckFromJson(validated, 'wt');
+  }
+
+  // ── Fallback: markdown section detection ──
+  let rawHtml = marked.parse(rawReply).replace(/\s*[-–]\s*/g, ', ');
 
   function chipify(html) {
     return html.replace(/\b([KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?|O-O-O|O-O)\b/g,
@@ -2013,7 +2155,9 @@ async function _wtFetchExplanation(step, cacheKey) {
   try {
     // ── Check shared raw reply cache (reuse analysis explanation) ──
     if (_rawReplyCache[step.ply]) {
-      const html = _renderWtSlides(marked.parse(_rawReplyCache[step.ply]));
+      const evBCached = evals[step.ply - 1];
+      const postFenCached = positions[step.ply]?.fen;
+      const html = _renderWtSlides(_rawReplyCache[step.ply], { best: evBCached?.bestSAN, fenAfter: postFenCached });
       _wtCache[cacheKey] = html;
       return html;
     }
@@ -2159,7 +2303,7 @@ async function _wtFetchExplanation(step, cacheKey) {
 
     const reply = await callClaude(prompt, key);
     _rawReplyCache[step.ply] = reply; // share with analysis page
-    const html = _renderWtSlides(marked.parse(reply));
+    const html = _renderWtSlides(reply, snap);
     _wtCache[cacheKey] = html;
     _persistAiCache();
     return html;

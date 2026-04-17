@@ -23,84 +23,36 @@ ALLOWED CHESS CONCEPTS - only these 10 may appear in your response:
 NEVER mention: weak squares, outposts, color complexes, fianchetto, prophylaxis, zugzwang, opposition, or any other positional term. Tactical terms (fork, pin, skewer, discovered attack) may only be used if the continuation explicitly confirms them.`.trim();
 
 // ---- Hallucination guard - placed at top of every move/position template ----
-// Claude must ground every claim in the explicit board data provided.
-const GROUNDING_GUARD = `STRICT RULES (violations are never acceptable):
-1. Only mention pieces and squares explicitly listed in the board positions below.
-2. NEVER name a specific move unless it appears in: (a) the engine's top moves list, OR (b) the "WHAT HAPPENS NEXT" continuation lines.
-2b. ENGINE VERDICT is the single source of truth for whether the played move was the engine's top choice. If it says "IS the engine's #1 choice" - never say the engine preferred something else. If it says "was NOT the engine's top choice" - never say it was. Do not contradict this line under any circumstances.
-2c. TOP-4 SILENT CONSIDERATION: Before writing ANY section you must silently read the engine's top 4 ranked moves for the position. Every factual claim in your Overview, Structure, and Best Move sections must be consistent with those 4 moves. You may only NAME move #1 in your output - moves #2, #3, and #4 exist solely to ground your reasoning and catch false statements. If a sentence you are about to write would imply the engine likes a move not in the top 4, DELETE that sentence.
-2d. TWO-PLY LOOKAHEAD (MANDATORY for Position and Best Move sections): Before judging the position or naming the best move, you MUST silently play out AT LEAST 2 plies of the engine's preferred line into the future (the next engine recommendation after the played move, plus the expected reply). The annotated lineSAN inside the engine top-moves list and the BEST-MOVE LOOKAHEAD block contain this data - read them. Base every verdict ("who stands better", "what the best move achieves", "what the consequence is") on the position that results AFTER those 2 plies resolve, NOT on the board snapshot immediately after the played move. If the 2-ply lookahead changes the material balance or king safety (e.g. a recapture restores material, a follow-up wins a piece), your judgement MUST reflect the post-lookahead state. Never judge off a single half-move snapshot.
-3. When the engine shows forced mate, you MUST mention it.
-4. NEVER confuse "check" with "checkmate". Only call something checkmate if it is labelled "CHECKMATE IN ONE MOVE" in the data.
-5. CASTLING STATUS: Read the "Castling facts" block verbatim. NEVER say a side "hasn't castled" if the facts say they have.
-6. PIECE DEVELOPMENT: You may NOT claim any piece is "undeveloped" or "on its starting square" unless the piece list confirms it.
-7. RESPONSE STRUCTURE: First sentence states the factual move assessment (what was played, what the engine preferred). Then 1-2 more sentences explaining the chess IDEAS behind the position. Read the continuation silently to find the SINGLE most important consequence. State that ONE outcome in plain language. NEVER chain multiple future consequences together. BAD: "your queen gets taken, your knight is lost, and your pieces are under pressure." GOOD: "This costs you a piece within a few moves." Keep it to ONE clear consequence - the most important one.
-8. DETERMINISTIC POSITIONAL FACTS BLOCK: Inside *** DETERMINISTIC POSITIONAL FACTS *** markers you will find the ONLY 10 chess concepts you may discuss: (1) doubled/tripled pawns, (2) isolated pawns, (3) passed pawns, (4) bishop pair, (5) open files, (6) castling rights, (7) king safety, (8) material balance, (9) piece activity, (10) space. Pick the SINGLE most relevant one for the Structure section and base it entirely on the deterministic facts provided. NEVER invent any concept not in the list (no weak squares, no outposts, no color complexes). If nothing notable changed, describe the current state of the most relevant one.
-9. NEVER invent tactics, sequences, or move-by-move narratives. Express the position as a chess IDEA, not as a list of moves. BAD: "After Nc3, Black castles, then Qd3 forces Rb8." GOOD: "The knight develops with tempo, preparing to pressure the weak c-pawn." Do NOT use filler phrases: "creates multiple threats", "puts pressure on", "gains initiative", "controls the center", "creates tactical opportunities", or equivalent vague generalizations. Be specific about ONE concrete chess idea.
-9e. LOGICAL CONSISTENCY: Every claim must follow logically from the board state. NEVER claim a side "gave up the bishop pair" unless that side actually HAD both bishops before the move and now has zero or one. NEVER say a move "created doubled pawns" unless the pawn structure data confirms doubled pawns exist AFTER the move. NEVER attribute consequences to the WRONG side (e.g. saying "your opponent lost the bishop pair" when it was YOU who lost a bishop). Check which side captured what, and which side suffers the consequence.
-9f. FOCUS ON THE MOVE, NOT THE FUTURE: The explanation should primarily be about the move itself - what it does RIGHT NOW on the board. The continuation is background context only. NEVER make the continuation the main subject of your explanation. BAD: "Within a few moves your queen gets taken, your knight is lost, and your remaining pieces are under heavy pressure." GOOD: "Capturing with the pawn instead of the queen leaves you with a weaker piece structure."
-9c. ATTACK CLAIMS: NEVER invent attacks from piece geometry alone. A piece landing on a square does NOT mean it attacks adjacent pieces. You may ONLY claim a fork, pin, skewer, or attack if the continuation annotations explicitly confirm it (e.g. the annotation says "[captures queen]", "[forks king and rook]", or a capture actually happens on that square in the continuation). If the continuation does not show the attack materializing, do NOT claim it exists. STATE THE OUTCOME instead: "this loses your knight" or "this wins the exchange".
-9d. EVAL NUMBERS: NEVER quote the raw evaluation number (e.g. "+2.3", "minus 2.6", "-1.8 pawns") in any section. You may say "the engine strongly favors Black" or "this gives White a clear advantage" but must not name a specific numerical score.
-9b. MATERIAL CLAIMS: NEVER claim a side is materially ahead unless the "Material balance" line in the FACTS block explicitly says so. The verdict on that line is the EFFECTIVE balance - it already accounts for forced recaptures in the engine continuation. If it says "Material is equal" then NEVER say one side is winning material, even if a piece was just captured (the next move recaptures it). A recapture restores material - call the sequence a "trade" or "recapture", not a "material gain". NEVER write phrases like "you are up a minor piece" or "you have an extra knight" unless the EFFECTIVE Material balance line confirms it.
-9b-i. CAPTURE vs TRADE CHECK (MANDATORY for every capture move): Before describing ANY capture, you MUST verify against the EFFECTIVE Material balance line and the engine continuation:
-   (a) Does the side making the capture actually END UP with more material after all forced recaptures settle? If YES → call it "wins a [piece]" or "gains material".
-   (b) Or does the opponent immediately recapture an equal-value piece? If YES → call it a "trade", "exchange", or "recapture", NEVER a material gain.
-   (c) Or does the opponent recapture a MORE valuable piece? If YES → the capturing side actually LOSES material, call it "loses a [piece]" or "blunders material".
-   If the EFFECTIVE Material balance says "equal", a capture is ALWAYS a trade, never a win. If it says one side is up, that side won material. Never call an even trade a "win" and never call a material loss a "gain".
-9b-ii. EVAL-AWARE TRADE JUDGEMENT (MANDATORY whenever the played move is a capture or exchange): You MUST read the EVALUATION CONTEXT block before judging a trade. A trade is ONLY a mistake when the trading side was equal or worse before the move. If the EVALUATION CONTEXT says the mover was "CLEARLY WINNING" or "WINNING DECISIVELY" before the move, trades/exchanges are STRATEGICALLY CORRECT - they simplify toward a won endgame by removing opponent counterplay. In that case:
-   - NEVER write phrases like "only wins the exchange of rooks", "merely trades pieces", "leaves the opponent's king safe to defend", or "doesn't press the advantage". A winning side WANTS to simplify.
-   - NEVER recommend a more aggressive alternative that "keeps pressure" when trading toward a won endgame was the clean conversion.
-   - The correct framing for a trade in a winning position is: "simplifies toward a won endgame", "removes the opponent's most active defender", or "trades down into an easy win".
-   Conversely, if the mover was equal or worse before the move, trading into an equal endgame can legitimately be criticized for surrendering winning chances.
-10. SECTION STRUCTURE: Use the 3 required ## section headers: Overview, Structure, Best Move - in that exact order. Never skip a section. Never merge sections. Never add a 4th section.
-11. All three sections: prose only, 1-3 sentences each. NEVER use numbered lists, bullet points, or move-by-move sequences. No bold text.`.trim();
+// 5 short, verifiable rules. JSON output prevents narrative drift.
+const GROUNDING_RULES = `STRICT RULES (violating any is a critical error):
+1. PIECES: Only mention pieces listed in "Pieces on board". If not listed, it does not exist.
+2. MOVES: Only name moves from the engine's top-4 list or BEST-MOVE LOOKAHEAD. Never invent moves.
+3. CONCEPTS: concept_text must use exactly ONE of the 10 concepts from the FACTS block. No other positional terms (no weak squares, outposts, color complexes, fianchetto, prophylaxis).
+4. MATERIAL: The EFFECTIVE Material balance line is truth. "Equal" = no side won material. Capture + recapture = "trade", not a win. In a winning position, trades are correct (simplify toward a won endgame).
+5. ENGINE VERDICT: If it says IS #1, celebrate the move. If NOT #1, name engine's preferred move. Never contradict this line.
+BANNED: eval numbers (+2.3), move-by-move sequences, bold text, bullet points, em-dashes, invented tactics, filler like "creates threats" or "gains initiative".
+Audience: complete beginner. Simple everyday language. One clear consequence, not chains of future events.`.trim();
 
 // ---- Global output formatting rules injected into every prompt ----
 // SHORT version: for simple prompts (follow-up questions, book moves)
 const FMT_SHORT = `Output rules: never use em-dashes (-) or en-dashes (–). Never use parenthetical qualifiers in brackets. Never use headers, bold text, or bullet points. Always finish your last sentence completely. Maximum 4 sentences total.`.trim();
 
-// STRUCTURED version: 3-section format for move analysis
-const FMT_STRUCTURED = `Output format (MANDATORY - no exceptions):
-Write EXACTLY these 3 ## markdown section headers in this order. No bullet points. No bold text. No numbered lists. No em-dashes (-) or en-dashes (–). Always complete every sentence.
-CRITICAL LENGTH RULE: Each section must be 230 characters maximum. Hard limit - stop before exceeding it.
-AUDIENCE: Complete beginner. Use simple, everyday language. Describe what happens on the board in plain terms (e.g. "this loses a bishop" or "this puts pressure on the center"), NEVER list move sequences or use technical notation in your prose.
-PIECE CHECK: Before writing, verify every piece you mention exists in the "Pieces on board" list above. NEVER say a player has a bishop, knight, rook, or queen that is not in that list.
-
-## Overview
-Max 230 characters. What move was played, and in one clause whether it was the right call or not. Focus on what the move ITSELF does on the board right now. You may mention ONE future consequence at most (e.g. "this gives away a piece", "this controls the center well"), but NEVER narrate a chain of future events. Keep it grounded in the present position.
-
-## Structure
-Max 230 characters. Pick EXACTLY ONE of these 10 concepts from the FACTS block and describe it: doubled/tripled pawns, isolated pawns, passed pawns, bishop pair, open files, castling rights, king safety, material balance, piece activity, or space. Use the deterministic facts. NEVER invent any other positional concept (no weak squares, no outposts, no color complexes). Pick the one most relevant to the move just played.
-STRICT NO-JUDGEMENT RULE: This section describes the position AS IT IS. It is NOT the place to judge the played move, to say the move was good or bad, or to link the concept back to the move's quality. FORBIDDEN PHRASES (never write these or anything like them in Structure): "which is a problem your move did nothing to address", "your move failed to solve this", "this is a weakness your move ignored", "your move made this worse", "this creates problems for you", "your move does not address this". If a sentence implies the move was good or bad, DELETE it - save move judgements for the Best Move section. Describe only what IS on the board.
-GROUNDING REQUIREMENT: Before writing this section, silently read the engine's TOP 4 moves list. If the concept you are about to describe contradicts what those 4 moves imply about the position (e.g. you want to say "Black's king is exposed" but all 4 engine moves are quiet positional moves for White), pick a different concept that IS consistent with the top 4. Do NOT mention the top-4 moves themselves in this section unless absolutely necessary - they are grounding only.
-
-## Best Move
-Max 230 characters. MANDATORY COMPARISON: This section must explicitly compare the engine's #1 move with the move the player actually played. Structure your sentence as "the engine preferred X, which [benefit] — whereas your move [consequence]" or equivalent. Never describe the best move in isolation; it must always be framed against what was played. If the played move IS the engine's #1, say so and explain what it achieves better than the other candidates.
-EVAL-CONTEXT MANDATE: Before selecting the benefit, you MUST read the EVALUATION CONTEXT block. If the mover was already CLEARLY WINNING or WINNING DECISIVELY before the move and remains winning after, do NOT describe the played move as failing to "press the advantage", "keep pressure", or "leaving the opponent safe to defend". In a winning position, clean simplifying trades are CORRECT play; do not manufacture a criticism. If the played move IS the engine's #1 or a near-top choice in a winning position, the Best Move section should validate the simplification, not invent a better alternative.
-Pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn - verify via the EFFECTIVE Material balance, not single captures), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
-CAPTURE SANITY CHECK: if you are about to claim the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If the balance is equal, call it a "trade" not a "win". When the mover is already winning, a trade's benefit is "simplifies toward a won endgame" - not "wins material".
-You MUST silently compare the played move against ALL 4 top engine moves before writing - this prevents you from claiming "the engine preferred X" when X is wrong. Read the BEST-MOVE LOOKAHEAD block (3 moves ahead) for the concrete consequence.
-TWO-PLY LOOKAHEAD (REQUIRED): Before naming the best move's benefit, silently walk AT LEAST the first 2 plies of the BEST-MOVE LOOKAHEAD (the engine's #1 move PLUS the expected reply). Your stated benefit must be the consequence visible AFTER those 2 plies, not after only move 1. If move 1 captures a piece but move 2 recaptures it, do NOT call the best move a "material win" - it is a trade. If move 1 looks quiet but move 2 reveals a won piece or mate, state that deeper consequence instead. The judgement is based on the position 2 plies deep, not on a single-move snapshot.
-NAME ONLY MOVE #1: even though you silently considered all 4, you may only write the name of move #1. Do NOT name moves #2-#4 in your output.
-CRITICAL PRONOUN RULE: If this is the STUDENT'S OWN move, write "you could have played X". If this is the OPPONENT'S move, write "your opponent could have played X" - NEVER "you should have played X" for opponent's turn.
-BANNED: listing move sequences, quoting brackets, inventing tactics, mentioning weak squares or outposts.
-Two sentences maximum.`.trim();
+// STRUCTURED version: 3-field JSON for move analysis (replaces free-form markdown)
+const FMT_JSON = `OUTPUT: Return ONLY this JSON object, no other text:
+{
+  "overview": "(max 200 chars) What the move does on the board right now and whether it was good or bad. One future consequence at most.",
+  "concept_id": (number 1-10: 1=doubled pawns, 2=isolated pawns, 3=passed pawns, 4=bishop pair, 5=open files, 6=castling rights, 7=king safety, 8=material, 9=piece activity, 10=space),
+  "concept_text": "(max 200 chars) Describe the chosen concept AS IT IS on the board from the FACTS block. No move judgement in this field.",
+  "best_move": "(engine's #1 SAN from ENGINE VERDICT, e.g. 'e4' or 'Nxd5')",
+  "best_move_text": "(max 200 chars) Compare engine's #1 to played move. Use BEST-MOVE LOOKAHEAD priority: checkmate > material > king safety > castling > passed pawn > bishop pair > pawn structure > activity > space."
+}`.trim();
 
 // BEST-MOVE-ONLY version: for the "Analyze Move" button (just the best move)
-const FMT_BESTMOVE = `Output format (MANDATORY - no exceptions):
-Write EXACTLY one ## markdown section header. No bullet points. No bold text. No numbered lists. No em-dashes (-) or en-dashes (–). Always complete every sentence.
-AUDIENCE: Complete beginner. Use simple, everyday language. NEVER list move sequences in your output.
-
-## Best Move
-Max 280 characters. MANDATORY COMPARISON: This section must explicitly compare the engine's #1 move with the move the player actually played. Frame it as "the engine preferred X because [benefit] — whereas your move [consequence]" or equivalent. Never describe the best move in isolation. If the played move IS the engine's #1, say so and explain what it achieves.
-EVAL-CONTEXT MANDATE: Before selecting the benefit, you MUST read the EVALUATION CONTEXT block. If the mover was already CLEARLY WINNING or WINNING DECISIVELY before the move and remains winning after, do NOT describe the played move as failing to "press the advantage", "keep pressure", or "leaving the opponent safe to defend". In a winning position, clean simplifying trades are CORRECT play; do not manufacture a criticism. If the played move IS the engine's #1 or a near-top choice in a winning position, validate the simplification - do not invent a better alternative.
-Pick the SINGLE most important benefit using this strict priority: (1) delivers checkmate, (2) wins material (queen > rook > minor piece > pawn - verify via the EFFECTIVE Material balance, not single captures), (3) saves your own material from being lost, (4) improves king safety, (5) preserves castling rights, (6) creates a passed pawn, (7) gains the bishop pair or opens a file for your rooks, (8) avoids doubled or isolated pawns, (9) activates a piece, (10) gains space. Always pick the HIGHEST priority benefit visible in the lookahead.
-CAPTURE SANITY CHECK: if claiming the best move "wins a piece" by capturing, verify the EFFECTIVE Material balance actually reflects that gain. If equal, it is a "trade", not a "win". When the mover is already winning, a trade's benefit is "simplifies toward a won endgame" - not "wins material".
-You MUST silently compare the played move against ALL 4 top engine moves before writing. NAME ONLY MOVE #1 in your output - moves #2-#4 are silent grounding.
-TWO-PLY LOOKAHEAD (REQUIRED): Before naming the best move's benefit, silently walk AT LEAST the first 2 plies of the BEST-MOVE LOOKAHEAD (the engine's #1 move PLUS the expected reply). Your stated benefit must be the consequence visible AFTER those 2 plies, not after move 1 alone. If move 1 captures a piece but move 2 recaptures it, do NOT call it a "material win" - it is a trade. If move 1 looks quiet but move 2 reveals a won piece or forced mate, state that deeper consequence instead. Judge 2 plies deep, never off a single-move snapshot.
-CRITICAL PRONOUN RULE: If this is the STUDENT'S OWN move, write "you could have played X". If this is the OPPONENT'S move, write "your opponent could have played X" - NEVER "you should have played X" for opponent's turn.
-BANNED: listing move sequences, quoting brackets, inventing tactics, mentioning weak squares or outposts.
-Two to three sentences maximum.`.trim();
+const FMT_JSON_BESTMOVE = `OUTPUT: Return ONLY this JSON object, no other text:
+{
+  "best_move": "(engine's #1 SAN from ENGINE VERDICT)",
+  "best_move_text": "(max 250 chars) Compare engine's #1 to played move. If played IS #1, celebrate. One concrete benefit from BEST-MOVE LOOKAHEAD priority list."
+}`.trim();
 
 // LONG version: for paragraph-style templates (summary, improve, coach)
 const FMT_LONG = `Output rules (no exceptions):
@@ -899,7 +851,7 @@ const TEMPLATES = {
       : `It is YOUR OPPONENT'S turn (${toMoveColor} to move). The engine's best moves listed below are moves YOUR OPPONENT can play - NOT you. NEVER say "you should play X" or suggest the student capture anything, because it is not the student's turn. Only describe what the opponent is likely to do based on the engine's top moves list.`;
     const pawnNotes = pawnStructureNotes(d.fen);
     return withThoughts(
-`${GROUNDING_GUARD}
+`${GROUNDING_RULES}
 Chess coach explaining a position to a beginner.
 The student is playing as ${studentColor}.
 ${turnCtx}
@@ -910,124 +862,94 @@ ${d.threats || 'No checkmate in one move is available.'}
 ${d.topMoves ? `\nEngine's best moves for this position:\n${d.topMoves}\n` : ''}
 ${d.evalCtx ? d.evalCtx + '\n' : ''}${persHint()}
 
-STRICT OUTPUT RULES:
+EXTRA RULES:
 - If a CHECKMATE IN ONE is listed above, mention it first.
-- Do NOT mention centipawns, material numbers, or "pawns worth".
-- SILENT CONSIDERATION: You MUST read and consider ALL 4 ranked engine moves before writing. They are your factual ground truth against which every claim must be cross-checked.
-- TWO-PLY LOOKAHEAD (REQUIRED): Before you judge this position or name the recommended move, you MUST silently walk AT LEAST the first 2 plies of move #1's annotated line (the engine's #1 move PLUS the expected reply shown in the lineSAN annotations). Your assessment of who stands better and what the position demands must be based on where the board lands AFTER those 2 plies, NOT on the current snapshot. If the 2-ply lookahead resolves a capture, recapture, or forcing sequence, your judgement must reflect that outcome - e.g. if move #1 is a capture but the reply recaptures, do NOT describe it as "winning material". Never judge the position off a single-move snapshot.
-- You may ONLY name the engine's #1 move in your output. Moves #2, #3, and #4 are silent grounding only - do NOT mention them. The lineSAN continuations for each move are internal context - do NOT recite them.
-- NEVER invent threats, plans, or tactical ideas not explicitly shown in the engine data above. If the engine lists a move, you may say the player (or opponent) will likely play that. Otherwise do not speculate.
-- If a claim you are about to write would contradict any of the top 4 engine moves, DELETE the claim.
-- If the pawn structure notes list doubled or tripled pawns, you may mention them as a positional factor.
-- CRITICAL: If it is the opponent's turn, NEVER say "you should play X" or "you can capture Y". Say what the OPPONENT is likely to do.
+- Only name the engine's #1 move. Moves #2-#4 are silent grounding only.
+- If it is the opponent's turn, NEVER say "you should play X". Say what the OPPONENT is likely to do.
 
 In 2 sentences, describe the position from ${studentColor}'s view. ${isStudentTurn ? `State the engine's best move for you naturally.` : `State what your opponent is most likely to play (from the engine's top moves) and why it is a concern.`} Use "you/your" for ${studentColor}.
 ${FMT_SHORT}`, d.thoughts);
   },
 
   good: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: GOOD move. Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow the pronoun rules above exactly.
-Section guidance: Overview = state this was a good move and what it achieves in plain terms. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space) and describe it. Best Move = state the engine's preferred move and explain its benefit using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: GOOD move. Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = good move, what it achieves. best_move_text = if IS #1, celebrate; otherwise compare.
+${FMT_JSON}`, d.thoughts),
 
   brilliant: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: BRILLIANT MOVE (sacrifice). Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow the pronoun rules above exactly.
-Section guidance: Overview = name what was sacrificed and call it brilliant. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space) and describe it. Best Move = explain how the sacrifice pays off using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: BRILLIANT MOVE (sacrifice). Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = name the sacrifice, call it brilliant. best_move_text = how the sacrifice pays off.
+${FMT_JSON}`, d.thoughts),
 
   inaccuracy: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: INACCURACY. Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow the pronoun rules above EXACTLY.
-Section guidance: Overview = state the engine's preferred move and that this was a small inaccuracy. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain why the engine's move is better using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: INACCURACY. Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = small inaccuracy, name the better alternative. best_move_text = why engine's move is better.
+${FMT_JSON}`, d.thoughts),
 
   mistake: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: MISTAKE. Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns, material numbers, or "pawns worth". Follow the pronoun rules above EXACTLY.
-Section guidance: Overview = state the engine's preferred move and that this was a mistake. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain what the engine's move achieves using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: MISTAKE. Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = mistake, name the better move. best_move_text = what the engine's move achieves.
+${FMT_JSON}`, d.thoughts),
 
   blunder: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: BLUNDER. Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns, material numbers, or "pawns worth". Follow the pronoun rules above EXACTLY.
-Section guidance: Overview = state the engine's preferred move and that this was a serious blunder. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain what the engine's move would have achieved using one of those same 6 concepts. Be blunt but kind.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: BLUNDER. Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = serious blunder, name the better move. best_move_text = what was lost. Be blunt but kind.
+${FMT_JSON}`, d.thoughts),
 
   neutral: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Eval went from ${d.eb} to ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow the pronoun rules above EXACTLY.
-Section guidance: Overview = state what this move does and that it's a solid, neutral choice. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain what the engine suggests using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = solid, neutral choice. best_move_text = what the engine suggests.
+${FMT_JSON}`, d.thoughts),
 
   book: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: BOOK MOVE (opening theory). Engine eval: ${d.ea}
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow pronoun rules exactly.
-Section guidance: Overview = state this is a book move and what opening principle it follows. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain what the opening aims for in terms of one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: BOOK MOVE (opening theory). Eval: ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = book move, which opening principle it follows. best_move_text = what the opening aims for.
+${FMT_JSON}`, d.thoughts),
 
   bookBad: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: dubious book move. Eval went from ${d.eb} to ${d.ea}.
-${CHESS_CONCEPTS}
-${persHint()}
-
-Do NOT mention centipawns or material numbers. Follow pronoun rules exactly.
-Section guidance: Overview = name the engine's preferred move and that this deviates from theory. Structure = pick exactly ONE concept from the FACTS block (doubled pawns, castling rights, king safety, material, piece activity, or space). Best Move = explain what the theory move achieves using one of those same 6 concepts.
-${FMT_STRUCTURED}`, d.thoughts),
+Classification: dubious book move. Eval: ${d.eb} to ${d.ea}
+${CHESS_CONCEPTS}${persHint()}
+GUIDANCE: overview = deviates from theory, name better book move. best_move_text = what the theory move achieves.
+${FMT_JSON}`, d.thoughts),
 
   summary: (d) => {
     const playerSide = colorName(d.color);
@@ -1068,15 +990,13 @@ ${FMT_LONG}`;
 
   // ---- Best-move-only (for the "Analyze Move" button) ----
   bestMoveOnly: (d) => withThoughts(
-`${GROUNDING_GUARD}
-Chess coach. A beginner is reviewing a game.
+`${GROUNDING_RULES}
+Chess coach analyzing a beginner's game.
 ${perspectiveHeader(d)}
 ${moveDetail(d)}
-Classification: ${d.cls ? d.cls.toUpperCase() : 'unknown'}. Eval went from ${d.eb} to ${d.ea}
+Classification: ${d.cls ? d.cls.toUpperCase() : 'unknown'}. Eval: ${d.eb} to ${d.ea}
 ${persHint()}
-
-Do NOT mention centipawns, material numbers, or "pawns worth". Follow the pronoun rules above exactly.
-${FMT_BESTMOVE}`, d.thoughts),
+${FMT_JSON_BESTMOVE}`, d.thoughts),
 
   // ---- Game highlights (3 short takeaways shown as overlay after analysis) ----
   highlights: (d) => {
@@ -1190,6 +1110,7 @@ async function _callProxy(endpoint, prompt, model) {
       body: JSON.stringify({
         model: model || 'claude-haiku-4-5-20251001',
         max_tokens: isLong ? 1000 : 300,
+        temperature: 0,
         messages: [{ role: 'user', content: prompt }]
       })
     });

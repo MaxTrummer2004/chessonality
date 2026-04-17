@@ -324,4 +324,5 @@ function switchEngine(mode) {
 
 function setActiveToggle(mode) {
   // Engine toggle buttons removed from UI
-}
+}
+

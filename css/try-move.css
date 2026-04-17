@@ -134,19 +134,19 @@
   color: var(--text);
 }
 
-/* ── User-move square highlights (purple tint, using inset box-shadow like all other highlights) ── */
+/* ── User-move square highlights (purple tint) ── */
 .user-move-from {
-  box-shadow: inset 0 0 0 72px rgba(139,92,246,0.22) !important;
+  background-image: linear-gradient(rgba(139,92,246,0.22),rgba(139,92,246,0.22)) !important;
 }
 .user-move-to {
-  box-shadow: inset 0 0 0 72px rgba(139,92,246,0.32) !important;
+  background-image: linear-gradient(rgba(139,92,246,0.32),rgba(139,92,246,0.32)) !important;
 }
 /* Dark mode: much softer purple */
 [data-theme="dark"] .user-move-from {
-  box-shadow: inset 0 0 0 72px rgba(167,139,250,0.10) !important;
+  background-image: linear-gradient(rgba(167,139,250,0.10),rgba(167,139,250,0.10)) !important;
 }
 [data-theme="dark"] .user-move-to {
-  box-shadow: inset 0 0 0 72px rgba(167,139,250,0.16) !important;
+  background-image: linear-gradient(rgba(167,139,250,0.16),rgba(167,139,250,0.16)) !important;
 }
 
 /* ── Explain Position button (replaces Try Move) ── */

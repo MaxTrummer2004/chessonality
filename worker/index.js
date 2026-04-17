@@ -127,6 +127,7 @@ async function handleClaude(request, env, isLong) {
     body: JSON.stringify({
       model: requestedModel,
       max_tokens: isLong ? 1000 : 300,
+      temperature: 0,
       messages: [{ role: 'user', content: body.prompt }]
     })
   });

@@ -1477,8 +1477,8 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  width: min(1100px, 95vw);
-  height: min(620px, 88vh);
+  width: min(1300px, 95vw);
+  height: min(720px, 92vh);
   background: var(--surface);
   border: 1px solid var(--border-hi);
   border-radius: 18px;
@@ -1534,7 +1534,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px 22px;
+  padding: 28px 32px;
   border-left: 1px solid var(--border);
   overflow: hidden;
 }
@@ -1603,14 +1603,31 @@
   .coach-pos-actions { flex-direction: column; }
   .mp-layout {
     flex-direction: column;
-    height: min(90vh, 700px);
+    width: 98vw;
+    height: min(94vh, 780px);
+  }
+  .mp-content-side {
+    padding: 16px 18px;
   }
   .mp-board-side {
     flex: 0 0 auto;
     padding: 12px;
   }
   .mp-board-clone {
-    max-width: 240px;
+    max-width: 220px;
+  }
+  .wt-slide-tab {
+    font-size: 0.88rem;
+    padding: 10px 6px;
+    gap: 6px;
+  }
+  .wt-slide-tab .wt-slide-icon { font-size: 1.1rem; }
+  .wt-slide-body {
+    font-size: 1.05rem;
+    padding: 4px 8px;
+  }
+  .wt-slide-body.wt-body-short {
+    font-size: 1.2rem;
   }
 }
 
