@@ -1017,11 +1017,19 @@ function closeMovePresentation() {
   }, 220);
 }
 
-function explainPosition(topMovesStr) {
+function explainPosition(topMovesStr, bestLineSAN) {
   const pos = positions[currentPly];
   if (!pos) return;
   setExplainContext('position');
   const ev = evals[currentPly];
+  // Prefer whatever richest engine PV is available so the 3-ply lookahead
+  // block inside TEMPLATES.position has real data to walk.
+  const fallbackLine = (ev?.lineSAN) || (ev?.bestSAN) || '';
+  const richest      = bestLineSAN || '';
+  const pickedLine   = (richest.split(/\s+/).filter(Boolean).length >=
+                        fallbackLine.split(/\s+/).filter(Boolean).length)
+    ? (richest || fallbackLine)
+    : fallbackLine;
   const snap = {
     fen:           pos.fen,
     turn:          pos.turn,
@@ -1029,13 +1037,14 @@ function explainPosition(topMovesStr) {
     evalCtx:       evalContext(ev, playerColor),
     threats:       threatsSummary(pos.fen),
     topMoves:      topMovesStr || '',
+    bestLineSAN:   pickedLine,
     material:      materialStr(pos.fen),
     color:         playerColor
   };
   pendingExplainPromptFn = () => TEMPLATES.position({ ...snap, thoughts: getContextThoughts('position') });
 }
 
-function explainMove(topMovesStr, continuationStr, fenAfterCont) {
+function explainMove(topMovesStr, continuationStr, fenAfterCont, extra) {
   if (currentPly < 1) return;
   const pos = positions[currentPly];
   const evB = evals[currentPly - 1];
@@ -1052,6 +1061,15 @@ function explainMove(topMovesStr, continuationStr, fenAfterCont) {
   const threatsBefore = threatsSummary(positions[currentPly - 1].fen);
   // Threats AFTER the move (what the opponent can now do)
   const threatsAfter  = threatsSummary(pos.fen);
+  // Prefer the richest bestLineSAN available: topMoves[0].lineSAN (up to 4 plies
+  // from Lichess) beats the cached eval's single-move fallback. This is what
+  // feeds the BEST-MOVE LOOKAHEAD block so Claude always sees 3 plies.
+  const richestBestLine = (extra && extra.bestLineSAN) ? extra.bestLineSAN : '';
+  const fallbackBestLine = evB.lineSAN || evB.bestSAN || '';
+  const bestLineSAN = (richestBestLine.split(/\s+/).filter(Boolean).length >=
+                       fallbackBestLine.split(/\s+/).filter(Boolean).length)
+    ? (richestBestLine || fallbackBestLine)
+    : fallbackBestLine;
   const snap = {
     fen: positions[currentPly - 1].fen,
     fenAfter: pos.fen,
@@ -1060,7 +1078,8 @@ function explainMove(topMovesStr, continuationStr, fenAfterCont) {
     from: pos.from, to: pos.to,
     san: pos.san, eb: fmtEval(evB), ea: fmtEval(evA),
     best: evB.bestSAN || '?', loss, cls,
-    bestLineSAN: evB.lineSAN || evB.bestSAN || '',
+    bestLineSAN,
+    contLineSAN: (extra && extra.contLineSAN) || '',
     topMoves: topMovesStr || '',
     continuation: continuationStr || '',
     threatsBefore, threatsAfter,
@@ -1275,6 +1294,7 @@ async function explainMoveAndAsk() {
   const preFen = positions[currentPly - 1]?.fen;
   const evBefore = evals[currentPly - 1];
   let topMovesStr = '';
+  let _topMovesRaw = []; // kept at outer scope so we can extract the #1 line's lineSAN later
   if (preFen) {
     try {
       let topMoves = await fetchTopMoves(preFen, 4);
@@ -1302,6 +1322,7 @@ async function explainMoveAndAsk() {
         }
       }
       topMovesStr = annotateTopMoves(preFen, topMoves);
+      _topMovesRaw = topMoves;
     } catch (e) { console.warn('[TopMoves] fetch failed:', e.message); }
   }
   // Fallback: if Lichess had no multiPv data, use the cached engine best move
@@ -1400,7 +1421,16 @@ async function explainMoveAndAsk() {
     : null;
   window._lastFenAfterContFinal = fenAfterContFinal;
 
-  explainMove(topMovesStr, continuationStr, fenAfterCont);
+  // Richest available PV strings for the 3-ply lookahead blocks in the prompt.
+  //   bestLineSAN = engine's preferred alternative starting from preFen
+  //   contLineSAN = engine's top reply starting from postFen (what really happens next)
+  const richestBestLine = (_topMovesRaw[0]?.lineSAN) || '';
+  const richestContLine = (_rawContMoves[0]?.lineSAN) || '';
+
+  explainMove(topMovesStr, continuationStr, fenAfterCont, {
+    bestLineSAN: richestBestLine,
+    contLineSAN: richestContLine,
+  });
   if (!pendingExplainPromptFn) return;
 
   try {
@@ -1503,10 +1533,12 @@ async function explainPositionAndAsk() {
   const curFen = positions[currentPly]?.fen;
   const evCurrent = evals[currentPly];
   let topMovesStr = '';
+  let _posTopMovesRaw = []; // hoisted so we can extract the #1 lineSAN for the lookahead block
   if (curFen) {
     try {
       const topMoves = await fetchTopMoves(curFen, 4);
       topMovesStr = formatTopMoves(topMoves);
+      _posTopMovesRaw = topMoves;
     } catch (e) { console.warn('[TopMoves] fetch failed:', e.message); }
   }
   // Fallback: if Lichess had no multiPv data, use the cached engine best move
@@ -1521,7 +1553,9 @@ async function explainPositionAndAsk() {
     }]);
   }
 
-  explainPosition(topMovesStr);
+  // Richest PV for the position's 3-ply lookahead block.
+  const _posBestLine = (_posTopMovesRaw[0]?.lineSAN) || '';
+  explainPosition(topMovesStr, _posBestLine);
   if (!pendingExplainPromptFn) return;
   try {
     const reply = await callClaude(pendingExplainPromptFn(), key);
@@ -2173,6 +2207,7 @@ async function _wtFetchExplanation(step, cacheKey) {
     // Get top moves for context - annotated so Claude gets plain-English move descriptions
     const preFen = positions[step.ply - 1]?.fen;
     let topMovesStr = '';
+    let _wtTopMovesRaw = []; // hoisted so we can extract #1 line's lineSAN later
     if (preFen) {
       try {
         let topMoves = await fetchTopMoves(preFen, 4);
@@ -2197,6 +2232,7 @@ async function _wtFetchExplanation(step, cacheKey) {
           }
         }
         topMovesStr = annotateTopMoves(preFen, topMoves);
+        _wtTopMovesRaw = topMoves;
       } catch (e) { console.warn('[WT TopMoves]', e.message); }
     }
     if (!topMovesStr && evB.bestSAN) {
@@ -2277,6 +2313,15 @@ async function _wtFetchExplanation(step, cacheKey) {
     const wtThreatsBefore = threatsSummary(positions[step.ply - 1].fen);
     const wtThreatsAfter  = threatsSummary(pos.fen);
 
+    // Prefer the richest PVs for the 3-ply lookahead blocks in the prompt.
+    const _wtRichestBest = (_wtTopMovesRaw[0]?.lineSAN) || '';
+    const _wtFallbackBest = evB.lineSAN || evB.bestSAN || '';
+    const _wtBestLine = (_wtRichestBest.split(/\s+/).filter(Boolean).length >=
+                         _wtFallbackBest.split(/\s+/).filter(Boolean).length)
+      ? (_wtRichestBest || _wtFallbackBest)
+      : _wtFallbackBest;
+    const _wtContLine = (_wtRawContMoves[0]?.lineSAN) || '';
+
     const snap = {
       fen: positions[step.ply - 1].fen, fenAfter: pos.fen,
       fenAfterCont: wtFenAfterCont,
@@ -2284,7 +2329,8 @@ async function _wtFetchExplanation(step, cacheKey) {
       from: pos.from, to: pos.to, san: pos.san,
       eb: fmtEval(evB), ea: fmtEval(evA),
       best: evB.bestSAN || '?', loss: step.loss, cls: step.cls,
-      bestLineSAN: evB.lineSAN || evB.bestSAN || '',
+      bestLineSAN: _wtBestLine,
+      contLineSAN: _wtContLine,
       topMoves: topMovesStr, continuation: continuationStr,
       threatsBefore: wtThreatsBefore, threatsAfter: wtThreatsAfter,
       color: playerColor, mover, thoughts: []

@@ -1,7 +1,11 @@
 /* ============================================================
-   claude-api.js - Claude API integration (Haiku + Sonnet)
-   Move/position analysis → Haiku  (fast, ~300 output tokens)
+   claude-api.js - Claude API integration (Sonnet for all calls)
+   Move/position analysis → Sonnet (strong reasoning, ~500 output tokens)
    Improvement plans + coach → Sonnet (stronger, ~1000 tokens)
+   Every move/position prompt is required to carry 3 plies of engine
+   continuation (BEST-MOVE LOOKAHEAD for the preferred line, plus the
+   opponent's 3-move continuation AFTER the played move) so Claude
+   never has to guess what happens next.
    No conversation history - each call is fully self-contained.
    ============================================================ */
 
@@ -23,13 +27,15 @@ ALLOWED CHESS CONCEPTS - only these 10 may appear in your response:
 NEVER mention: weak squares, outposts, color complexes, fianchetto, prophylaxis, zugzwang, opposition, or any other positional term. Tactical terms (fork, pin, skewer, discovered attack) may only be used if the continuation explicitly confirms them.`.trim();
 
 // ---- Hallucination guard - placed at top of every move/position template ----
-// 5 short, verifiable rules. JSON output prevents narrative drift.
+// Short, verifiable rules. JSON output prevents narrative drift.
 const GROUNDING_RULES = `STRICT RULES (violating any is a critical error):
 1. PIECES: Only mention pieces listed in "Pieces on board". If not listed, it does not exist.
-2. MOVES: Only name moves from the engine's top-4 list or BEST-MOVE LOOKAHEAD. Never invent moves.
+2. MOVES: Only name moves from the engine's top-4 list, the BEST-MOVE LOOKAHEAD block, or the OPPONENT CONTINUATION block. Never invent moves.
 3. CONCEPTS: concept_text must use exactly ONE of the 10 concepts from the FACTS block. No other positional terms (no weak squares, outposts, color complexes, fianchetto, prophylaxis).
 4. MATERIAL: The EFFECTIVE Material balance line is truth. "Equal" = no side won material. Capture + recapture = "trade", not a win. In a winning position, trades are correct (simplify toward a won endgame).
 5. ENGINE VERDICT: If it says IS #1, celebrate the move. If NOT #1, name engine's preferred move. Never contradict this line.
+6. LOOKAHEAD IS MANDATORY: Before you write ANY sentence in overview or best_move_text, silently read the BEST-MOVE LOOKAHEAD (3 plies of the engine's preferred line) AND the OPPONENT CONTINUATION (3 plies of what happens after the played move). Every claim about consequences (material won/lost, checkmate threats, king exposure) MUST be traceable to a specific ply in one of those two blocks. If a consequence is not in those blocks, DO NOT mention it.
+7. NO SPECULATION BEYOND 3 PLIES: You are given exactly 3 plies of look-ahead. Never narrate events beyond those 3 plies. Never say "eventually", "long-term", "down the line", or invent a continuation of your own.
 BANNED: eval numbers (+2.3), move-by-move sequences, bold text, bullet points, em-dashes, invented tactics, filler like "creates threats" or "gains initiative".
 Audience: complete beginner. Simple everyday language. One clear consequence, not chains of future events.`.trim();
 
@@ -40,18 +46,18 @@ const FMT_SHORT = `Output rules: never use em-dashes (-) or en-dashes (–). Nev
 // STRUCTURED version: 3-field JSON for move analysis (replaces free-form markdown)
 const FMT_JSON = `OUTPUT: Return ONLY this JSON object, no other text:
 {
-  "overview": "(max 200 chars) What the move does on the board right now and whether it was good or bad. One future consequence at most.",
+  "overview": "(max 200 chars) What the move does on the board right now and whether it was good or bad. The single future consequence you mention MUST come from ply 1-3 of the OPPONENT CONTINUATION block (what actually happens after this move). Do NOT invent a consequence; if the continuation is empty, describe only the board state now.",
   "concept_id": (number 1-10: 1=doubled pawns, 2=isolated pawns, 3=passed pawns, 4=bishop pair, 5=open files, 6=castling rights, 7=king safety, 8=material, 9=piece activity, 10=space),
   "concept_text": "(max 200 chars) Describe the chosen concept AS IT IS on the board from the FACTS block. No move judgement in this field.",
   "best_move": "(engine's #1 SAN from ENGINE VERDICT, e.g. 'e4' or 'Nxd5')",
-  "best_move_text": "(max 200 chars) Compare engine's #1 to played move. Use BEST-MOVE LOOKAHEAD priority: checkmate > material > king safety > castling > passed pawn > bishop pair > pawn structure > activity > space."
+  "best_move_text": "(max 200 chars) Compare engine's #1 to played move. Your ONE concrete benefit MUST come from a specific ply in the BEST-MOVE LOOKAHEAD block. Use BEST-MOVE LOOKAHEAD priority: checkmate > material > king safety > castling > passed pawn > bishop pair > pawn structure > activity > space. If the played move IS #1, celebrate it and still cite the concrete benefit from the lookahead."
 }`.trim();
 
 // BEST-MOVE-ONLY version: for the "Analyze Move" button (just the best move)
 const FMT_JSON_BESTMOVE = `OUTPUT: Return ONLY this JSON object, no other text:
 {
   "best_move": "(engine's #1 SAN from ENGINE VERDICT)",
-  "best_move_text": "(max 250 chars) Compare engine's #1 to played move. If played IS #1, celebrate. One concrete benefit from BEST-MOVE LOOKAHEAD priority list."
+  "best_move_text": "(max 250 chars) Compare engine's #1 to played move. If played IS #1, celebrate. The one concrete benefit MUST be traceable to a specific ply in the BEST-MOVE LOOKAHEAD block (mate at ply N, wins queen at ply N, saves king at ply N, etc.). Follow the LOOKAHEAD priority list."
 }`.trim();
 
 // LONG version: for paragraph-style templates (summary, improve, coach)
@@ -471,19 +477,16 @@ function openFilesNotes(fen) {
   } catch { return ''; }
 }
 
-// ── BEST-MOVE LOOKAHEAD ──
-// Plays the engine's best line (up to 3 plies) starting from preFen, and
-// annotates each ply in plain English. This gives Claude a deterministic
-// 3-move-ahead view of why the engine's preferred move is good.
-//
-// Inputs: preFen = position BEFORE the move was played, lineSAN = engine PV
-// (whitespace-separated SAN moves; first move is the engine's #1 choice).
-// Returns a multi-line string ready to inject as a *** BEST-MOVE LOOKAHEAD ***
-// block, or '' if data is missing.
-function bestMoveLookahead(preFen, lineSAN) {
-  if (!preFen || !lineSAN) return '';
+// ── Engine-line lookahead (shared core) ──
+// Plays up to 3 plies of an engine PV starting from a given FEN and returns
+// { lines, summary, parsedPlies } so callers can wrap it in either a
+// BEST-MOVE LOOKAHEAD block (engine's preferred alternative from preFen) or an
+// OPPONENT CONTINUATION block (engine's top reply from postFen after the
+// played move). Ensures Claude ALWAYS has deterministic 3-move context.
+function _engineLookaheadCore(fen, lineSAN) {
+  if (!fen || !lineSAN) return null;
   const tokens = String(lineSAN).trim().split(/\s+/).filter(Boolean).slice(0, 3);
-  if (!tokens.length) return '';
+  if (!tokens.length) return null;
 
   const pieceNames = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' };
   const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -499,14 +502,13 @@ function bestMoveLookahead(preFen, lineSAN) {
   }
 
   let g;
-  try { g = new Chess(preFen); } catch { return ''; }
+  try { g = new Chess(fen); } catch { return null; }
   const startMat = countMaterial(g);
 
   const lines = [];
   const moverNames = { w: 'White', b: 'Black' };
-  let bestMoveLabel = tokens[0];
   let mateFound = false;
-  let materialDelta = 0; // positive = White ahead vs start, negative = Black ahead
+  let parsedPlies = 0;
 
   for (let i = 0; i < tokens.length; i++) {
     const san = tokens[i];
@@ -517,6 +519,7 @@ function bestMoveLookahead(preFen, lineSAN) {
       lines.push(`  Ply ${i + 1}: (could not parse "${san}")`);
       break;
     }
+    parsedPlies++;
     const piece = pieceNames[move.piece] || 'piece';
     let desc = `${moverNames[moverColor]} plays ${move.san} (${piece} ${move.from}→${move.to})`;
     if (move.captured) {
@@ -530,29 +533,81 @@ function bestMoveLookahead(preFen, lineSAN) {
     if (g.in_checkmate() || g.in_stalemate()) break;
   }
 
-  // Material delta after the lookahead
-  const endMat = countMaterial(g);
+  const endMat    = countMaterial(g);
   const startDiff = startMat.w - startMat.b;
   const endDiff   = endMat.w - endMat.b;
-  materialDelta   = endDiff - startDiff; // positive = White gained material vs start
+  const materialDelta = endDiff - startDiff;
+
+  return { lines, parsedPlies, mateFound, materialDelta, firstMove: tokens[0] };
+}
+
+// ── BEST-MOVE LOOKAHEAD ──
+// Plays the engine's best line (up to 3 plies) starting from preFen, and
+// annotates each ply in plain English. This gives Claude a deterministic
+// 3-move-ahead view of why the engine's preferred move is good.
+//
+// Inputs: preFen = position BEFORE the move was played, lineSAN = engine PV
+// (whitespace-separated SAN moves; first move is the engine's #1 choice).
+// Returns a multi-line string ready to inject as a *** BEST-MOVE LOOKAHEAD ***
+// block. Falls back to a placeholder note so Claude always sees SOME grounding
+// text rather than silent omission.
+function bestMoveLookahead(preFen, lineSAN) {
+  const core = _engineLookaheadCore(preFen, lineSAN);
+  if (!core) {
+    return `\n\n*** BEST-MOVE LOOKAHEAD (engine's preferred line, 3 plies) ***
+(No engine PV available for this position - best_move_text must therefore stay generic and avoid naming any concrete consequence.)
+*** END BEST-MOVE LOOKAHEAD ***`;
+  }
 
   let summary;
-  if (mateFound) {
-    summary = `RESULT: The best move leads to CHECKMATE within ${lines.length} plies.`;
-  } else if (materialDelta > 0) {
-    summary = `RESULT: After 3 plies White is up ${materialDelta} point${materialDelta === 1 ? '' : 's'} of material compared to the starting position.`;
-  } else if (materialDelta < 0) {
-    summary = `RESULT: After 3 plies Black is up ${-materialDelta} point${materialDelta === -1 ? '' : 's'} of material compared to the starting position.`;
+  if (core.mateFound) {
+    summary = `RESULT: The best move leads to CHECKMATE within ${core.lines.length} plies.`;
+  } else if (core.materialDelta > 0) {
+    summary = `RESULT: After ${core.parsedPlies} plies White is up ${core.materialDelta} point${core.materialDelta === 1 ? '' : 's'} of material compared to the starting position.`;
+  } else if (core.materialDelta < 0) {
+    summary = `RESULT: After ${core.parsedPlies} plies Black is up ${-core.materialDelta} point${core.materialDelta === -1 ? '' : 's'} of material compared to the starting position.`;
   } else {
-    summary = `RESULT: After 3 plies material is unchanged from the starting position.`;
+    summary = `RESULT: After ${core.parsedPlies} plies material is unchanged from the starting position.`;
   }
 
   return `\n\n*** BEST-MOVE LOOKAHEAD (engine's preferred line, 3 plies) ***
-Engine's #1 move: ${bestMoveLabel}
-${lines.join('\n')}
+Engine's #1 move: ${core.firstMove}
+${core.lines.join('\n')}
 ${summary}
 PRIORITY HIERARCHY for the Best Move section: (1) checkmate, (2) winning material (queen > rook > minor piece > pawn), (3) saving your own material, (4) king safety, (5) castling rights, (6) passed pawn, (7) bishop pair / open file, (8) avoiding doubled or isolated pawns, (9) piece activity, (10) space. Pick the HIGHEST priority benefit visible in the lookahead above and base your Best Move sentence on that ONE benefit only.
 *** END BEST-MOVE LOOKAHEAD ***`;
+}
+
+// ── OPPONENT CONTINUATION LOOKAHEAD ──
+// Plays the engine's top reply line (up to 3 plies) starting from postFen
+// (the position AFTER the played move). This is ground truth for the
+// overview field: "what actually happens next" after the move under
+// analysis. Claude is required to source consequence claims from here.
+function continuationLookahead(postFen, lineSAN) {
+  const core = _engineLookaheadCore(postFen, lineSAN);
+  if (!core) {
+    return `\n\n*** OPPONENT CONTINUATION (what actually happens next, 3 plies) ***
+(No engine continuation available for this position - overview must therefore describe only the CURRENT board state and avoid claiming any future consequence.)
+*** END OPPONENT CONTINUATION ***`;
+  }
+
+  let summary;
+  if (core.mateFound) {
+    summary = `RESULT: Within ${core.lines.length} plies this line reaches CHECKMATE.`;
+  } else if (core.materialDelta > 0) {
+    summary = `RESULT: After ${core.parsedPlies} plies White is up ${core.materialDelta} point${core.materialDelta === 1 ? '' : 's'} of material compared to the position right after the played move.`;
+  } else if (core.materialDelta < 0) {
+    summary = `RESULT: After ${core.parsedPlies} plies Black is up ${-core.materialDelta} point${core.materialDelta === -1 ? '' : 's'} of material compared to the position right after the played move.`;
+  } else {
+    summary = `RESULT: After ${core.parsedPlies} plies material is unchanged from the position right after the played move.`;
+  }
+
+  return `\n\n*** OPPONENT CONTINUATION (what actually happens next, 3 plies) ***
+Engine's top reply: ${core.firstMove}
+${core.lines.join('\n')}
+${summary}
+HOW TO USE THIS BLOCK: The "overview" field in your JSON may describe at most ONE concrete consequence. That consequence MUST appear in the plies above (e.g. "your knight gets captured at ply 2", "your king is exposed to check at ply 1"). If the line ends peacefully, the overview should describe only the current board change without predicting drama.
+*** END OPPONENT CONTINUATION ***`;
 }
 
 // ── Evaluation context: parse d.eb / d.ea (already-formatted fmtEval strings) ──
@@ -811,22 +866,29 @@ ${factsLines.join('\n')}
   // when describing what the engine's best move would have achieved.
   const lookaheadStr = bestMoveLookahead(d.fen, d.bestLineSAN || '');
 
+  // ── OPPONENT CONTINUATION LOOKAHEAD (3 plies from postFen) ──
+  // Deterministic ground truth for the overview field: what actually happens
+  // immediately after the played move. Claude is REQUIRED to source any
+  // future-consequence claim from these plies only.
+  const contLookaheadStr = continuationLookahead(d.fenAfter, d.contLineSAN || '');
+
   // ── EVALUATION CONTEXT (deterministic who-is-winning verdict) ──
   // Prevents Claude from criticizing clean simplifying trades when the mover
   // is already winning, and generally grounds every move-quality judgement in
   // the actual eval rather than single-move surface features.
   const evalCtxStr = evalContextBlock(d);
 
-  // ── Best continuation AFTER the move ──
-  // Each half-move annotated in plain English so Claude reads facts, not notation.
+  // ── Raw annotated continuation lines (top 3 PVs, for internal grounding) ──
+  // The richer per-ply lookahead above is authoritative; this block is kept as
+  // secondary internal reference and is explicitly marked as such.
   const continuationStr = d.continuation
-    ? `\nWHAT HAPPENS NEXT - Engine continuation (for YOUR internal understanding only):\n${d.continuation}\n\nHOW TO USE THIS: Read the continuation silently to understand the SINGLE most important outcome (e.g. a piece is lost, a checkmate is threatened, a trade occurs). Then express ONLY that one outcome in plain English. NEVER narrate multiple future events. NEVER say "your queen gets taken, then your knight is lost, then..." - just state the worst single consequence. Do NOT say "the eval shifted."`
+    ? `\n\nSECONDARY REFERENCE - Top 3 annotated engine reply lines (read silently, do NOT quote):\n${d.continuation}\n\nRule: the OPPONENT CONTINUATION block above is authoritative. If this secondary list contradicts it, trust the OPPONENT CONTINUATION block.`
     : '';
 
   return `${before}${pawnBefore}${threatBeforeStr}
 Move played: ${colorName(d.mover)}'s ${pieceName} from ${d.from || '?'} → ${d.to || '?'}${captureStr}${epStr}${promoStr}.${checkStr}${bestStr}${topMovesStr}${evalCtxStr}
 Position AFTER the move:
-${after}${threatAfterStr}${obsBlock}${lookaheadStr}${continuationStr}`;
+${after}${threatAfterStr}${obsBlock}${lookaheadStr}${contLookaheadStr}${continuationStr}`;
 }
 
 // ---- Personality helper: returns a short flavour line or empty string ----
@@ -850,6 +912,9 @@ const TEMPLATES = {
       ? `It is YOUR turn (${studentColor} to move). The engine's best moves listed below are moves YOU can play.`
       : `It is YOUR OPPONENT'S turn (${toMoveColor} to move). The engine's best moves listed below are moves YOUR OPPONENT can play - NOT you. NEVER say "you should play X" or suggest the student capture anything, because it is not the student's turn. Only describe what the opponent is likely to do based on the engine's top moves list.`;
     const pawnNotes = pawnStructureNotes(d.fen);
+    // 3-ply lookahead of the engine's #1 line from THIS position so Claude has
+    // deterministic context instead of guessing what the top move achieves.
+    const posLookahead = bestMoveLookahead(d.fen, d.bestLineSAN || '');
     return withThoughts(
 `${GROUNDING_RULES}
 Chess coach explaining a position to a beginner.
@@ -860,14 +925,15 @@ ${boardDescription(d.fen)}${pawnNotes}
 
 ${d.threats || 'No checkmate in one move is available.'}
 ${d.topMoves ? `\nEngine's best moves for this position:\n${d.topMoves}\n` : ''}
-${d.evalCtx ? d.evalCtx + '\n' : ''}${persHint()}
+${d.evalCtx ? d.evalCtx + '\n' : ''}${posLookahead}${persHint()}
 
 EXTRA RULES:
 - If a CHECKMATE IN ONE is listed above, mention it first.
 - Only name the engine's #1 move. Moves #2-#4 are silent grounding only.
+- Your one concrete observation MUST be anchored in the BEST-MOVE LOOKAHEAD block (ply 1-3). Never invent a consequence beyond it.
 - If it is the opponent's turn, NEVER say "you should play X". Say what the OPPONENT is likely to do.
 
-In 2 sentences, describe the position from ${studentColor}'s view. ${isStudentTurn ? `State the engine's best move for you naturally.` : `State what your opponent is most likely to play (from the engine's top moves) and why it is a concern.`} Use "you/your" for ${studentColor}.
+In 2 sentences, describe the position from ${studentColor}'s view. ${isStudentTurn ? `State the engine's best move for you naturally, grounded in the 3-ply lookahead above.` : `State what your opponent is most likely to play (from the engine's top moves) and why it is a concern, grounded in the 3-ply lookahead above.`} Use "you/your" for ${studentColor}.
 ${FMT_SHORT}`, d.thoughts);
   },
 
@@ -1108,8 +1174,8 @@ async function _callProxy(endpoint, prompt, model) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: model || 'claude-haiku-4-5-20251001',
-        max_tokens: isLong ? 1000 : 300,
+        model: model || 'claude-sonnet-4-5-20250514',
+        max_tokens: isLong ? 1000 : 500,
         temperature: 0,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -1125,12 +1191,12 @@ async function _callProxy(endpoint, prompt, model) {
 }
 
 // ---- Public API call functions ----
-// callClaude: high-volume move/position analysis — Haiku (fast, cheap)
+// callClaude: move/position analysis — Sonnet (strong reasoning, grounded on 3-ply lookahead)
 async function callClaude(prompt, _apiKey) {
-  return _callProxy('/api/claude', prompt);
+  return _callProxy('/api/claude', prompt, 'claude-sonnet-4-5-20250514');
 }
 
-// callClaudeLong: improvement plans + coach insights — Sonnet (stronger reasoning)
+// callClaudeLong: improvement plans + coach insights — Sonnet (stronger reasoning, longer output)
 async function callClaudeLong(prompt, _apiKey) {
   return _callProxy('/api/claude-long', prompt, 'claude-sonnet-4-5-20250514');
 }

@@ -2,7 +2,7 @@
  * Chess Personality — Cloudflare Worker
  * ─────────────────────────────────────
  * Handles:
- *   POST /api/claude       → proxy to Anthropic (max_tokens 300, default Haiku)
+ *   POST /api/claude       → proxy to Anthropic (max_tokens 500, default Sonnet)
  *   POST /api/claude-long  → proxy to Anthropic (max_tokens 1000, client picks model)
  *   POST /api/verify-key   → verify a license key
  *   GET  /api/health       → health check
@@ -108,14 +108,17 @@ async function handleClaude(request, env, isLong) {
   }
 
   // Proxy to Anthropic
-  // Allow the client to request a specific model; default to Haiku.
+  // Allow the client to request a specific model; default to Sonnet so that
+  // every move/position analysis gets the stronger reasoning model that can
+  // actually USE the 3-ply BEST-MOVE LOOKAHEAD and OPPONENT CONTINUATION
+  // blocks embedded in the prompt.
   const ALLOWED_MODELS = [
-    'claude-haiku-4-5-20251001',
     'claude-sonnet-4-5-20250514',
+    'claude-haiku-4-5-20251001',
   ];
   const requestedModel = ALLOWED_MODELS.includes(body.model)
     ? body.model
-    : 'claude-haiku-4-5-20251001';
+    : 'claude-sonnet-4-5-20250514';
 
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -126,7 +129,7 @@ async function handleClaude(request, env, isLong) {
     },
     body: JSON.stringify({
       model: requestedModel,
-      max_tokens: isLong ? 1000 : 300,
+      max_tokens: isLong ? 1000 : 500,
       temperature: 0,
       messages: [{ role: 'user', content: body.prompt }]
     })
